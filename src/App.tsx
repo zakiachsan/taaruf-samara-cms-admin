@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { 
   LayoutDashboard, 
   Users, 
@@ -11,8 +11,12 @@ import {
   Settings,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Database,
+  AlertCircle,
+  CheckCircle
 } from 'lucide-react'
+import { supabase, getCurrentUser } from './lib/supabase'
 
 // Navigation items
 const NAV_ITEMS = [
@@ -30,6 +34,68 @@ const NAV_ITEMS = [
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
+  const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    checkConnection()
+  }, [])
+
+  const checkConnection = async () => {
+    try {
+      // Try to get current user to test connection
+      await getCurrentUser()
+      setConnectionStatus('connected')
+    } catch (err) {
+      setConnectionStatus('error')
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to connect to Supabase')
+    }
+  }
+
+  // Show setup message if Supabase is not configured
+  if (connectionStatus === 'error') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 max-w-md w-full">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Database className="w-8 h-8 text-red-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 text-center mb-4">
+            Supabase Belum Terkonfigurasi
+          </h1>
+          <p className="text-gray-600 text-center mb-6">
+            Silakan konfigurasi environment variables Supabase untuk melanjutkan.
+          </p>
+          
+          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <p className="text-sm font-medium text-gray-700 mb-2">Langkah-langkah:</p>
+            <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
+              <li>Copy <code className="bg-gray-200 px-1 rounded">.env.example</code> menjadi <code className="bg-gray-200 px-1 rounded">.env</code></li>
+              <li>Isi <code className="bg-gray-200 px-1 rounded">VITE_SUPABASE_URL</code> dengan URL project Supabase</li>
+              <li>Isi <code className="bg-gray-200 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> dengan anon key</li>
+              <li>Refresh halaman</li>
+            </ol>
+          </div>
+
+          {errorMessage && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{errorMessage}</p>
+              </div>
+            </div>
+          )}
+
+          <button 
+            onClick={checkConnection}
+            className="w-full bg-emerald-600 text-white py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors"
+          >
+            Coba Lagi
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -72,6 +138,15 @@ function App() {
 
         {/* Bottom Actions */}
         <div className="p-3 border-t border-gray-200">
+          {/* Connection Status */}
+          {sidebarOpen && (
+            <div className="mb-3 px-3 py-2 bg-emerald-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={16} className="text-emerald-600" />
+                <span className="text-sm text-emerald-700 font-medium">Terhubung</span>
+              </div>
+            </div>
+          )}
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors">
             <LogOut size={20} />
             {sidebarOpen && <span className="font-medium">Logout</span>}
@@ -126,8 +201,12 @@ function App() {
                 Halaman {NAV_ITEMS.find(i => i.id === activeTab)?.label}
               </h3>
               <p className="text-gray-500 max-w-md mx-auto">
-                Halaman ini sedang dalam pengembangan. Silakan pilih menu lain atau kembali lagi nanti.
+                Database sudah terhubung. Halaman ini sedang dalam pengembangan.
               </p>
+              <div className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-600">
+                <CheckCircle size={16} />
+                <span>Supabase Connected</span>
+              </div>
             </div>
           </div>
         </div>
