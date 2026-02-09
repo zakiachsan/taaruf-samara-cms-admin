@@ -19,6 +19,7 @@ import {
 import { supabase, getCurrentUser } from './lib/supabase'
 import Dashboard from './components/dashboard/Dashboard'
 import UsersManagement from './components/users/UsersManagement'
+import PremiumManagement from './components/premium/PremiumManagement'
 
 // Navigation items
 const NAV_ITEMS = [
@@ -196,6 +197,8 @@ function App() {
               <Dashboard />
             ) : activeTab === 'users' ? (
               <UsersManagement />
+            ) : activeTab === 'premium' ? (
+              <PremiumManagement />
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
