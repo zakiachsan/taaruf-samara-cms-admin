@@ -17,6 +17,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 import { supabase, getCurrentUser } from './lib/supabase'
+import Dashboard from './components/dashboard/Dashboard'
 
 // Navigation items
 const NAV_ITEMS = [
@@ -189,25 +190,29 @@ function App() {
               </p>
             </div>
 
-            {/* Placeholder Content */}
-            <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                {(() => {
-                  const Icon = NAV_ITEMS.find(i => i.id === activeTab)?.icon || LayoutDashboard
-                  return <Icon size={32} className="text-gray-400" />
-                })()}
+            {/* Content */}
+            {activeTab === 'dashboard' ? (
+              <Dashboard />
+            ) : (
+              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  {(() => {
+                    const Icon = NAV_ITEMS.find(i => i.id === activeTab)?.icon || LayoutDashboard
+                    return <Icon size={32} className="text-gray-400" />
+                  })()}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Halaman {NAV_ITEMS.find(i => i.id === activeTab)?.label}
+                </h3>
+                <p className="text-gray-500 max-w-md mx-auto">
+                  Halaman ini sedang dalam pengembangan.
+                </p>
+                <div className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-600">
+                  <CheckCircle size={16} />
+                  <span>Supabase Connected</span>
+                </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                Halaman {NAV_ITEMS.find(i => i.id === activeTab)?.label}
-              </h3>
-              <p className="text-gray-500 max-w-md mx-auto">
-                Database sudah terhubung. Halaman ini sedang dalam pengembangan.
-              </p>
-              <div className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-600">
-                <CheckCircle size={16} />
-                <span>Supabase Connected</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </main>
