@@ -23,6 +23,7 @@ import {
   BarChart,
   Bar
 } from 'recharts'
+import { RefreshCw } from 'lucide-react'
 
 const StatCard = ({ 
   title, 
@@ -106,9 +107,13 @@ const ActivityItem = ({ activity }: { activity: any }) => {
 }
 
 export default function Dashboard() {
-  const { stats, loading: statsLoading } = useDashboardStats()
+  const { stats, loading: statsLoading, refetch: refetchStats } = useDashboardStats()
   const { data: chartData, loading: chartLoading } = useRegistrationChart()
   const { activities, loading: activitiesLoading } = useRecentActivities(10)
+
+  const handleRefresh = () => {
+    window.location.reload()
+  }
 
   const formatCurrency = (amount: number) => {
     return `Rp ${amount.toLocaleString('id-ID')}`
@@ -116,6 +121,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Refresh Bar */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleRefresh}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <RefreshCw size={18} />
+          <span>Refresh Data</span>
+        </button>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard

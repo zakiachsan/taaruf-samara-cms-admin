@@ -107,13 +107,13 @@ export const useDashboardStats = () => {
     }
 
     fetchStats()
-    
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchStats, 30000)
-    return () => clearInterval(interval)
   }, [])
 
-  return { stats, loading, error, refetch: () => {} }
+  const refetch = () => {
+    fetchStats()
+  }
+
+  return { stats, loading, error, refetch }
 }
 
 // Hook for registration chart data (last 7 days)
