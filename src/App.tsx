@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import { supabase, getCurrentUser } from './lib/supabase'
 import Dashboard from './components/dashboard/Dashboard'
+import UsersManagement from './components/users/UsersManagement'
 
 // Navigation items
 const NAV_ITEMS = [
@@ -193,6 +194,8 @@ function App() {
             {/* Content */}
             {activeTab === 'dashboard' ? (
               <Dashboard />
+            ) : activeTab === 'users' ? (
+              <UsersManagement />
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
