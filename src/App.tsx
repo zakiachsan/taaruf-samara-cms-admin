@@ -22,6 +22,9 @@ import UsersManagement from './components/users/UsersManagement'
 import PremiumManagement from './components/premium/PremiumManagement'
 import ReferralManagement from './components/referral/ReferralManagement'
 import ReportsManagement from './components/reports/ReportsManagement'
+import BannerManagement from './components/banner/BannerManagement'
+import SelfValueManagement from './components/selfvalue/SelfValueManagement'
+import MatchesManagement from './components/matches/MatchesManagement'
 
 // Navigation items
 const NAV_ITEMS = [
@@ -205,6 +208,12 @@ function App() {
               <ReferralManagement />
             ) : activeTab === 'reports' ? (
               <ReportsManagement />
+            ) : activeTab === 'banner' ? (
+              <BannerManagement />
+            ) : activeTab === 'selfvalue' ? (
+              <SelfValueManagement />
+            ) : activeTab === 'matches' ? (
+              <MatchesManagement />
             ) : (
               <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

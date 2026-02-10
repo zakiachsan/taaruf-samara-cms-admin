@@ -1,4 +1,5 @@
-// Database Types for Taaruf Samara
+// Database Types for Taaruf Samara CMS Admin
+// Synced with Mobile App types
 
 export interface User {
   id: string
@@ -7,37 +8,45 @@ export interface User {
   role: 'user' | 'admin' | 'moderator'
   is_verified: boolean
   created_at: string
-  updated_at: string
+  updated_at?: string
   profile?: UserProfile
 }
 
 export interface UserProfile {
   id: string
   user_id: string
-  age: number
-  religion: string
-  prayer_condition: 'taat' | 'sedang'
-  salary_range: string
-  education: string
-  location: string
+  full_name?: string
+  age?: number
+  gender?: 'male' | 'female'
+  religion?: string
+  prayer_condition?: 'taat' | 'sedang'
+  salary_range?: string
+  education?: string
+  location?: string
   bio?: string
   photos?: string[]
   hobbies?: string[]
   interests?: string[]
-  is_premium: boolean
+  referral_code?: string
+  is_verified: boolean
   is_blurred: boolean
   created_at: string
+  updated_at?: string
 }
 
 export interface PremiumSubscription {
   id: string
   user_id: string
-  type: 'basic' | 'premium'
+  plan_type: 'basic' | 'premium'  // Updated to match mobile
+  type?: 'basic' | 'premium'      // Legacy field
   status: 'active' | 'expired' | 'cancelled'
   start_date: string
   end_date?: string
+  expires_at?: string  // Alias for end_date
   amount: number
   created_at: string
+  // Joined data
+  user?: User
 }
 
 export interface Referral {
@@ -49,6 +58,24 @@ export interface Referral {
   reward_amount: number
   created_at: string
   completed_at?: string
+  // Joined data
+  referrer?: User
+  referred?: User
+}
+
+export interface ReferralWithdrawal {
+  id: string
+  user_id: string
+  amount: number
+  bank_name: string
+  account_number: string
+  account_name: string
+  status: 'pending' | 'processing' | 'completed' | 'rejected'
+  admin_notes?: string
+  processed_at?: string
+  created_at: string
+  // Joined data
+  user?: User
 }
 
 export interface Banner {
@@ -56,13 +83,13 @@ export interface Banner {
   title: string
   subtitle?: string
   image_url: string
-  link_to: string
+  link_to?: string
   is_active: boolean
-  order: number
+  display_order: number  // Updated from 'order'
   start_date?: string
   end_date?: string
-  created_at: string
-  updated_at: string
+  created_at?: string
+  updated_at?: string
 }
 
 export interface SelfValueRegistration {
@@ -75,7 +102,9 @@ export interface SelfValueRegistration {
   certificate_url?: string
   notes?: string
   created_at: string
-  updated_at: string
+  updated_at?: string
+  // Joined data
+  user?: User
 }
 
 export interface MatchRequest {
@@ -85,7 +114,10 @@ export interface MatchRequest {
   status: 'pending' | 'accepted' | 'rejected' | 'completed'
   introduction_message?: string
   created_at: string
-  updated_at: string
+  updated_at?: string
+  // Joined data
+  requester?: User
+  recipient?: User
 }
 
 export interface Report {
@@ -95,8 +127,12 @@ export interface Report {
   reason: string
   description?: string
   status: 'open' | 'investigating' | 'resolved' | 'dismissed'
+  admin_notes?: string
   created_at: string
-  updated_at: string
+  updated_at?: string
+  // Joined data
+  reporter?: User
+  reported?: User
 }
 
 export interface BlockedUser {
@@ -107,13 +143,34 @@ export interface BlockedUser {
   created_at: string
 }
 
+export interface Chat {
+  id: string
+  participant_ids: string[]
+  match_request_id?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface ChatMessage {
+  id: string
+  chat_id: string
+  sender_id: string
+  content: string
+  is_read: boolean
+  created_at: string
+}
+
 // Dashboard Stats
 export interface DashboardStats {
   totalUsers: number
   newUsersToday: number
-  activePremiumUsers: number
+  verifiedUsers: number
   pendingVerifications: number
+  activePremiumBasic: number
+  activePremiumPremium: number
   todayMatches: number
+  totalReferrals: number
   totalRevenue: number
   monthlyRevenue: number
+  pendingWithdrawals: number
 }
