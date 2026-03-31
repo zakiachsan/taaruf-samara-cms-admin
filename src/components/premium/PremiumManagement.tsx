@@ -4,9 +4,7 @@ import {
   Search,
   Crown,
   CheckCircle,
-  XCircle,
   Clock,
-  Calendar,
   DollarSign,
   TrendingUp,
   AlertTriangle,
@@ -305,7 +303,7 @@ export default function PremiumManagement() {
                         <p className="text-sm text-gray-500">{sub.user_email}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-3">{getTypeBadge(sub.type)}</td>
+                    <td className="px-4 py-3">{getTypeBadge(sub.plan_type)}</td>
                     <td className="px-4 py-3">{getStatusBadge(sub.status)}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">
                       {formatCurrency(sub.amount)}
@@ -315,10 +313,10 @@ export default function PremiumManagement() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <span className={`text-sm ${isExpiringSoon(sub.end_date) ? 'text-amber-600 font-medium' : 'text-gray-500'}`}>
-                          {formatDate(sub.end_date)}
+                        <span className={`text-sm ${isExpiringSoon(sub.expires_at) ? 'text-amber-600 font-medium' : 'text-gray-500'}`}>
+                          {formatDate(sub.expires_at)}
                         </span>
-                        {isExpiringSoon(sub.end_date) && (
+                        {isExpiringSoon(sub.expires_at) && (
                           <AlertTriangle size={16} className="text-amber-500" />
                         )}
                       </div>
@@ -330,7 +328,7 @@ export default function PremiumManagement() {
                             <button
                               onClick={() => {
                                 setSelectedSubscription(sub)
-                                setExtendDate(sub.end_date.split('T')[0])
+                                setExtendDate(sub.expires_at.split('T')[0])
                                 setShowExtendModal(true)
                               }}
                               className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"

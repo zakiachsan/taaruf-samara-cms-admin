@@ -12,16 +12,14 @@ import {
   ArrowDownRight,
   Calendar
 } from 'lucide-react'
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar
 } from 'recharts'
 import { RefreshCw } from 'lucide-react'
 
@@ -107,7 +105,7 @@ const ActivityItem = ({ activity }: { activity: any }) => {
 }
 
 export default function Dashboard() {
-  const { stats, loading: statsLoading, refetch: refetchStats } = useDashboardStats()
+  const { stats, loading: statsLoading } = useDashboardStats()
   const { data: chartData, loading: chartLoading } = useRegistrationChart()
   const { activities, loading: activitiesLoading } = useRecentActivities(10)
 

@@ -1,20 +1,16 @@
 import { useState } from 'react'
 import { useUsers, type UserFilters } from '../../hooks/useUsers'
-import { 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  CheckCircle, 
-  XCircle, 
-  Trash2, 
-  Shield, 
+import {
+  Search,
+  CheckCircle,
+  XCircle,
+  Trash2,
+  Shield,
   User,
   ChevronLeft,
   ChevronRight,
   Crown,
-  Calendar,
-  Mail,
-  RefreshCw
+  RefreshCw,
 } from 'lucide-react'
 
 const ROLES = [
@@ -47,8 +43,6 @@ export default function UsersManagement() {
   })
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
-  const [selectedUser, setSelectedUser] = useState<any>(null)
-  const [showDetail, setShowDetail] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const { 

@@ -7,7 +7,6 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
-  TrendingUp,
   AlertCircle,
   RefreshCw,
   ChevronLeft,
@@ -15,7 +14,6 @@ import {
   Check,
   X,
   Wallet,
-  Banknote,
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
@@ -24,8 +22,6 @@ const STATUS_OPTIONS = [
   { value: 'successful', label: 'Successful' },
   { value: 'failed', label: 'Failed' },
 ]
-
-const LIMIT_OPTIONS = [10, 25, 50]
 
 const StatCard = ({ title, value, icon: Icon, color, subtitle }: any) => (
   <div className="bg-white rounded-xl p-4 border border-gray-200">
@@ -49,20 +45,18 @@ export default function ReferralManagement() {
     status: '',
   })
   const [page, setPage] = useState(1)
-  const [limit, setLimit] = useState(10)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const {
     referrals,
     withdrawals,
     loading,
-    totalCount,
     totalPages,
     stats,
     refetch,
     approveWithdrawal,
     rejectWithdrawal,
-  } = useReferrals(filters, page, limit)
+  } = useReferrals(filters, page)
 
   const handleApprove = async (withdrawalId: string) => {
     if (!confirm('Approve this withdrawal?')) return

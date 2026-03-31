@@ -3,8 +3,6 @@ import { useChats, type ChatFilters } from '../../hooks/useChats'
 import {
   Search,
   MessageCircle,
-  Users,
-  Clock,
   RefreshCw,
   ChevronLeft,
   ChevronRight,
@@ -176,7 +174,7 @@ export default function ChatsManagement({ onViewChat }: Props) {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          {chat.participants?.slice(0, 2).map((p, idx) => (
+                          {chat.participants?.slice(0, 2).map((p) => (
                             <div
                               key={p.id}
                               className="w-8 h-8 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center"

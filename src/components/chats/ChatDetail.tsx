@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useChatMessages, type ChatMessage } from '../../hooks/useChatMessages'
-import { X, ArrowLeft, User } from 'lucide-react'
+import { ArrowLeft, User } from 'lucide-react'
 
 interface Props {
   chatId: string

@@ -38,76 +38,76 @@ export const useDashboardStats = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true)
-        
-        // Total users
-        const { count: totalUsers } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true })
+  const fetchStats = async () => {
+    try {
+      setLoading(true)
 
-        // New users today
-        const today = new Date().toISOString().split('T')[0]
-        const { count: newUsersToday } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', today)
+      // Total users
+      const { count: totalUsers } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
 
-        // Active premium users
-        const { count: activePremiumUsers } = await supabase
-          .from('premium_subscriptions')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'active')
+      // New users today
+      const today = new Date().toISOString().split('T')[0]
+      const { count: newUsersToday } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today)
 
-        // Pending verifications
-        const { count: pendingVerifications } = await supabase
-          .from('users')
-          .select('*', { count: 'exact', head: true })
-          .eq('is_verified', false)
+      // Active premium users
+      const { count: activePremiumUsers } = await supabase
+        .from('premium_subscriptions')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'active')
 
-        // Today's matches
-        const { count: todayMatches } = await supabase
-          .from('match_requests')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', today)
+      // Pending verifications
+      const { count: pendingVerifications } = await supabase
+        .from('users')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_verified', false)
 
-        // Calculate revenue
-        const { data: subscriptions } = await supabase
-          .from('premium_subscriptions')
-          .select('amount')
+      // Today's matches
+      const { count: todayMatches } = await supabase
+        .from('match_requests')
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', today)
 
-        const totalRevenue = subscriptions?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+      // Calculate revenue
+      const { data: subscriptions } = await supabase
+        .from('premium_subscriptions')
+        .select('amount')
 
-        // Monthly revenue
-        const firstDayOfMonth = new Date()
-        firstDayOfMonth.setDate(1)
-        const { data: monthlySubs } = await supabase
-          .from('premium_subscriptions')
-          .select('amount')
-          .gte('created_at', firstDayOfMonth.toISOString())
+      const totalRevenue = subscriptions?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
 
-        const monthlyRevenue = monthlySubs?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+      // Monthly revenue
+      const firstDayOfMonth = new Date()
+      firstDayOfMonth.setDate(1)
+      const { data: monthlySubs } = await supabase
+        .from('premium_subscriptions')
+        .select('amount')
+        .gte('created_at', firstDayOfMonth.toISOString())
 
-        setStats({
-          totalUsers: totalUsers || 0,
-          newUsersToday: newUsersToday || 0,
-          activePremiumUsers: activePremiumUsers || 0,
-          pendingVerifications: pendingVerifications || 0,
-          todayMatches: todayMatches || 0,
-          totalRevenue,
-          monthlyRevenue,
-        })
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
-      } finally {
-        setLoading(false)
-      }
+      const monthlyRevenue = monthlySubs?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+
+      setStats({
+        totalUsers: totalUsers || 0,
+        newUsersToday: newUsersToday || 0,
+        activePremiumUsers: activePremiumUsers || 0,
+        pendingVerifications: pendingVerifications || 0,
+        todayMatches: todayMatches || 0,
+        totalRevenue,
+        monthlyRevenue,
+      })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setLoading(false)
     }
+  }
 
+  useEffect(() => {
     fetchStats()
-  }, [])
+  }, [fetchStats])
 
   const refetch = () => {
     fetchStats()

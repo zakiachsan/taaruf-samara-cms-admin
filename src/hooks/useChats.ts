@@ -108,8 +108,8 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
       let filtered = chatsWithParticipants
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
-        filtered = chatsWithParticipants.filter(chat =>
-          chat.participants?.some(p =>
+        filtered = chatsWithParticipants.filter((chat: Chat) =>
+          chat.participants?.some((p: { id: string; full_name: string; email: string }) =>
             p.full_name?.toLowerCase().includes(searchLower) ||
             p.email?.toLowerCase().includes(searchLower)
           ) ||

@@ -15,7 +15,6 @@ import {
   Check,
   X,
   User,
-  MessageSquare,
   Ban,
 } from 'lucide-react'
 
@@ -72,7 +71,6 @@ export default function ReportsManagement() {
     totalCount,
     totalPages,
     stats,
-    reasons,
     refetch,
     updateStatus,
     blockUser,

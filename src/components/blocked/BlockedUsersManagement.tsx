@@ -26,11 +26,10 @@ export default function BlockedUsersManagement() {
     totalCount,
     totalPages,
     refetch,
-    unblockUser,
     unblockById,
   } = useBlockedUsers(filters, page, limit)
 
-  const handleUnblock = async (blockId: string, blockedId: string, blockerId: string) => {
+  const handleUnblock = async (blockId: string) => {
     if (!confirm('Unblock this user? They will be able to use the app again.')) return
 
     setActionLoading(blockId)
@@ -179,7 +178,7 @@ export default function BlockedUsersManagement() {
                     </td>
                     <td className="px-4 py-3">
                       <button
-                        onClick={() => handleUnblock(user.id, user.blocked_id, user.blocker_id)}
+                        onClick={() => handleUnblock(user.id)}
                         disabled={actionLoading === user.id}
                         className="flex items-center gap-1 px-3 py-1.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg disabled:opacity-50"
                       >

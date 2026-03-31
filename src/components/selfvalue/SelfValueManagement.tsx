@@ -3,10 +3,7 @@ import { useSelfValue, type SelfValueFilters } from '../../hooks/useSelfValue'
 import { type SelfValueRegistration } from '../../types'
 import {
   Search,
-  Filter,
   Calendar,
-  MapPin,
-  Clock,
   CheckCircle,
   XCircle,
   FileText,
@@ -16,7 +13,6 @@ import {
   ChevronRight,
   Award,
   X,
-  Save,
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [

@@ -14,7 +14,6 @@ import {
   User,
   ArrowRight,
   MessageCircle,
-  Eye,
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
