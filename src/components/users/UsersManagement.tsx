@@ -44,6 +44,12 @@ export default function UsersManagement() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [verifyModal, setVerifyModal] = useState<{
+    open: boolean
+    userId: string | null
+    currentStatus: boolean
+    userName: string
+  }>({ open: false, userId: null, currentStatus: false, userName: '' })
 
   const { 
     users, 
@@ -57,9 +63,15 @@ export default function UsersManagement() {
     changeRole 
   } = useUsers(filters, page, limit)
 
-  const handleVerify = async (userId: string, currentStatus: boolean) => {
-    setActionLoading(userId)
-    await verifyUser(userId, !currentStatus)
+  const handleVerify = (userId: string, currentStatus: boolean, userName: string) => {
+    setVerifyModal({ open: true, userId, currentStatus, userName })
+  }
+
+  const confirmVerify = async () => {
+    if (!verifyModal.userId) return
+    setActionLoading(verifyModal.userId)
+    setVerifyModal({ open: false, userId: null, currentStatus: false, userName: '' })
+    await verifyUser(verifyModal.userId, !verifyModal.currentStatus)
     setActionLoading(null)
   }
 
@@ -278,11 +290,11 @@ export default function UsersManagement() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleVerify(user.id, user.is_verified)}
+                          onClick={() => handleVerify(user.id, user.is_verified, user.full_name)}
                           disabled={actionLoading === user.id}
                           className={`p-2 rounded-lg transition-colors ${
-                            user.is_verified 
-                              ? 'text-emerald-600 hover:bg-emerald-50' 
+                            user.is_verified
+                              ? 'text-emerald-600 hover:bg-emerald-50'
                               : 'text-amber-600 hover:bg-amber-50'
                           }`}
                           title={user.is_verified ? 'Unverify' : 'Verify'}
@@ -347,6 +359,51 @@ export default function UsersManagement() {
           </div>
         )}
       </div>
+
+      {/* Verify Confirmation Modal */}
+      {verifyModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setVerifyModal({ open: false, userId: null, currentStatus: false, userName: '' })}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4 animate-in fade-in zoom-in-95">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {verifyModal.currentStatus ? 'Unverify User' : 'Verify User'}
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  {verifyModal.currentStatus
+                    ? `Are you sure you want to unverify ${verifyModal.userName}? They will lose their verified status.`
+                    : `Are you sure you want to verify ${verifyModal.userName}? They will receive a verified badge.`}
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setVerifyModal({ open: false, userId: null, currentStatus: false, userName: '' })}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmVerify}
+                  disabled={actionLoading !== null}
+                  className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors disabled:opacity-50 ${
+                    verifyModal.currentStatus
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : 'bg-emerald-600 hover:bg-emerald-700'
+                  }`}
+                >
+                  {actionLoading !== null ? 'Loading...' : (verifyModal.currentStatus ? 'Unverify' : 'Verify')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
