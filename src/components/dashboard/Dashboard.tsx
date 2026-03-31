@@ -1,6 +1,4 @@
 import { useDashboardStats, useRegistrationChart, useRecentActivities } from '../../hooks/useDashboard'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { 
   Users, 
   UserPlus, 
@@ -12,8 +10,7 @@ import {
   Activity,
   ArrowUpRight,
   ArrowDownRight,
-  Calendar,
-  RefreshCw
+  Calendar
 } from 'lucide-react'
 import { 
   LineChart, 
@@ -22,8 +19,11 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer
+  ResponsiveContainer,
+  BarChart,
+  Bar
 } from 'recharts'
+import { RefreshCw } from 'lucide-react'
 
 const StatCard = ({ 
   title, 
@@ -35,33 +35,31 @@ const StatCard = ({
 }: { 
   title: string
   value: string | number
-  icon: React.ElementType
+  icon: any
   trend?: string
   trendUp?: boolean
   color: string
 }) => (
-  <Card>
-    <CardContent className="p-6">
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-muted-foreground mb-1">{title}</p>
-          <h3 className="text-2xl font-bold">{value}</h3>
-          {trend && (
-            <div className={`flex items-center gap-1 mt-2 text-sm ${trendUp ? 'text-emerald-600' : 'text-red-600'}`}>
-              {trendUp ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
-              <span>{trend}</span>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 rounded-lg ${color}`}>
-          <Icon size={24} className="text-white" />
-        </div>
+  <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+    <div className="flex items-start justify-between">
+      <div>
+        <p className="text-sm text-gray-500 mb-1">{title}</p>
+        <h3 className="text-2xl font-bold text-gray-900">{value}</h3>
+        {trend && (
+          <div className={`flex items-center gap-1 mt-2 text-sm ${trendUp ? 'text-emerald-600' : 'text-red-600'}`}>
+            {trendUp ? <ArrowUpRight size={16} /> : <ArrowDownRight size={16} />}
+            <span>{trend}</span>
+          </div>
+        )}
       </div>
-    </CardContent>
-  </Card>
+      <div className={`p-3 rounded-lg ${color}`}>
+        <Icon size={24} className="text-white" />
+      </div>
+    </div>
+  </div>
 )
 
-const ActivityItem = ({ activity }: { activity: { id: string; type: string; description: string; userName?: string; timestamp: string } }) => {
+const ActivityItem = ({ activity }: { activity: any }) => {
   const icons = {
     register: UserPlus,
     premium: Crown,
@@ -93,23 +91,23 @@ const ActivityItem = ({ activity }: { activity: { id: string; type: string; desc
   }
   
   return (
-    <div className="flex items-start gap-4 p-4 hover:bg-muted/50 rounded-lg transition-colors">
+    <div className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg transition-colors">
       <div className={`p-2 rounded-lg ${colorClass}`}>
         <Icon size={20} />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium">{activity.description}</p>
+        <p className="text-sm font-medium text-gray-900">{activity.description}</p>
         {activity.userName && (
-          <p className="text-xs text-muted-foreground mt-0.5">{activity.userName}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{activity.userName}</p>
         )}
       </div>
-      <span className="text-xs text-muted-foreground whitespace-nowrap">{timeAgo(activity.timestamp)}</span>
+      <span className="text-xs text-gray-400 whitespace-nowrap">{timeAgo(activity.timestamp)}</span>
     </div>
   )
 }
 
 export default function Dashboard() {
-  const { stats, loading: statsLoading } = useDashboardStats()
+  const { stats, loading: statsLoading, refetch: refetchStats } = useDashboardStats()
   const { data: chartData, loading: chartLoading } = useRegistrationChart()
   const { activities, loading: activitiesLoading } = useRecentActivities(10)
 
@@ -125,10 +123,13 @@ export default function Dashboard() {
     <div className="space-y-6">
       {/* Refresh Bar */}
       <div className="flex justify-end">
-        <Button variant="outline" onClick={handleRefresh}>
-          <RefreshCw size={18} className="mr-2" />
-          Refresh Data
-        </Button>
+        <button
+          onClick={handleRefresh}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <RefreshCw size={18} />
+          <span>Refresh Data</span>
+        </button>
       </div>
 
       {/* Stats Grid */}
@@ -167,81 +168,85 @@ export default function Dashboard() {
       {/* Charts & Activities Row */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Registration Chart */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Registrasi 7 Hari Terakhir</CardTitle>
-                <CardDescription>Grafik user baru yang mendaftar</CardDescription>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Calendar size={16} />
-                <span>Last 7 days</span>
-              </div>
+        <div className="lg:col-span-2 bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Registrasi 7 Hari Terakhir</h3>
+              <p className="text-sm text-gray-500">Grafik user baru yang mendaftar</p>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64">
-              {chartLoading ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </div>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" stroke="#6b7280" fontSize={12} tickLine={false} />
-                    <YAxis stroke="#6b7280" fontSize={12} tickLine={false} allowDecimals={false} />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: '#fff',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                      }}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="count" 
-                      stroke="hsl(var(--primary))" 
-                      strokeWidth={3}
-                      dot={{ fill: 'hsl(var(--primary))', strokeWidth: 2, r: 4 }}
-                      activeDot={{ r: 6 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              )}
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Calendar size={16} />
+              <span>Last 7 days</span>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          
+          <div className="h-64">
+            {chartLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={256} minWidth={100}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis 
+                    dataKey="date" 
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    stroke="#6b7280"
+                    fontSize={12}
+                    tickLine={false}
+                    allowDecimals={false}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#fff',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="count" 
+                    stroke="#10b981" 
+                    strokeWidth={3}
+                    dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
 
         {/* Recent Activities */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Aktivitas Terbaru</CardTitle>
-                <CardDescription>Update real-time</CardDescription>
+        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">Aktivitas Terbaru</h3>
+              <p className="text-sm text-gray-500">Update real-time</p>
+            </div>
+            <Activity size={20} className="text-gray-400" />
+          </div>
+          
+          <div className="space-y-1 max-h-64 overflow-y-auto">
+            {activitiesLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-500"></div>
               </div>
-              <Activity size={20} className="text-muted-foreground" />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1 max-h-64 overflow-y-auto">
-              {activitiesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                </div>
-              ) : activities.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Belum ada aktivitas</p>
-              ) : (
-                activities.map((activity) => (
-                  <ActivityItem key={activity.id} activity={activity} />
-                ))
-              )}
-            </div>
-          </CardContent>
-        </Card>
+            ) : activities.length === 0 ? (
+              <p className="text-center text-gray-400 py-8">Belum ada aktivitas</p>
+            ) : (
+              activities.map((activity) => (
+                <ActivityItem key={activity.id} activity={activity} />
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Revenue Section */}
@@ -301,32 +306,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            <Button variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
-              <Users size={18} className="mr-2" />
-              Manage Users
-            </Button>
-            <Button variant="outline" className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100">
-              <Crown size={18} className="mr-2" />
-              View Premium
-            </Button>
-            <Button variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-              <ShieldAlert size={18} className="mr-2" />
-              Review Reports
-            </Button>
-            <Button variant="outline" className="bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100">
-              <Activity size={18} className="mr-2" />
-              View Analytics
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   )
 }

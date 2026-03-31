@@ -93,7 +93,31 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error } = await query
+      let { data, error } = await query
+
+      // Fallback: if users relationship doesn't exist
+      if (error && error.code === 'PGRST200') {
+        let fallbackQuery = supabase
+          .from('reports')
+          .select('*', { count: 'exact' })
+
+        if (filters.status) {
+          fallbackQuery = fallbackQuery.eq('status', filters.status)
+        }
+        if (filters.reason) {
+          fallbackQuery = fallbackQuery.eq('reason', filters.reason)
+        }
+
+        const { count: fbCount } = await fallbackQuery
+        setTotalCount(fbCount || 0)
+
+        const fbResult = await fallbackQuery
+          .order('created_at', { ascending: false })
+          .range(from, to)
+
+        data = fbResult.data
+        error = fbResult.error
+      }
 
       if (error) throw error
 
@@ -199,11 +223,18 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
   const blockUser = async (userId: string) => {
     try {
+      // Get current admin user
+      const { data: { user: currentUser } } = await supabase.auth.getUser()
+
+      if (!currentUser) {
+        return { success: false, error: 'No authenticated user found' }
+      }
+
       // Add to blocked_users table
       const { error } = await supabase
         .from('blocked_users')
         .insert({
-          blocker_id: 'system', // or current admin id
+          blocker_id: currentUser.id,
           blocked_id: userId,
           reason: 'Reported by multiple users',
         })

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { MatchRequest } from '../types'
+import { type MatchRequest } from '../types'
 
 export interface MatchFilters {
   status: string
@@ -51,7 +51,28 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error: fetchError } = await query
+      let { data, error: fetchError } = await query
+
+      // Fallback: if users relationship doesn't exist
+      if (fetchError && fetchError.code === 'PGRST200') {
+        let fallbackQuery = supabase
+          .from('match_requests')
+          .select('*', { count: 'exact' })
+
+        if (filters.status) {
+          fallbackQuery = fallbackQuery.eq('status', filters.status)
+        }
+
+        const { count: fbCount } = await fallbackQuery
+        setTotalCount(fbCount || 0)
+
+        const fbResult = await fallbackQuery
+          .order('created_at', { ascending: false })
+          .range(from, to)
+
+        data = fbResult.data
+        fetchError = fbResult.error
+      }
 
       if (fetchError) throw fetchError
 

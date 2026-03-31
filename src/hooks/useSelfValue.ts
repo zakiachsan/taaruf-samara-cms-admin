@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { SelfValueRegistration } from '../types'
+import { type SelfValueRegistration } from '../types'
 
 export interface SelfValueFilters {
   status: string

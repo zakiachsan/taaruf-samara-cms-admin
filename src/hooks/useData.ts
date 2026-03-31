@@ -51,14 +51,31 @@ export const useDashboardStats = () => {
           .select('*', { count: 'exact', head: true })
           .gte('created_at', today)
 
+        // Calculate revenue from premium subscriptions
+        const { data: subscriptions } = await supabase
+          .from('premium_subscriptions')
+          .select('amount')
+
+        const totalRevenue = subscriptions?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+
+        // Monthly revenue - subscriptions created this month
+        const firstDayOfMonth = new Date()
+        firstDayOfMonth.setDate(1)
+        const { data: monthlySubs } = await supabase
+          .from('premium_subscriptions')
+          .select('amount')
+          .gte('created_at', firstDayOfMonth.toISOString())
+
+        const monthlyRevenue = monthlySubs?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
+
         setStats({
           totalUsers: totalUsers || 0,
           newUsersToday: newUsersToday || 0,
           activePremiumUsers: activePremiumUsers || 0,
           pendingVerifications: pendingVerifications || 0,
           todayMatches: todayMatches || 0,
-          totalRevenue: 0, // Calculate from transactions
-          monthlyRevenue: 0,
+          totalRevenue,
+          monthlyRevenue,
         })
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Unknown error')

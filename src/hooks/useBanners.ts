@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { Banner } from '../types'
+import { type Banner } from '../types'
 
 export const useBanners = () => {
   const [banners, setBanners] = useState<Banner[]>([])

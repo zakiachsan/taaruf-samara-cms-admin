@@ -10,9 +10,13 @@ export interface User {
   created_at: string
   profile?: {
     age?: number
+    gender?: string
     religion?: string
+    education?: string
     location?: string
+    bio?: string
     is_premium?: boolean
+    is_blurred?: boolean
     photos?: string[]
   }
 }
@@ -40,9 +44,13 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
           *,
           user_profiles (
             age,
+            gender,
             religion,
+            education,
             location,
+            bio,
             is_premium,
+            is_blurred,
             photos
           )
         `, { count: 'exact' })
@@ -72,9 +80,39 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error: fetchError } = await query
+      let { data, error: fetchError } = await query
 
-      if (fetchError) throw fetchError
+      // Fallback: if user_profiles relationship doesn't exist, query users only
+      if (fetchError && fetchError.code === 'PGRST200') {
+        let fallbackQuery = supabase
+          .from('users')
+          .select('*', { count: 'exact' })
+
+        if (filters.search) {
+          fallbackQuery = fallbackQuery.or(`full_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
+        }
+        if (filters.role) {
+          fallbackQuery = fallbackQuery.eq('role', filters.role)
+        }
+        if (filters.isVerified) {
+          fallbackQuery = fallbackQuery.eq('is_verified', filters.isVerified === 'true')
+        }
+
+        const { count: fbCount } = await fallbackQuery
+        setTotalCount(fbCount || 0)
+
+        const fbResult = await fallbackQuery
+          .order('created_at', { ascending: false })
+          .range(from, to)
+
+        data = fbResult.data
+        fetchError = fbResult.error
+      }
+
+      if (fetchError) {
+        console.error('Supabase users error:', fetchError)
+        throw fetchError
+      }
 
       // Transform data
       const transformedUsers: User[] = (data || []).map((u: any) => ({
@@ -110,18 +148,29 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const verifyUser = async (userId: string, verified: boolean) => {
     try {
-      const { error } = await supabase
+      // Update both users.is_verified AND user_profiles.is_verified for consistency
+      const { error: usersError } = await supabase
         .from('users')
-        .update({ is_verified: verified })
+        .update({ is_verified: verified, updated_at: new Date().toISOString() })
         .eq('id', userId)
-      
-      if (error) throw error
-      
+
+      if (usersError) throw usersError
+
+      const { error: profilesError } = await supabase
+        .from('user_profiles')
+        .update({ is_verified: verified })
+        .eq('user_id', userId)
+
+      if (profilesError) {
+        console.error('Profile update failed (profile may not exist):', profilesError)
+        // Don't throw - users table is updated, that's the main one
+      }
+
       // Update local state
-      setUsers(users.map(u => 
+      setUsers(users.map(u =>
         u.id === userId ? { ...u, is_verified: verified } : u
       ))
-      
+
       return { success: true }
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }

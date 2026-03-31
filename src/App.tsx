@@ -1,49 +1,58 @@
-import { useEffect, useState } from 'react'
-import { 
-  LayoutDashboard, 
-  Users, 
-  Crown, 
-  Gift, 
-  Image as ImageIcon, 
-  Award, 
-  Heart, 
-  Flag, 
+import { Suspense, lazy, useEffect, useState } from 'react'
+import {
+  LayoutDashboard,
+  Users,
+  Crown,
+  Gift,
+  Image as ImageIcon,
+  Award,
+  Heart,
+  Flag,
   Settings,
   Menu,
   X,
   LogOut,
   Database,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  MessageCircle,
+  Ban
 } from 'lucide-react'
-import { supabase, getCurrentUser } from './lib/supabase'
-import Dashboard from './components/dashboard/Dashboard'
-import UsersManagement from './components/users/UsersManagement'
-import PremiumManagement from './components/premium/PremiumManagement'
-import ReferralManagement from './components/referral/ReferralManagement'
-import ReportsManagement from './components/reports/ReportsManagement'
-import BannerManagement from './components/banner/BannerManagement'
-import SelfValueManagement from './components/selfvalue/SelfValueManagement'
-import MatchesManagement from './components/matches/MatchesManagement'
+import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom'
+import { getCurrentUser } from './lib/supabase'
+
+// Lazy load all page components
+const Dashboard = lazy(() => import('./components/dashboard/Dashboard'))
+const UsersManagement = lazy(() => import('./components/users/UsersManagement'))
+const PremiumManagement = lazy(() => import('./components/premium/PremiumManagement'))
+const ReferralManagement = lazy(() => import('./components/referral/ReferralManagement'))
+const ReportsManagement = lazy(() => import('./components/reports/ReportsManagement'))
+const BannerManagement = lazy(() => import('./components/banner/BannerManagement'))
+const SelfValueManagement = lazy(() => import('./components/selfvalue/SelfValueManagement'))
+const MatchesManagement = lazy(() => import('./components/matches/MatchesManagement'))
+const ChatsManagement = lazy(() => import('./components/chats/ChatsManagement'))
+const BlockedUsersManagement = lazy(() => import('./components/blocked/BlockedUsersManagement'))
 
 // Navigation items
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { id: 'users', label: 'Users', icon: Users },
-  { id: 'premium', label: 'Premium', icon: Crown },
-  { id: 'referral', label: 'Referral', icon: Gift },
-  { id: 'banner', label: 'Banner', icon: ImageIcon },
-  { id: 'selfvalue', label: 'Self-Value', icon: Award },
-  { id: 'matches', label: 'Matches', icon: Heart },
-  { id: 'reports', label: 'Reports', icon: Flag },
-  { id: 'settings', label: 'Settings', icon: Settings },
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/' },
+  { id: 'users', label: 'Users', icon: Users, path: '/users' },
+  { id: 'premium', label: 'Premium', icon: Crown, path: '/premium' },
+  { id: 'referral', label: 'Referral', icon: Gift, path: '/referral' },
+  { id: 'banner', label: 'Banner', icon: ImageIcon, path: '/banner' },
+  { id: 'selfvalue', label: 'Self-Value', icon: Award, path: '/selfvalue' },
+  { id: 'matches', label: 'Matches', icon: Heart, path: '/matches' },
+  { id: 'reports', label: 'Reports', icon: Flag, path: '/reports' },
+  { id: 'chats', label: 'Chats', icon: MessageCircle, path: '/chats' },
+  { id: 'blocked', label: 'Blocked', icon: Ban, path: '/blocked' },
+  { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
 ]
 
-function App() {
-  const [activeTab, setActiveTab] = useState('dashboard')
+function AppContent() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const [errorMessage, setErrorMessage] = useState('')
+  const location = useLocation()
 
   useEffect(() => {
     checkConnection()
@@ -51,7 +60,6 @@ function App() {
 
   const checkConnection = async () => {
     try {
-      // Try to get current user to test connection
       await getCurrentUser()
       setConnectionStatus('connected')
     } catch (err) {
@@ -60,7 +68,6 @@ function App() {
     }
   }
 
-  // Show setup message if Supabase is not configured
   if (connectionStatus === 'error') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
@@ -127,19 +134,20 @@ function App() {
         <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
+            const isActive = location.pathname === item.path
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                to={item.path}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  activeTab === item.id 
+                  isActive 
                     ? 'bg-emerald-50 text-emerald-700' 
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
                 <Icon size={20} />
                 {sidebarOpen && <span className="font-medium">{item.label}</span>}
-              </button>
+              </Link>
             )
           })}
         </nav>
@@ -190,50 +198,42 @@ function App() {
             {/* Page Title */}
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-gray-900">
-                {NAV_ITEMS.find(i => i.id === activeTab)?.label}
+                {NAV_ITEMS.find(i => i.path === location.pathname)?.label || 'Dashboard'}
               </h2>
               <p className="text-gray-500 mt-1">
-                Kelola {NAV_ITEMS.find(i => i.id === activeTab)?.label.toLowerCase()} aplikasi Taaruf Samara
+                Kelola {(NAV_ITEMS.find(i => i.path === location.pathname)?.label || 'Dashboard').toLowerCase()} aplikasi Taaruf Samara
               </p>
             </div>
 
             {/* Content */}
-            {activeTab === 'dashboard' ? (
-              <Dashboard />
-            ) : activeTab === 'users' ? (
-              <UsersManagement />
-            ) : activeTab === 'premium' ? (
-              <PremiumManagement />
-            ) : activeTab === 'referral' ? (
-              <ReferralManagement />
-            ) : activeTab === 'reports' ? (
-              <ReportsManagement />
-            ) : activeTab === 'banner' ? (
-              <BannerManagement />
-            ) : activeTab === 'selfvalue' ? (
-              <SelfValueManagement />
-            ) : activeTab === 'matches' ? (
-              <MatchesManagement />
-            ) : (
-              <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  {(() => {
-                    const Icon = NAV_ITEMS.find(i => i.id === activeTab)?.icon || LayoutDashboard
-                    return <Icon size={32} className="text-gray-400" />
-                  })()}
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Halaman {NAV_ITEMS.find(i => i.id === activeTab)?.label}
-                </h3>
-                <p className="text-gray-500 max-w-md mx-auto">
-                  Halaman ini sedang dalam pengembangan.
-                </p>
-                <div className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-600">
-                  <CheckCircle size={16} />
-                  <span>Supabase Connected</span>
-                </div>
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
               </div>
-            )}
+            }>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/users" element={<UsersManagement />} />
+                <Route path="/premium" element={<PremiumManagement />} />
+                <Route path="/referral" element={<ReferralManagement />} />
+                <Route path="/reports" element={<ReportsManagement />} />
+                <Route path="/banner" element={<BannerManagement />} />
+                <Route path="/selfvalue" element={<SelfValueManagement />} />
+                <Route path="/matches" element={<MatchesManagement />} />
+                <Route path="/chats" element={<ChatsManagement />} />
+                <Route path="/blocked" element={<BlockedUsersManagement />} />
+                <Route path="/settings" element={
+                  <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Settings size={32} className="text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Halaman Settings</h3>
+                    <p className="text-gray-500 max-w-md mx-auto">Halaman ini sedang dalam pengembangan.</p>
+                  </div>
+                } />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </div>
         </div>
       </main>
@@ -241,4 +241,6 @@ function App() {
   )
 }
 
-export default App
+export default function App() {
+  return <AppContent />
+}

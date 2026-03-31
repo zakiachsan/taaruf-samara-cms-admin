@@ -86,7 +86,28 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error } = await query
+      let { data, error } = await query
+
+      // Fallback: if users relationship doesn't exist
+      if (error && error.code === 'PGRST200') {
+        let fallbackQuery = supabase
+          .from('referrals')
+          .select('*', { count: 'exact' })
+
+        if (filters.status) {
+          fallbackQuery = fallbackQuery.eq('status', filters.status)
+        }
+
+        const { count: fbCount } = await fallbackQuery
+        setTotalCount(fbCount || 0)
+
+        const fbResult = await fallbackQuery
+          .order('created_at', { ascending: false })
+          .range(from, to)
+
+        data = fbResult.data
+        error = fbResult.error
+      }
 
       if (error) throw error
 

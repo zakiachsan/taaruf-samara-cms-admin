@@ -1,12 +1,9 @@
 import { useState } from 'react'
-import { useUsers, UserFilters } from '../../hooks/useUsers'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { useUsers, type UserFilters } from '../../hooks/useUsers'
 import { 
   Search, 
+  Filter, 
+  MoreVertical, 
   CheckCircle, 
   XCircle, 
   Trash2, 
@@ -15,6 +12,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Crown,
+  Calendar,
+  Mail,
   RefreshCw
 } from 'lucide-react'
 
@@ -48,6 +47,8 @@ export default function UsersManagement() {
   })
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
+  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [showDetail, setShowDetail] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const { 
@@ -55,6 +56,7 @@ export default function UsersManagement() {
     loading, 
     totalCount, 
     totalPages, 
+    error,
     refetch,
     verifyUser, 
     deleteUser, 
@@ -89,237 +91,268 @@ export default function UsersManagement() {
   }
 
   const getRoleBadge = (role: string) => {
-    const variants: Record<string, 'default' | 'secondary' | 'outline'> = {
-      admin: 'default',
-      moderator: 'secondary',
-      user: 'outline',
+    const styles = {
+      admin: 'bg-purple-100 text-purple-700',
+      moderator: 'bg-blue-100 text-blue-700',
+      user: 'bg-gray-100 text-gray-700',
     }
     return (
-      <Badge variant={variants[role] || 'outline'}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[role as keyof typeof styles] || styles.user}`}>
         {role.charAt(0).toUpperCase() + role.slice(1)}
-      </Badge>
+      </span>
     )
   }
 
   return (
     <div className="space-y-4">
       {/* Header & Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex flex-col lg:flex-row gap-4">
-            {/* Search */}
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-              <Input
-                type="text"
-                placeholder="Search by name or email..."
-                value={filters.search}
-                onChange={(e) => {
-                  setFilters({ ...filters, search: e.target.value })
-                  setPage(1)
-                }}
-                className="pl-10"
-              />
-            </div>
-
-            {/* Filters */}
-            <div className="flex flex-wrap gap-2">
-              <select
-                value={filters.role}
-                onChange={(e) => {
-                  setFilters({ ...filters, role: e.target.value })
-                  setPage(1)
-                }}
-                className="px-3 py-2 border border-input rounded-md bg-background text-sm focus:ring-2 focus:ring-ring"
-              >
-                {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
-
-              <select
-                value={filters.isVerified}
-                onChange={(e) => {
-                  setFilters({ ...filters, isVerified: e.target.value })
-                  setPage(1)
-                }}
-                className="px-3 py-2 border border-input rounded-md bg-background text-sm focus:ring-2 focus:ring-ring"
-              >
-                {VERIFIED_OPTIONS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
-              </select>
-
-              <select
-                value={filters.isPremium}
-                onChange={(e) => {
-                  setFilters({ ...filters, isPremium: e.target.value })
-                  setPage(1)
-                }}
-                className="px-3 py-2 border border-input rounded-md bg-background text-sm focus:ring-2 focus:ring-ring"
-              >
-                {PREMIUM_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
-              </select>
-
-              <Button variant="outline" onClick={refetch}>
-                <RefreshCw size={18} className="mr-2" />
-                <span className="hidden sm:inline">Refresh</span>
-              </Button>
-            </div>
+      <div className="bg-white rounded-xl p-4 border border-gray-200">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={filters.search}
+              onChange={(e) => {
+                setFilters({ ...filters, search: e.target.value })
+                setPage(1)
+              }}
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            />
           </div>
 
-          {/* Results count */}
-          <div className="mt-4 flex items-center justify-between text-sm text-muted-foreground">
-            <span>Total: {totalCount} users</span>
-            <div className="flex items-center gap-2">
-              <span>Show:</span>
-              <select
-                value={limit}
-                onChange={(e) => {
-                  setLimit(Number(e.target.value))
-                  setPage(1)
-                }}
-                className="border border-input rounded px-2 py-1 bg-background"
-              >
-                {LIMIT_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-            </div>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2">
+            <select
+              value={filters.role}
+              onChange={(e) => {
+                setFilters({ ...filters, role: e.target.value })
+                setPage(1)
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+            >
+              {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
+            </select>
+
+            <select
+              value={filters.isVerified}
+              onChange={(e) => {
+                setFilters({ ...filters, isVerified: e.target.value })
+                setPage(1)
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+            >
+              {VERIFIED_OPTIONS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+            </select>
+
+            <select
+              value={filters.isPremium}
+              onChange={(e) => {
+                setFilters({ ...filters, isPremium: e.target.value })
+                setPage(1)
+              }}
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+            >
+              {PREMIUM_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
+            </select>
+
+            <button
+              onClick={refetch}
+              className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              <RefreshCw size={18} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Results count */}
+        <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+          <span>Total: {totalCount} users</span>
+          <div className="flex items-center gap-2">
+            <span>Show:</span>
+            <select
+              value={limit}
+              onChange={(e) => {
+                setLimit(Number(e.target.value))
+                setPage(1)
+              }}
+              className="border border-gray-200 rounded px-2 py-1"
+            >
+              {LIMIT_OPTIONS.map(l => <option key={l} value={l}>{l}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
 
       {/* Users Table */}
-      <Card>
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {loading ? (
           <div className="p-12 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-muted-foreground">Loading users...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
+            <p className="mt-4 text-gray-500">Loading users...</p>
+          </div>
+        ) : error ? (
+          <div className="p-12 text-center">
+            <XCircle size={48} className="mx-auto text-red-400 mb-4" />
+            <p className="text-red-600 font-medium mb-2">Failed to load users</p>
+            <p className="text-gray-500 text-sm mb-4">{error}</p>
+            <button
+              onClick={refetch}
+              className="px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 transition-colors"
+            >
+              Try Again
+            </button>
           </div>
         ) : users.length === 0 ? (
           <div className="p-12 text-center">
-            <User size={48} className="mx-auto text-muted-foreground/50 mb-4" />
-            <p className="text-muted-foreground">No users found</p>
+            <User size={48} className="mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500">No users found</p>
           </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Premium</TableHead>
-                <TableHead>Joined</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                        <span className="text-primary font-semibold">
-                          {user.full_name.charAt(0).toUpperCase()}
-                        </span>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profile</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Premium</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                          <span className="text-emerald-700 font-semibold">
+                            {user.full_name.charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{user.full_name}</p>
+                          <p className="text-sm text-gray-500">{user.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{user.full_name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
-                  <TableCell>
-                    {user.is_verified ? (
-                      <Badge variant="success" className="gap-1">
-                        <CheckCircle size={14} /> Verified
-                      </Badge>
-                    ) : (
-                      <Badge variant="warning" className="gap-1">
-                        <XCircle size={14} /> Unverified
-                      </Badge>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    {user.profile?.is_premium ? (
-                      <Badge variant="warning" className="gap-1">
-                        <Crown size={14} /> Premium
-                      </Badge>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">Free</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">
-                    {formatDate(user.created_at)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleVerify(user.id, user.is_verified)}
-                        disabled={actionLoading === user.id}
-                        title={user.is_verified ? 'Unverify' : 'Verify'}
-                      >
-                        {actionLoading === user.id ? (
-                          <div className="animate-spin h-4 w-4 border-2 border-current rounded-full" />
-                        ) : user.is_verified ? (
-                          <CheckCircle size={18} className="text-emerald-600" />
-                        ) : (
-                          <Shield size={18} className="text-amber-600" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="text-sm">
+                        {user.profile?.age && (
+                          <p className="text-gray-600">{user.profile.age} tahun</p>
                         )}
-                      </Button>
+                        {user.profile?.gender && (
+                          <p className="text-gray-500 capitalize">{user.profile.gender}</p>
+                        )}
+                        {user.profile?.religion && (
+                          <p className="text-gray-500">{user.profile.religion}</p>
+                        )}
+                        {user.profile?.location && (
+                          <p className="text-gray-500 text-xs">{user.profile.location}</p>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">{getRoleBadge(user.role)}</td>
+                    <td className="px-4 py-3">
+                      {user.is_verified ? (
+                        <span className="flex items-center gap-1 text-emerald-600 text-sm">
+                          <CheckCircle size={16} /> Verified
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-amber-600 text-sm">
+                          <XCircle size={16} /> Unverified
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {user.profile?.is_premium ? (
+                        <span className="flex items-center gap-1 text-amber-600 text-sm">
+                          <Crown size={16} /> Premium
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Free</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {formatDate(user.created_at)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleVerify(user.id, user.is_verified)}
+                          disabled={actionLoading === user.id}
+                          className={`p-2 rounded-lg transition-colors ${
+                            user.is_verified 
+                              ? 'text-emerald-600 hover:bg-emerald-50' 
+                              : 'text-amber-600 hover:bg-amber-50'
+                          }`}
+                          title={user.is_verified ? 'Unverify' : 'Verify'}
+                        >
+                          {actionLoading === user.id ? (
+                            <div className="animate-spin h-4 w-4 border-2 border-current rounded-full" />
+                          ) : user.is_verified ? (
+                            <CheckCircle size={18} />
+                          ) : (
+                            <Shield size={18} />
+                          )}
+                        </button>
 
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        disabled={actionLoading === user.id}
-                        className="text-sm border border-input rounded px-2 py-1 bg-background"
-                      >
-                        <option value="user">User</option>
-                        <option value="moderator">Moderator</option>
-                        <option value="admin">Admin</option>
-                      </select>
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          disabled={actionLoading === user.id}
+                          className="text-sm border border-gray-200 rounded px-2 py-1"
+                        >
+                          <option value="user">User</option>
+                          <option value="moderator">Moderator</option>
+                          <option value="admin">Admin</option>
+                        </select>
 
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(user.id)}
-                        disabled={actionLoading === user.id}
-                        className="text-destructive hover:text-destructive"
-                        title="Delete"
-                      >
-                        <Trash2 size={18} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          disabled={actionLoading === user.id}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t">
-            <Button
-              variant="outline"
-              size="sm"
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+            <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
+              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
-              <ChevronLeft size={16} className="mr-1" /> Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
+              <ChevronLeft size={16} /> Previous
+            </button>
+            <span className="text-sm text-gray-500">
               Page {page} of {totalPages}
             </span>
-            <Button
-              variant="outline"
-              size="sm"
+            <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
+              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
             >
-              Next <ChevronRight size={16} className="ml-1" />
-            </Button>
+              Next <ChevronRight size={16} />
+            </button>
           </div>
         )}
-      </Card>
+      </div>
     </div>
   )
 }

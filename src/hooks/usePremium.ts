@@ -6,10 +6,10 @@ export interface PremiumSubscription {
   user_id: string
   user_name?: string
   user_email?: string
-  type: 'basic' | 'premium'
+  plan_type: 'basic' | 'premium'
   status: 'active' | 'expired' | 'cancelled'
   start_date: string
-  end_date: string
+  expires_at: string
   amount: number
   created_at: string
 }
@@ -64,7 +64,7 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       // Apply filters
       if (filters.type) {
-        query = query.eq('type', filters.type)
+        query = query.eq('plan_type', filters.type)
       }
 
       if (filters.status) {
@@ -73,12 +73,12 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       if (filters.expiringSoon === 'week') {
         query = query
-          .lte('end_date', weekFromNow.toISOString())
-          .gte('end_date', today.toISOString())
+          .lte('expires_at', weekFromNow.toISOString())
+          .gte('expires_at', today.toISOString())
       } else if (filters.expiringSoon === 'month') {
         query = query
-          .lte('end_date', monthFromNow.toISOString())
-          .gte('end_date', today.toISOString())
+          .lte('expires_at', monthFromNow.toISOString())
+          .gte('expires_at', today.toISOString())
       }
 
       // Get total count
@@ -93,7 +93,40 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error } = await query
+      let { data, error } = await query
+
+      // Fallback: if users relationship doesn't exist
+      if (error && error.code === 'PGRST200') {
+        let fallbackQuery = supabase
+          .from('premium_subscriptions')
+          .select('*', { count: 'exact' })
+
+        if (filters.type) {
+          fallbackQuery = fallbackQuery.eq('plan_type', filters.type)
+        }
+        if (filters.status) {
+          fallbackQuery = fallbackQuery.eq('status', filters.status)
+        }
+        if (filters.expiringSoon === 'week') {
+          fallbackQuery = fallbackQuery
+            .lte('expires_at', weekFromNow.toISOString())
+            .gte('expires_at', today.toISOString())
+        } else if (filters.expiringSoon === 'month') {
+          fallbackQuery = fallbackQuery
+            .lte('expires_at', monthFromNow.toISOString())
+            .gte('expires_at', today.toISOString())
+        }
+
+        const { count: fbCount } = await fallbackQuery
+        setTotalCount(fbCount || 0)
+
+        const fbResult = await fallbackQuery
+          .order('created_at', { ascending: false })
+          .range(from, to)
+
+        data = fbResult.data
+        error = fbResult.error
+      }
 
       if (error) throw error
 
@@ -103,10 +136,10 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         user_id: s.user_id,
         user_name: s.users?.full_name || 'Unknown',
         user_email: s.users?.email || '',
-        type: s.type,
+        plan_type: s.plan_type,
         status: s.status,
         start_date: s.start_date,
-        end_date: s.end_date,
+        expires_at: s.expires_at,
         amount: s.amount,
         created_at: s.created_at,
       }))
@@ -138,27 +171,27 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
       // Get all subscriptions for stats
       const { data: allSubs } = await supabase
         .from('premium_subscriptions')
-        .select('type, status, amount, end_date')
+        .select('plan_type, status, amount, expires_at')
 
       if (!allSubs) return
 
       const totalRevenue = allSubs.reduce((sum, s) => sum + (s.amount || 0), 0)
       const basicRevenue = allSubs
-        .filter(s => s.type === 'basic')
+        .filter(s => s.plan_type === 'basic')
         .reduce((sum, s) => sum + (s.amount || 0), 0)
       const premiumRevenue = allSubs
-        .filter(s => s.type === 'premium')
+        .filter(s => s.plan_type === 'premium')
         .reduce((sum, s) => sum + (s.amount || 0), 0)
 
       const activeSubscriptions = allSubs.filter(s => s.status === 'active').length
 
       const expiringThisWeek = allSubs.filter(s => {
-        const endDate = new Date(s.end_date)
+        const endDate = new Date(s.expires_at)
         return endDate >= today && endDate <= weekFromNow && s.status === 'active'
       }).length
 
       const expiringThisMonth = allSubs.filter(s => {
-        const endDate = new Date(s.end_date)
+        const endDate = new Date(s.expires_at)
         return endDate >= today && endDate <= monthFromNow && s.status === 'active'
       }).length
 
@@ -184,7 +217,7 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
     try {
       const { error } = await supabase
         .from('premium_subscriptions')
-        .update({ end_date: newEndDate, status: 'active' })
+        .update({ expires_at: newEndDate, status: 'active' })
         .eq('id', subscriptionId)
 
       if (error) throw error
@@ -193,7 +226,7 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
       setSubscriptions(subs =>
         subs.map(s =>
           s.id === subscriptionId
-            ? { ...s, end_date: newEndDate, status: 'active' }
+            ? { ...s, expires_at: newEndDate, status: 'active' }
             : s
         )
       )
