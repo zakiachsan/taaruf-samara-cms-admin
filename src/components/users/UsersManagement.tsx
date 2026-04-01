@@ -4,12 +4,14 @@ import {
   Search,
   CheckCircle,
   XCircle,
-  Trash2,
+  Ban,
+  Unlock,
   Shield,
   User,
   ChevronLeft,
   ChevronRight,
   Crown,
+  Award,
   RefreshCw,
 } from 'lucide-react'
 
@@ -51,16 +53,29 @@ export default function UsersManagement() {
     userName: string
   }>({ open: false, userId: null, currentStatus: false, userName: '' })
 
-  const { 
-    users, 
-    loading, 
-    totalCount, 
-    totalPages, 
+  const [blockModal, setBlockModal] = useState<{
+    open: boolean
+    userId: string | null
+    userName: string
+  }>({ open: false, userId: null, userName: '' })
+
+  const [unblockModal, setUnblockModal] = useState<{
+    open: boolean
+    userId: string | null
+    userName: string
+  }>({ open: false, userId: null, userName: '' })
+
+  const {
+    users,
+    loading,
+    totalCount,
+    totalPages,
     error,
     refetch,
-    verifyUser, 
-    deleteUser, 
-    changeRole 
+    verifyUser,
+    blockUser,
+    unblockUser,
+    changeRole
   } = useUsers(filters, page, limit)
 
   const handleVerify = (userId: string, currentStatus: boolean, userName: string) => {
@@ -75,10 +90,27 @@ export default function UsersManagement() {
     setActionLoading(null)
   }
 
-  const handleDelete = async (userId: string) => {
-    if (!confirm('Are you sure you want to delete this user?')) return
-    setActionLoading(userId)
-    await deleteUser(userId)
+  const handleBlock = (userId: string, userName: string) => {
+    setBlockModal({ open: true, userId, userName })
+  }
+
+  const confirmBlock = async () => {
+    if (!blockModal.userId) return
+    setActionLoading(blockModal.userId)
+    setBlockModal({ open: false, userId: null, userName: '' })
+    await blockUser(blockModal.userId)
+    setActionLoading(null)
+  }
+
+  const handleUnblock = (userId: string, userName: string) => {
+    setUnblockModal({ open: true, userId, userName })
+  }
+
+  const confirmUnblock = async () => {
+    if (!unblockModal.userId) return
+    setActionLoading(unblockModal.userId)
+    setUnblockModal({ open: false, userId: null, userName: '' })
+    await unblockUser(unblockModal.userId)
     setActionLoading(null)
   }
 
@@ -223,10 +255,10 @@ export default function UsersManagement() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Profile</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Premium</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Verification</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Membership</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
@@ -248,22 +280,28 @@ export default function UsersManagement() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="text-sm">
-                        {user.profile?.age && (
-                          <p className="text-gray-600">{user.profile.age} tahun</p>
-                        )}
-                        {user.profile?.gender && (
-                          <p className="text-gray-500 capitalize">{user.profile.gender}</p>
-                        )}
-                        {user.profile?.religion && (
-                          <p className="text-gray-500">{user.profile.religion}</p>
-                        )}
-                        {user.profile?.location && (
-                          <p className="text-gray-500 text-xs">{user.profile.location}</p>
-                        )}
-                      </div>
+                      {user.is_blocked ? (
+                        <span className="flex items-center gap-1 text-red-600 text-sm">
+                          <Ban size={16} /> Blocked
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-emerald-600 text-sm">
+                          <CheckCircle size={16} /> Active
+                        </span>
+                      )}
                     </td>
-                    <td className="px-4 py-3">{getRoleBadge(user.role)}</td>
+                    <td className="px-4 py-3">
+                      <select
+                        value={user.role}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        disabled={actionLoading === user.id}
+                        className="text-sm border border-gray-200 rounded px-2 py-1 bg-white"
+                      >
+                        <option value="user">User</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="admin">Admin</option>
+                      </select>
+                    </td>
                     <td className="px-4 py-3">
                       {user.is_verified ? (
                         <span className="flex items-center gap-1 text-emerald-600 text-sm">
@@ -276,13 +314,20 @@ export default function UsersManagement() {
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      {user.profile?.is_premium ? (
-                        <span className="flex items-center gap-1 text-amber-600 text-sm">
-                          <Crown size={16} /> Premium
-                        </span>
-                      ) : (
-                        <span className="text-gray-400 text-sm">Free</span>
-                      )}
+                      <div className="flex flex-col gap-1">
+                        {user.profile?.is_premium ? (
+                          <span className="flex items-center gap-1 text-amber-600 text-sm">
+                            <Crown size={16} /> Premium
+                          </span>
+                        ) : (
+                          <span className="text-gray-400 text-sm">Free</span>
+                        )}
+                        {user.profile?.has_bedah_value_cert && (
+                          <span className="flex items-center gap-1 text-emerald-600 text-sm">
+                            <Award size={16} /> Bersertifikat
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-500">
                       {formatDate(user.created_at)}
@@ -308,24 +353,19 @@ export default function UsersManagement() {
                           )}
                         </button>
 
-                        <select
-                          value={user.role}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                          disabled={actionLoading === user.id}
-                          className="text-sm border border-gray-200 rounded px-2 py-1"
-                        >
-                          <option value="user">User</option>
-                          <option value="moderator">Moderator</option>
-                          <option value="admin">Admin</option>
-                        </select>
-
                         <button
-                          onClick={() => handleDelete(user.id)}
+                          onClick={() => user.is_blocked ? handleUnblock(user.id, user.full_name) : handleBlock(user.id, user.full_name)}
                           disabled={actionLoading === user.id}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Delete"
+                          className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                          title={user.is_blocked ? 'Unblock' : 'Block'}
                         >
-                          <Trash2 size={18} />
+                          {actionLoading === user.id ? (
+                            <div className="animate-spin h-4 w-4 border-2 border-current rounded-full" />
+                          ) : user.is_blocked ? (
+                            <Unlock size={18} />
+                          ) : (
+                            <Ban size={18} />
+                          )}
                         </button>
                       </div>
                     </td>
@@ -398,6 +438,84 @@ export default function UsersManagement() {
                   }`}
                 >
                   {actionLoading !== null ? 'Loading...' : (verifyModal.currentStatus ? 'Unverify' : 'Verify')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block Confirmation Modal */}
+      {blockModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setBlockModal({ open: false, userId: null, userName: '' })}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4 animate-in fade-in zoom-in-95">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Block User
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Are you sure you want to block {blockModal.userName}? They will not be able to login to the app.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setBlockModal({ open: false, userId: null, userName: '' })}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmBlock}
+                  disabled={actionLoading !== null}
+                  className="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {actionLoading !== null ? 'Loading...' : 'Block'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Unblock Confirmation Modal */}
+      {unblockModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setUnblockModal({ open: false, userId: null, userName: '' })}
+          />
+          {/* Modal */}
+          <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4 animate-in fade-in zoom-in-95">
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Unblock User
+                </h3>
+                <p className="mt-2 text-sm text-gray-600">
+                  Are you sure you want to unblock {unblockModal.userName}? They will be able to login to the app again.
+                </p>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setUnblockModal({ open: false, userId: null, userName: '' })}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmUnblock}
+                  disabled={actionLoading !== null}
+                  className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {actionLoading !== null ? 'Loading...' : 'Unblock'}
                 </button>
               </div>
             </div>

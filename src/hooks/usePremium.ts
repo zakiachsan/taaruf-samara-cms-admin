@@ -211,7 +211,8 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
   useEffect(() => {
     fetchSubscriptions()
     fetchStats()
-  }, [fetchSubscriptions, fetchStats])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, page, limit])
 
   const extendSubscription = async (subscriptionId: string, newEndDate: string) => {
     try {

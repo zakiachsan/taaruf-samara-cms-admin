@@ -7,6 +7,7 @@ export interface User {
   full_name: string
   role: 'user' | 'admin' | 'moderator'
   is_verified: boolean
+  is_blocked?: boolean
   created_at: string
   profile?: {
     age?: number
@@ -18,6 +19,8 @@ export interface User {
     is_premium?: boolean
     is_blurred?: boolean
     photos?: string[]
+    has_bedah_value_cert?: boolean
+    bedah_value_cert_code?: string
   }
 }
 
@@ -51,7 +54,9 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
             bio,
             is_premium,
             is_blurred,
-            photos
+            photos,
+            has_bedah_value_cert,
+            bedah_value_cert_code
           )
         `, { count: 'exact' })
 
@@ -121,6 +126,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         full_name: u.full_name,
         role: u.role,
         is_verified: u.is_verified,
+        is_blocked: u.is_blocked,
         created_at: u.created_at,
         profile: u.user_profiles?.[0] || {},
       }))
@@ -177,31 +183,24 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     }
   }
 
-  const deleteUser = async (userId: string) => {
+  const blockUser = async (userId: string) => {
     try {
-      // Delete from auth.users (this will cascade to users table due to foreign key)
-      const { error } = await supabase.auth.admin.deleteUser(userId)
-      
+      // Update is_blocked to true on users table
+      const { error } = await supabase
+        .from('users')
+        .update({ is_blocked: true, updated_at: new Date().toISOString() })
+        .eq('id', userId)
+
       if (error) throw error
-      
-      // Update local state
-      setUsers(users.filter(u => u.id !== userId))
-      setTotalCount(prev => prev - 1)
-      
+
+      // Update local state using functional update to avoid stale closure
+      setUsers(prevUsers => prevUsers.map(u =>
+        u.id === userId ? { ...u, is_blocked: true } : u
+      ))
+
       return { success: true }
     } catch (err) {
-      // Fallback: soft delete by updating role
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ role: 'suspended' })
-        .eq('id', userId)
-      
-      if (updateError) {
-        return { success: false, error: updateError.message }
-      }
-      
-      setUsers(users.filter(u => u.id !== userId))
-      return { success: true }
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
     }
   }
 
@@ -222,6 +221,25 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
     }
+    }
+
+  const unblockUser = async (userId: string) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ is_blocked: false, updated_at: new Date().toISOString() })
+        .eq('id', userId)
+
+      if (error) throw error
+
+      setUsers(prevUsers => prevUsers.map(u =>
+        u.id === userId ? { ...u, is_blocked: false } : u
+      ))
+
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
   }
 
   return {
@@ -232,7 +250,8 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     totalPages: Math.ceil(totalCount / limit),
     refetch: fetchUsers,
     verifyUser,
-    deleteUser,
+    blockUser,
+    unblockUser,
     changeRole,
   }
 }

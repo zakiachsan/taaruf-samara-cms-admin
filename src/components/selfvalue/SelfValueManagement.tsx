@@ -32,6 +32,7 @@ export default function SelfValueManagement() {
   const [selectedRegistration, setSelectedRegistration] = useState<SelfValueRegistration | null>(null)
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // Schedule form
@@ -45,6 +46,13 @@ export default function SelfValueManagement() {
   const [completeData, setCompleteData] = useState({
     certificateUrl: '',
     notes: '',
+    quality_score: 0,
+    mental_readiness_score: 0,
+    emotional_baggage_notes: '',
+    life_needs_notes: '',
+    partner_category: '',
+    consultant_notes: '',
+    certificate_code: '',
   })
 
   const {
@@ -56,6 +64,9 @@ export default function SelfValueManagement() {
     scheduleSession,
     completeSession,
     cancelSession,
+    saveTestResults,
+    updateTestResults,
+    getTestResults,
   } = useSelfValue(filters, page)
 
   const handleSchedule = async () => {
@@ -86,6 +97,25 @@ export default function SelfValueManagement() {
     if (!selectedRegistration) return
 
     setActionLoading('complete')
+
+    // First save test results
+    const resultsResult = await saveTestResults(selectedRegistration.user_id, {
+      quality_score: completeData.quality_score,
+      mental_readiness_score: completeData.mental_readiness_score,
+      emotional_baggage_notes: completeData.emotional_baggage_notes,
+      life_needs_notes: completeData.life_needs_notes,
+      partner_category: completeData.partner_category,
+      consultant_notes: completeData.consultant_notes,
+      certificate_code: completeData.certificate_code || undefined,
+    })
+
+    if (!resultsResult.success) {
+      setActionLoading(null)
+      alert(resultsResult.error)
+      return
+    }
+
+    // Then complete the session
     const result = await completeSession(
       selectedRegistration.id,
       completeData.certificateUrl || undefined,
@@ -96,7 +126,17 @@ export default function SelfValueManagement() {
     if (result.success) {
       setShowCompleteModal(false)
       setSelectedRegistration(null)
-      setCompleteData({ certificateUrl: '', notes: '' })
+      setCompleteData({
+        certificateUrl: '',
+        notes: '',
+        quality_score: 0,
+        mental_readiness_score: 0,
+        emotional_baggage_notes: '',
+        life_needs_notes: '',
+        partner_category: '',
+        consultant_notes: '',
+        certificate_code: '',
+      })
     } else {
       alert(result.error)
     }
@@ -108,6 +148,70 @@ export default function SelfValueManagement() {
     setActionLoading(registration.id)
     await cancelSession(registration.id)
     setActionLoading(null)
+  }
+
+  const handleEdit = async (registration: SelfValueRegistration) => {
+    setSelectedRegistration(registration)
+    setActionLoading('edit-load')
+
+    // Fetch existing test results
+    const { success, data } = await getTestResults(registration.user_id)
+
+    if (success && data) {
+      setCompleteData({
+        certificateUrl: data.certificate_url || '',
+        notes: registration.notes || '',
+        quality_score: data.quality_score || 0,
+        mental_readiness_score: data.mental_readiness_score || 0,
+        emotional_baggage_notes: data.emotional_baggage_notes || '',
+        life_needs_notes: data.life_needs_notes || '',
+        partner_category: data.partner_category || '',
+        consultant_notes: data.consultant_notes || '',
+        certificate_code: data.certificate_code || '',
+      })
+    } else {
+      // Reset to empty if no existing results
+      setCompleteData({
+        certificateUrl: '',
+        notes: '',
+        quality_score: 0,
+        mental_readiness_score: 0,
+        emotional_baggage_notes: '',
+        life_needs_notes: '',
+        partner_category: '',
+        consultant_notes: '',
+        certificate_code: '',
+      })
+    }
+
+    setActionLoading(null)
+    setShowEditModal(true)
+  }
+
+  const handleSaveEdit = async () => {
+    if (!selectedRegistration) return
+
+    setActionLoading('edit')
+
+    const result = await updateTestResults(selectedRegistration.user_id, {
+      quality_score: completeData.quality_score,
+      mental_readiness_score: completeData.mental_readiness_score,
+      emotional_baggage_notes: completeData.emotional_baggage_notes,
+      life_needs_notes: completeData.life_needs_notes,
+      partner_category: completeData.partner_category,
+      consultant_notes: completeData.consultant_notes,
+      certificate_code: completeData.certificate_code || undefined,
+    })
+
+    setActionLoading(null)
+
+    if (result.success) {
+      setShowEditModal(false)
+      setSelectedRegistration(null)
+      refetch()
+    } else {
+      alert(result.error)
+    }
   }
 
   const formatDate = (dateString?: string) => {
@@ -285,7 +389,15 @@ export default function SelfValueManagement() {
                           }}
                           className="px-3 py-1 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
                         >
-                          Complete
+                          Input Hasil Test
+                        </button>
+                      )}
+                      {reg.status === 'completed' && (
+                        <button
+                          onClick={() => handleEdit(reg)}
+                          className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
+                        >
+                          Edit Hasil
                         </button>
                       )}
                       {(reg.status === 'registered' || reg.status === 'scheduled') && (
@@ -390,14 +502,90 @@ export default function SelfValueManagement() {
       {/* Complete Modal */}
       {showCompleteModal && selectedRegistration && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-gray-900">Selesaikan Sesi</h3>
+              <h3 className="text-lg font-bold text-gray-900">Input Hasil Test</h3>
               <button onClick={() => setShowCompleteModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <X size={20} />
               </button>
             </div>
             <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quality Score (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={completeData.quality_score || ''}
+                    onChange={(e) => setCompleteData({ ...completeData, quality_score: parseInt(e.target.value) || 0 })}
+                    placeholder="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mental Readiness (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={completeData.mental_readiness_score || ''}
+                    onChange={(e) => setCompleteData({ ...completeData, mental_readiness_score: parseInt(e.target.value) || 0 })}
+                    placeholder="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Emotional Baggage Notes</label>
+                <textarea
+                  value={completeData.emotional_baggage_notes}
+                  onChange={(e) => setCompleteData({ ...completeData, emotional_baggage_notes: e.target.value })}
+                  placeholder="Catatan tentang beban emosional..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Life Needs Notes</label>
+                <textarea
+                  value={completeData.life_needs_notes}
+                  onChange={(e) => setCompleteData({ ...completeData, life_needs_notes: e.target.value })}
+                  placeholder="Catatan tentang kebutuhan hidup..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Category</label>
+                <input
+                  type="text"
+                  value={completeData.partner_category}
+                  onChange={(e) => setCompleteData({ ...completeData, partner_category: e.target.value })}
+                  placeholder="Kategori partner yang cocok..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Consultant Notes</label>
+                <textarea
+                  value={completeData.consultant_notes}
+                  onChange={(e) => setCompleteData({ ...completeData, consultant_notes: e.target.value })}
+                  placeholder="Catatan konsultan..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kode Sertifikat (auto-generated if empty)</label>
+                <input
+                  type="text"
+                  value={completeData.certificate_code}
+                  onChange={(e) => setCompleteData({ ...completeData, certificate_code: e.target.value })}
+                  placeholder="BV-2026-XXXXX"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">URL Sertifikat</label>
                 <input
@@ -414,7 +602,7 @@ export default function SelfValueManagement() {
                   value={completeData.notes}
                   onChange={(e) => setCompleteData({ ...completeData, notes: e.target.value })}
                   placeholder="Catatan tambahan (opsional)"
-                  rows={3}
+                  rows={2}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg"
                 />
               </div>
@@ -431,7 +619,125 @@ export default function SelfValueManagement() {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
                   <CheckCircle size={18} />
-                  {actionLoading === 'complete' ? 'Saving...' : 'Selesaikan'}
+                  {actionLoading === 'complete' ? 'Saving...' : 'Simpan & Selesaikan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal - For completed registrations */}
+      {showEditModal && selectedRegistration && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Edit Hasil Test</h3>
+              <button onClick={() => setShowEditModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quality Score (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={completeData.quality_score || ''}
+                    onChange={(e) => setCompleteData({ ...completeData, quality_score: parseInt(e.target.value) || 0 })}
+                    placeholder="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mental Readiness (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={completeData.mental_readiness_score || ''}
+                    onChange={(e) => setCompleteData({ ...completeData, mental_readiness_score: parseInt(e.target.value) || 0 })}
+                    placeholder="0"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Emotional Baggage Notes</label>
+                <textarea
+                  value={completeData.emotional_baggage_notes}
+                  onChange={(e) => setCompleteData({ ...completeData, emotional_baggage_notes: e.target.value })}
+                  placeholder="Catatan tentang beban emosional..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Life Needs Notes</label>
+                <textarea
+                  value={completeData.life_needs_notes}
+                  onChange={(e) => setCompleteData({ ...completeData, life_needs_notes: e.target.value })}
+                  placeholder="Catatan tentang kebutuhan hidup..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Category</label>
+                <input
+                  type="text"
+                  value={completeData.partner_category}
+                  onChange={(e) => setCompleteData({ ...completeData, partner_category: e.target.value })}
+                  placeholder="Kategori partner yang cocok..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Consultant Notes</label>
+                <textarea
+                  value={completeData.consultant_notes}
+                  onChange={(e) => setCompleteData({ ...completeData, consultant_notes: e.target.value })}
+                  placeholder="Catatan konsultan..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kode Sertifikat</label>
+                <input
+                  type="text"
+                  value={completeData.certificate_code}
+                  onChange={(e) => setCompleteData({ ...completeData, certificate_code: e.target.value })}
+                  placeholder="BV-2026-XXXXX"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">URL Sertifikat</label>
+                <input
+                  type="url"
+                  value={completeData.certificateUrl}
+                  onChange={(e) => setCompleteData({ ...completeData, certificateUrl: e.target.value })}
+                  placeholder="https://... (opsional)"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={actionLoading === 'edit'}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                >
+                  <CheckCircle size={18} />
+                  {actionLoading === 'edit' ? 'Saving...' : 'Simpan Perubahan'}
                 </button>
               </div>
             </div>
