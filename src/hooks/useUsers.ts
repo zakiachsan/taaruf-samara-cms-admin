@@ -46,6 +46,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         .select(`
           *,
           user_profiles (
+            full_name,
             age,
             gender,
             religion,
@@ -54,6 +55,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
             bio,
             is_premium,
             is_blurred,
+            is_verified,
             photos,
             has_bedah_value_cert,
             bedah_value_cert_code
@@ -110,7 +112,10 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
           .order('created_at', { ascending: false })
           .range(from, to)
 
-        data = fbResult.data
+        data = fbResult.data?.map((u: any) => ({
+          ...u,
+          user_profiles: null // No join available
+        }))
         fetchError = fbResult.error
       }
 
@@ -123,12 +128,12 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
       const transformedUsers: User[] = (data || []).map((u: any) => ({
         id: u.id,
         email: u.email,
-        full_name: u.full_name,
+        full_name: u.user_profiles?.full_name || u.full_name, // Prefer user_profiles
         role: u.role,
-        is_verified: u.is_verified,
+        is_verified: u.user_profiles?.is_verified ?? u.is_verified, // Prefer user_profiles
         is_blocked: u.is_blocked,
         created_at: u.created_at,
-        profile: u.user_profiles?.[0] || {},
+        profile: u.user_profiles || {},
       }))
 
       // Filter by premium status (need to do this client-side due to join)
