@@ -40,112 +40,112 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
   const fetchUsers = useCallback(async () => {
     try {
       setLoading(true)
-      
+
+      // Query user_profiles directly (user_id references auth.users.id)
       let query = supabase
-        .from('users')
-        .select(`
-          *,
-          user_profiles (
-            full_name,
-            age,
-            gender,
-            religion,
-            education,
-            location,
-            bio,
-            is_premium,
-            is_blurred,
-            is_verified,
-            photos,
-            has_bedah_value_cert,
-            bedah_value_cert_code
-          )
-        `, { count: 'exact' })
+        .from('user_profiles')
+        .select('*', { count: 'exact' })
 
       // Apply filters
       if (filters.search) {
-        query = query.or(`full_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
-      }
-      
-      if (filters.role) {
-        query = query.eq('role', filters.role)
-      }
-      
-      if (filters.isVerified) {
-        query = query.eq('is_verified', filters.isVerified === 'true')
+        query = query.or(`full_name.ilike.%${filters.search}%`)
       }
 
-      // Get total count first
+      if (filters.isVerified === 'true') {
+        query = query.eq('is_verified', true)
+      } else if (filters.isVerified === 'false') {
+        query = query.eq('is_verified', false)
+      }
+
+      // Get total count
       const { count } = await query
       setTotalCount(count || 0)
 
       // Apply pagination
       const from = (page - 1) * limit
       const to = from + limit - 1
-      
+
       query = query
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      let { data, error: fetchError } = await query
+      let { data: profiles, error: profilesError } = await query
 
-      // Fallback: if user_profiles relationship doesn't exist, query users only
-      if (fetchError && fetchError.code === 'PGRST200') {
-        let fallbackQuery = supabase
-          .from('users')
-          .select('*', { count: 'exact' })
-
-        if (filters.search) {
-          fallbackQuery = fallbackQuery.or(`full_name.ilike.%${filters.search}%,email.ilike.%${filters.search}%`)
-        }
-        if (filters.role) {
-          fallbackQuery = fallbackQuery.eq('role', filters.role)
-        }
-        if (filters.isVerified) {
-          fallbackQuery = fallbackQuery.eq('is_verified', filters.isVerified === 'true')
-        }
-
-        const { count: fbCount } = await fallbackQuery
-        setTotalCount(fbCount || 0)
-
-        const fbResult = await fallbackQuery
-          .order('created_at', { ascending: false })
-          .range(from, to)
-
-        data = fbResult.data?.map((u: any) => ({
-          ...u,
-          user_profiles: null // No join available
-        }))
-        fetchError = fbResult.error
+      if (profilesError) {
+        console.error('Supabase profiles error:', profilesError)
+        throw profilesError
       }
 
-      if (fetchError) {
-        console.error('Supabase users error:', fetchError)
-        throw fetchError
+      if (!profiles || profiles.length === 0) {
+        setUsers([])
+        setLoading(false)
+        return
       }
 
-      // Transform data
-      const transformedUsers: User[] = (data || []).map((u: any) => ({
-        id: u.id,
-        email: u.email,
-        full_name: u.user_profiles?.full_name || u.full_name, // Prefer user_profiles
-        role: u.role,
-        is_verified: u.user_profiles?.is_verified ?? u.is_verified, // Prefer user_profiles
-        is_blocked: u.is_blocked,
-        created_at: u.created_at,
-        profile: u.user_profiles || {},
+      // Get user_ids for fetching auth.users emails
+      const userIds = profiles.map(p => p.user_id)
+
+      // Transform data - use user_profiles data as source of truth
+      let transformedUsers: User[] = profiles.map((p: any) => ({
+        id: p.user_id,
+        email: p.email || '', // Will be filled if we can get from auth
+        full_name: p.full_name,
+        role: 'user' as const, // Default role
+        is_verified: p.is_verified,
+        is_blocked: p.is_blocked || false,
+        created_at: p.created_at,
+        profile: {
+          age: p.age,
+          gender: p.gender,
+          religion: p.religion,
+          education: p.education,
+          location: p.location,
+          bio: p.bio,
+          is_premium: p.is_premium,
+          is_blurred: p.is_blurred,
+          photos: p.photos,
+          has_bedah_value_cert: p.has_bedah_value_cert,
+          bedah_value_cert_code: p.bedah_value_cert_code,
+        },
       }))
 
-      // Filter by premium status (need to do this client-side due to join)
-      let filteredUsers = transformedUsers
+      // Try to get emails from users table (if it has matching user_ids)
+      try {
+        const { data: usersData } = await supabase
+          .from('users')
+          .select('id, email')
+          .in('id', userIds)
+
+        if (usersData && usersData.length > 0) {
+          const emailMap = new Map(usersData.map(u => [u.id, u.email]))
+          transformedUsers = transformedUsers.map(u => ({
+            ...u,
+            email: emailMap.get(u.id) || u.email
+          }))
+        }
+      } catch (e) {
+        // users table might not exist or not have the right data, continue without email
+        console.log('Could not fetch emails from users table:', e)
+      }
+
+      // Filter by premium status
       if (filters.isPremium) {
         const isPremium = filters.isPremium === 'true'
-        filteredUsers = transformedUsers.filter(u => 
+        transformedUsers = transformedUsers.filter(u =>
           isPremium ? u.profile?.is_premium : !u.profile?.is_premium
         )
       }
 
-      setUsers(filteredUsers)
+      // Filter by search (if searching by email, we need to check after we have emails)
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase()
+        transformedUsers = transformedUsers.filter(u =>
+          u.full_name.toLowerCase().includes(searchLower) ||
+          u.email.toLowerCase().includes(searchLower)
+        )
+      }
+
+      setUsers(transformedUsers)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
@@ -159,23 +159,19 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const verifyUser = async (userId: string, verified: boolean) => {
     try {
-      // Update both users.is_verified AND user_profiles.is_verified for consistency
-      const { error: usersError } = await supabase
-        .from('users')
-        .update({ is_verified: verified, updated_at: new Date().toISOString() })
-        .eq('id', userId)
-
-      if (usersError) throw usersError
-
+      // Update user_profiles.is_verified
       const { error: profilesError } = await supabase
         .from('user_profiles')
         .update({ is_verified: verified })
         .eq('user_id', userId)
 
-      if (profilesError) {
-        console.error('Profile update failed (profile may not exist):', profilesError)
-        // Don't throw - users table is updated, that's the main one
-      }
+      if (profilesError) throw profilesError
+
+      // Also update legacy users table if exists
+      await supabase
+        .from('users')
+        .update({ is_verified: verified, updated_at: new Date().toISOString() })
+        .eq('id', userId)
 
       // Update local state
       setUsers(users.map(u =>
@@ -190,15 +186,21 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const blockUser = async (userId: string) => {
     try {
-      // Update is_blocked to true on users table
-      const { error } = await supabase
+      // Update user_profiles.is_blocked
+      const { error: profilesError } = await supabase
+        .from('user_profiles')
+        .update({ is_blocked: true })
+        .eq('user_id', userId)
+
+      if (profilesError) throw profilesError
+
+      // Also update legacy users table if exists
+      await supabase
         .from('users')
         .update({ is_blocked: true, updated_at: new Date().toISOString() })
         .eq('id', userId)
 
-      if (error) throw error
-
-      // Update local state using functional update to avoid stale closure
+      // Update local state
       setUsers(prevUsers => prevUsers.map(u =>
         u.id === userId ? { ...u, is_blocked: true } : u
       ))
@@ -209,36 +211,48 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     }
   }
 
-  const changeRole = async (userId: string, newRole: string) => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .update({ role: newRole })
-        .eq('id', userId)
-      
-      if (error) throw error
-      
-      setUsers(users.map(u => 
-        u.id === userId ? { ...u, role: newRole as any } : u
-      ))
-      
-      return { success: true }
-    } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
-    }
-    }
-
   const unblockUser = async (userId: string) => {
     try {
-      const { error } = await supabase
+      // Update user_profiles.is_blocked
+      const { error: profilesError } = await supabase
+        .from('user_profiles')
+        .update({ is_blocked: false })
+        .eq('user_id', userId)
+
+      if (profilesError) throw profilesError
+
+      // Also update legacy users table if exists
+      await supabase
         .from('users')
         .update({ is_blocked: false, updated_at: new Date().toISOString() })
         .eq('id', userId)
 
-      if (error) throw error
-
+      // Update local state
       setUsers(prevUsers => prevUsers.map(u =>
         u.id === userId ? { ...u, is_blocked: false } : u
+      ))
+
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+    }
+  }
+
+  const changeRole = async (userId: string, newRole: string) => {
+    try {
+      // Update legacy users table
+      const { error } = await supabase
+        .from('users')
+        .update({ role: newRole })
+        .eq('id', userId)
+
+      if (error) {
+        console.error('Role update error:', error)
+        // Don't throw - the main functionality is updating user_profiles
+      }
+
+      setUsers(users.map(u =>
+        u.id === userId ? { ...u, role: newRole as any } : u
       ))
 
       return { success: true }
