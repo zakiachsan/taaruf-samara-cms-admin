@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useUsers, type UserFilters } from '../../hooks/useUsers'
+import UserDetail from './UserDetail'
 import {
   Search,
   CheckCircle,
@@ -13,6 +14,7 @@ import {
   Crown,
   Award,
   RefreshCw,
+  ExternalLink,
 } from 'lucide-react'
 
 const ROLES = [
@@ -46,6 +48,7 @@ export default function UsersManagement() {
   const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [selectedUser, setSelectedUser] = useState<{ userId: string; userName: string } | null>(null)
   const [verifyModal, setVerifyModal] = useState<{
     open: boolean
     userId: string | null
@@ -261,7 +264,13 @@ export default function UsersManagement() {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{user.full_name}</p>
+                          <button
+                            onClick={() => setSelectedUser({ userId: user.id, userName: user.full_name })}
+                            className="font-medium text-gray-900 hover:text-emerald-600 flex items-center gap-1 transition-colors"
+                          >
+                            {user.full_name}
+                            <ExternalLink size={14} />
+                          </button>
                           <p className="text-sm text-gray-500">{user.email}</p>
                         </div>
                       </div>
@@ -508,6 +517,15 @@ export default function UsersManagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* User Detail Modal */}
+      {selectedUser && (
+        <UserDetail
+          userId={selectedUser.userId}
+          userName={selectedUser.userName}
+          onClose={() => setSelectedUser(null)}
+        />
       )}
     </div>
   )

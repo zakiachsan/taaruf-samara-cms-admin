@@ -34,12 +34,11 @@ export interface ReportFilters {
 }
 
 const REASONS = [
-  'Inappropriate content',
-  'Fake profile',
-  'Harassment',
-  'Spam',
-  'Scam/Fraud',
-  'Other',
+  'Profil palsu',
+  'Info tidak sesuai',
+  'Perilaku tidak sopan',
+  'Scam/Penipuan',
+  'Lainnya',
 ]
 
 export const useReports = (filters: ReportFilters, page: number = 1, limit: number = 10) => {

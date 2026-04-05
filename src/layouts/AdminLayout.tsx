@@ -33,7 +33,7 @@ const NAV_ITEMS = [
   { id: 'referral', label: 'Referral', icon: Gift, path: '/admin/referral' },
   { id: 'banner', label: 'Banner', icon: ImageIcon, path: '/admin/banner' },
   { id: 'matches', label: 'Matches', icon: Heart, path: '/admin/matches' },
-  { id: 'reports', label: 'Reports', icon: Flag, path: '/admin/reports' },
+  { id: 'reports', label: 'Laporan', icon: Flag, path: '/admin/reports' },
   { id: 'chats', label: 'Chats', icon: MessageCircle, path: '/admin/chats' },
   { id: 'blocked', label: 'Blocked', icon: Ban, path: '/admin/blocked' },
   { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },

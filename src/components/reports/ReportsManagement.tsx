@@ -19,21 +19,20 @@ import {
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All Status' },
+  { value: '', label: 'Semua Status' },
   { value: 'open', label: 'Open' },
-  { value: 'investigating', label: 'Investigating' },
-  { value: 'resolved', label: 'Resolved' },
-  { value: 'dismissed', label: 'Dismissed' },
+  { value: 'investigating', label: 'Investigasi' },
+  { value: 'resolved', label: 'Terselesaikan' },
+  { value: 'dismissed', label: 'Dihiraukan' },
 ]
 
 const REASON_OPTIONS = [
-  { value: '', label: 'All Reasons' },
-  { value: 'Inappropriate content', label: 'Inappropriate content' },
-  { value: 'Fake profile', label: 'Fake profile' },
-  { value: 'Harassment', label: 'Harassment' },
-  { value: 'Spam', label: 'Spam' },
-  { value: 'Scam/Fraud', label: 'Scam/Fraud' },
-  { value: 'Other', label: 'Other' },
+  { value: '', label: 'Semua Alasan' },
+  { value: 'Profil palsu', label: 'Profil palsu' },
+  { value: 'Info tidak sesuai', label: 'Info tidak sesuai' },
+  { value: 'Perilaku tidak sopan', label: 'Perilaku tidak sopan' },
+  { value: 'Scam/Penipuan', label: 'Scam/Penipuan' },
+  { value: 'Lainnya', label: 'Lainnya' },
 ]
 
 const LIMIT_OPTIONS = [10, 25, 50]
@@ -51,6 +50,34 @@ const StatCard = ({ title, value, icon: Icon, color }: any) => (
     </div>
   </div>
 )
+
+const getStatusBadge = (status: string) => {
+  const styles = {
+    open: 'bg-red-100 text-red-700',
+    investigating: 'bg-amber-100 text-amber-700',
+    resolved: 'bg-emerald-100 text-emerald-700',
+    dismissed: 'bg-gray-100 text-gray-700',
+  }
+  const icons = {
+    open: AlertCircle,
+    investigating: Clock,
+    resolved: CheckCircle,
+    dismissed: XCircle,
+  }
+  const labels = {
+    open: 'Open',
+    investigating: 'Investigasi',
+    resolved: 'Terselesaikan',
+    dismissed: 'Dihiraukan',
+  }
+  const Icon = icons[status as keyof typeof icons] || AlertCircle
+  return (
+    <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
+      <Icon size={12} />
+      {labels[status as keyof typeof labels] || status}
+    </span>
+  )
+}
 
 export default function ReportsManagement() {
   const [filters, setFilters] = useState<ReportFilters>({
@@ -88,7 +115,7 @@ export default function ReportsManagement() {
   }
 
   const handleBlockUser = async (userId: string) => {
-    if (!confirm('Block this user? They will not be able to use the app.')) return
+    if (!confirm('Block user ini? Mereka tidak akan bisa menggunakan aplikasi.')) return
     setActionLoading(userId)
     await blockUser(userId)
     setActionLoading(null)
@@ -104,39 +131,16 @@ export default function ReportsManagement() {
     })
   }
 
-  const getStatusBadge = (status: string) => {
-    const styles = {
-      open: 'bg-red-100 text-red-700',
-      investigating: 'bg-amber-100 text-amber-700',
-      resolved: 'bg-emerald-100 text-emerald-700',
-      dismissed: 'bg-gray-100 text-gray-700',
-    }
-    const icons = {
-      open: AlertCircle,
-      investigating: Clock,
-      resolved: CheckCircle,
-      dismissed: XCircle,
-    }
-    const Icon = icons[status as keyof typeof icons] || AlertCircle
-    return (
-      <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
-        <Icon size={12} />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    )
-  }
-
   const getReasonBadge = (reason: string) => {
     const colors: Record<string, string> = {
-      'Inappropriate content': 'bg-purple-100 text-purple-700',
-      'Fake profile': 'bg-blue-100 text-blue-700',
-      'Harassment': 'bg-red-100 text-red-700',
-      'Spam': 'bg-orange-100 text-orange-700',
-      'Scam/Fraud': 'bg-rose-100 text-rose-700',
-      'Other': 'bg-gray-100 text-gray-700',
+      'Profil palsu': 'bg-blue-100 text-blue-700',
+      'Info tidak sesuai': 'bg-purple-100 text-purple-700',
+      'Perilaku tidak sopan': 'bg-red-100 text-red-700',
+      'Scam/Penipuan': 'bg-rose-100 text-rose-700',
+      'Lainnya': 'bg-gray-100 text-gray-700',
     }
     return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[reason] || colors['Other']}`}>
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${colors[reason] || colors['Lainnya']}`}>
         {reason}
       </span>
     )
@@ -147,7 +151,7 @@ export default function ReportsManagement() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          title="Total Reports"
+          title="Total Laporan"
           value={stats.totalReports}
           icon={Flag}
           color="bg-blue-500"
@@ -159,13 +163,13 @@ export default function ReportsManagement() {
           color="bg-red-500"
         />
         <StatCard
-          title="Investigating"
+          title="Investigasi"
           value={stats.investigatingReports}
           icon={Clock}
           color="bg-amber-500"
         />
         <StatCard
-          title="Resolved"
+          title="Terselesaikan"
           value={stats.resolvedReports}
           icon={CheckCircle}
           color="bg-emerald-500"
@@ -179,14 +183,14 @@ export default function ReportsManagement() {
             <AlertCircle className="text-red-600" size={24} />
           </div>
           <div className="flex-1">
-            <p className="text-red-900 font-semibold">{stats.openReports} reports need attention</p>
-            <p className="text-red-700 text-sm">Please review and take action on open reports</p>
+            <p className="text-red-900 font-semibold">{stats.openReports} laporan perlu ditinjau</p>
+            <p className="text-red-700 text-sm">Silakan tinjau dan ambil tindakan pada laporan yang open</p>
           </div>
           <button
             onClick={() => setFilters({ ...filters, status: 'open' })}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
           >
-            View Open
+            Lihat Open
           </button>
         </div>
       )}
@@ -198,7 +202,7 @@ export default function ReportsManagement() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Search by user or reason..."
+              placeholder="Cari berdasarkan user atau alasan..."
               value={filters.search}
               onChange={(e) => {
                 setFilters({ ...filters, search: e.target.value })
@@ -241,9 +245,9 @@ export default function ReportsManagement() {
         </div>
 
         <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-          <span>Total: {totalCount} reports</span>
+          <span>Total: {totalCount} laporan</span>
           <div className="flex items-center gap-2">
-            <span>Show:</span>
+            <span>Tampilkan:</span>
             <select
               value={limit}
               onChange={(e) => {
@@ -263,24 +267,24 @@ export default function ReportsManagement() {
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-            <p className="mt-4 text-gray-500">Loading reports...</p>
+            <p className="mt-4 text-gray-500">Memuat laporan...</p>
           </div>
         ) : reports.length === 0 ? (
           <div className="p-12 text-center">
             <CheckCircle size={48} className="mx-auto text-emerald-400 mb-4" />
-            <p className="text-gray-500">No reports found</p>
+            <p className="text-gray-500">Tidak ada laporan ditemukan</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reporter</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reported User</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reason</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pelapor</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User Dilaporkan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alasan</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -325,7 +329,7 @@ export default function ReportsManagement() {
                             setShowDetailModal(true)
                           }}
                           className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                          title="View Details"
+                          title="Lihat Detail"
                         >
                           <Eye size={18} />
                         </button>
@@ -335,7 +339,7 @@ export default function ReportsManagement() {
                             onClick={() => handleStatusChange(report.id, 'investigating')}
                             disabled={actionLoading === report.id}
                             className="p-2 text-amber-600 hover:bg-amber-50 rounded-lg"
-                            title="Mark Investigating"
+                            title="Tandai Investigasi"
                           >
                             {actionLoading === report.id ? (
                               <div className="animate-spin h-4 w-4 border-2 border-current rounded-full" />
@@ -351,7 +355,7 @@ export default function ReportsManagement() {
                               onClick={() => handleStatusChange(report.id, 'resolved')}
                               disabled={actionLoading === report.id}
                               className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                              title="Resolve"
+                              title="Selesaikan"
                             >
                               <Check size={18} />
                             </button>
@@ -359,7 +363,7 @@ export default function ReportsManagement() {
                               onClick={() => handleStatusChange(report.id, 'dismissed')}
                               disabled={actionLoading === report.id}
                               className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg"
-                              title="Dismiss"
+                              title="Abaikan"
                             >
                               <X size={18} />
                             </button>
@@ -381,17 +385,17 @@ export default function ReportsManagement() {
               disabled={page === 1}
               className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50"
             >
-              <ChevronLeft size={16} /> Previous
+              <ChevronLeft size={16} /> Sebelumnya
             </button>
             <span className="text-sm text-gray-500">
-              Page {page} of {totalPages}
+              Halaman {page} dari {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50"
             >
-              Next <ChevronRight size={16} />
+              Berikutnya <ChevronRight size={16} />
             </button>
           </div>
         )}
@@ -403,7 +407,7 @@ export default function ReportsManagement() {
           <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold text-gray-900">Report Details</h3>
+                <h3 className="text-xl font-semibold text-gray-900">Detail Laporan</h3>
                 <button
                   onClick={() => {
                     setShowDetailModal(false)
@@ -427,7 +431,7 @@ export default function ReportsManagement() {
               {/* Reporter Info */}
               <div className="bg-blue-50 rounded-lg p-4">
                 <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
-                  <User size={16} /> Reporter
+                  <User size={16} /> Pelapor
                 </h4>
                 <p className="text-blue-800">{selectedReport.reporter_name}</p>
                 <p className="text-blue-600 text-sm">{selectedReport.reporter_email}</p>
@@ -436,7 +440,7 @@ export default function ReportsManagement() {
               {/* Reported User Info */}
               <div className="bg-red-50 rounded-lg p-4">
                 <h4 className="font-medium text-red-900 mb-2 flex items-center gap-2">
-                  <Shield size={16} /> Reported User
+                  <Shield size={16} /> User Dilaporkan
                 </h4>
                 <p className="text-red-800">{selectedReport.reported_name}</p>
                 <p className="text-red-600 text-sm">{selectedReport.reported_email}</p>
@@ -444,14 +448,14 @@ export default function ReportsManagement() {
 
               {/* Reason */}
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">Reason</h4>
+                <h4 className="font-medium text-gray-900 mb-2">Alasan</h4>
                 {getReasonBadge(selectedReport.reason)}
               </div>
 
               {/* Description */}
               {selectedReport.description && (
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Description</h4>
+                  <h4 className="font-medium text-gray-900 mb-2">Deskripsi</h4>
                   <p className="text-gray-600 bg-gray-50 rounded-lg p-4">
                     {selectedReport.description}
                   </p>
@@ -460,11 +464,11 @@ export default function ReportsManagement() {
 
               {/* Notes */}
               <div>
-                <h4 className="font-medium text-gray-900 mb-2">Admin Notes</h4>
+                <h4 className="font-medium text-gray-900 mb-2">Catatan Admin</h4>
                 <textarea
                   value={notes || selectedReport.notes || ''}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Add notes about this report..."
+                  placeholder="Tambahkan catatan tentang laporan ini..."
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 min-h-[100px]"
                 />
               </div>
@@ -472,7 +476,7 @@ export default function ReportsManagement() {
               {/* Handler Info */}
               {selectedReport.handler_name && (
                 <div className="text-sm text-gray-500">
-                  Handled by: {selectedReport.handler_name}
+                  Ditangani oleh: {selectedReport.handler_name}
                 </div>
               )}
             </div>
@@ -495,7 +499,7 @@ export default function ReportsManagement() {
                   className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
                   <Check size={18} />
-                  Mark Resolved
+                  Tandai Selesai
                 </button>
               )}
 
@@ -506,7 +510,7 @@ export default function ReportsManagement() {
                   className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 disabled:opacity-50"
                 >
                   <X size={18} />
-                  Dismiss
+                  Abaikan
                 </button>
               )}
             </div>
