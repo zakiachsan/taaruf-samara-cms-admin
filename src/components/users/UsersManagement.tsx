@@ -128,19 +128,6 @@ export default function UsersManagement() {
     })
   }
 
-  const getRoleBadge = (role: string) => {
-    const styles = {
-      admin: 'bg-purple-100 text-purple-700',
-      moderator: 'bg-blue-100 text-blue-700',
-      user: 'bg-gray-100 text-gray-700',
-    }
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[role as keyof typeof styles] || styles.user}`}>
-        {role.charAt(0).toUpperCase() + role.slice(1)}
-      </span>
-    )
-  }
-
   return (
     <div className="space-y-4">
       {/* Header & Filters */}
