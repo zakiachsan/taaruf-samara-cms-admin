@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "serena": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-serena@latest"
+      ],
+      "env": {
+        "SERENA_SUPABASE_URL": "https://okgddlgugdkiswitewdi.supabase.co",
+        "SERENA_SUPABASE_ANON_KEY": "YOUR_ANON_KEY_HERE",
+        "SERENA_SUPABASE_SERVICE_ROLE_KEY": "YOUR_SERVICE_ROLE_KEY_HERE"
+      }
+    }
+  }
+}

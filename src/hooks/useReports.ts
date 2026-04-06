@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabaseAdmin } from '../lib/supabase'
 
 export interface Report {
   id: string
@@ -57,87 +57,87 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
     try {
       setLoading(true)
 
-      let query = supabase
+      // Step 1: Fetch reports first
+      let reportsQuery = supabaseAdmin
         .from('reports')
-        .select(`
-          *,
-          reporter:reporter_id (
-            full_name,
-            email
-          ),
-          reported:reported_id (
-            full_name,
-            email
-          ),
-          handler:handler_id (
-            full_name
-          )
-        `, { count: 'exact' })
+        .select('*', { count: 'exact' })
 
+      // Apply filters
       if (filters.status) {
-        query = query.eq('status', filters.status)
+        reportsQuery = reportsQuery.eq('status', filters.status)
       }
 
       if (filters.reason) {
-        query = query.eq('reason', filters.reason)
+        reportsQuery = reportsQuery.eq('reason', filters.reason)
       }
 
-      const { count } = await query
+      // Get count first
+      const { count } = await reportsQuery
       setTotalCount(count || 0)
 
+      // Apply pagination
       const from = (page - 1) * limit
       const to = from + limit - 1
 
-      query = query
+      const { data: reportsData, error: reportsError } = await reportsQuery
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      let { data, error } = await query
+      if (reportsError) throw reportsError
 
-      // Fallback: if users relationship doesn't exist
-      if (error && error.code === 'PGRST200') {
-        let fallbackQuery = supabase
-          .from('reports')
-          .select('*', { count: 'exact' })
+      // Step 2: Collect all unique user_ids
+      const userIds = new Set<string>()
+      ;(reportsData || []).forEach(r => {
+        userIds.add(r.reporter_id)
+        userIds.add(r.reported_id)
+      })
 
-        if (filters.status) {
-          fallbackQuery = fallbackQuery.eq('status', filters.status)
+      // Step 3: Fetch user_profiles for these user_ids
+      // Fetch profiles one by one to avoid filter issues
+      const profilePromises = Array.from(userIds).map(async userId => {
+        const result = await supabaseAdmin
+          .from('user_profiles')
+          .select('user_id, full_name')
+          .eq('user_id', userId)
+          .single()
+
+        return result
+      })
+
+      const profileResults = await Promise.all(profilePromises)
+      const profiles = profileResults.map(r => r.data).filter(Boolean)
+
+      // Step 4: Create a map for quick lookup
+      const profileMap = new Map<string, { full_name: string }>()
+      ;(profiles || []).forEach(p => {
+        profileMap.set(p.user_id, { full_name: p.full_name })
+      })
+
+      // Step 5: Transform reports with profile data
+      const transformed: Report[] = (reportsData || []).map((r: any) => {
+        const reporter = profileMap.get(r.reporter_id) || { full_name: 'Unknown' }
+        const reported = profileMap.get(r.reported_id) || { full_name: 'Unknown' }
+
+        return {
+          id: r.id,
+          reporter_id: r.reporter_id,
+          reporter_name: reporter.full_name,
+          reporter_email: '',
+          reported_id: r.reported_id,
+          reported_name: reported.full_name,
+          reported_email: '',
+          reason: r.reason,
+          description: r.description,
+          status: r.status,
+          handler_id: r.handler_id,
+          handler_name: null, // Could be added later if needed
+          notes: r.notes,
+          created_at: r.created_at,
+          updated_at: r.updated_at,
         }
-        if (filters.reason) {
-          fallbackQuery = fallbackQuery.eq('reason', filters.reason)
-        }
+      })
 
-        const { count: fbCount } = await fallbackQuery
-        setTotalCount(fbCount || 0)
-
-        const fbResult = await fallbackQuery
-          .order('created_at', { ascending: false })
-          .range(from, to)
-
-        data = fbResult.data
-        error = fbResult.error
-      }
-
-      if (error) throw error
-
-      const transformed: Report[] = (data || []).map((r: any) => ({
-        id: r.id,
-        reporter_id: r.reporter_id,
-        reporter_name: r.reporter?.full_name || 'Unknown',
-        reporter_email: r.reporter?.email || '',
-        reported_id: r.reported_id,
-        reported_name: r.reported?.full_name || 'Unknown',
-        reported_email: r.reported?.email || '',
-        reason: r.reason,
-        description: r.description,
-        status: r.status,
-        handler_id: r.handler_id,
-        handler_name: r.handler?.full_name,
-        notes: r.notes,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-      }))
-
+      // Step 6: Apply search filter (if any)
       let filtered = transformed
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
@@ -158,7 +158,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
   const fetchStats = useCallback(async () => {
     try {
-      const { data } = await supabase
+      const { data } = await supabaseAdmin
         .from('reports')
         .select('status')
 
@@ -184,7 +184,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
   const updateStatus = async (reportId: string, newStatus: string, notes?: string) => {
     try {
       // Get current user as handler
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } } = await supabaseAdmin.auth.getUser()
 
       const updateData: any = {
         status: newStatus,
@@ -199,7 +199,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
         updateData.notes = notes
       }
 
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('reports')
         .update(updateData)
         .eq('id', reportId)
@@ -223,14 +223,14 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
   const blockUser = async (userId: string) => {
     try {
       // Get current admin user
-      const { data: { user: currentUser } } = await supabase.auth.getUser()
+      const { data: { user: currentUser } } = await supabaseAdmin.auth.getUser()
 
       if (!currentUser) {
         return { success: false, error: 'No authenticated user found' }
       }
 
       // Add to blocked_users table
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('blocked_users')
         .insert({
           blocker_id: currentUser.id,

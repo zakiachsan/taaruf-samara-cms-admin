@@ -10,6 +10,8 @@ export interface Package {
   description?: string
   is_active: boolean
   sort_order: number
+  is_popular?: boolean
+  features?: string[]
   created_at: string
   updated_at: string
 }
@@ -63,7 +65,7 @@ export const usePackages = () => {
 
   const updatePackage = useCallback(async (
     id: string,
-    updates: Partial<Pick<Package, 'display_name' | 'description' | 'price' | 'is_active'>>
+    updates: Partial<Pick<Package, 'display_name' | 'description' | 'price' | 'is_active' | 'is_popular' | 'features'>>
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       const { error } = await supabase
@@ -97,4 +99,71 @@ export const usePackages = () => {
     updatePackagePrice,
     updatePackage,
   }
+}
+
+// =====================================================
+// Helper Functions
+// =====================================================
+
+/**
+ * Format price for display
+ * @param amount - Price in IDR
+ * @returns Formatted price string (e.g., "Rp 50.000" or "Gratis")
+ */
+export const formatPrice = (amount: number): string => {
+  if (amount === 0) return 'Rp 0'
+  return 'Rp ' + amount.toLocaleString('id-ID')
+}
+
+/**
+ * Format period based on duration
+ * @param durationMonths - Duration in months
+ * @returns Formatted period string (e.g., "3 Bulan" or "Selamanya")
+ */
+export const formatPeriod = (durationMonths: number): string => {
+  if (durationMonths === 0) return 'Selamanya'
+  if (durationMonths === 1) return '1 Bulan'
+  return `${durationMonths} Bulan`
+}
+
+/**
+ * Format package for landing page display
+ * @param pkg - Package object from database
+ * @returns Formatted package object for landing page
+ */
+export const formatPackageForDisplay = (pkg: Package) => {
+  return {
+    id: pkg.id,
+    name: pkg.display_name,
+    price: formatPrice(pkg.price),
+    period: formatPeriod(pkg.duration_months),
+    description: pkg.description || '',
+    features: pkg.features || [],
+    highlighted: pkg.is_popular || false,
+    badge: pkg.is_popular ? 'Paling Populer' : undefined,
+    cta: pkg.price === 0 ? 'Mulai Gratis' : pkg.is_popular ? 'Pilih Paket Ini' : 'Pilih Paket',
+  }
+}
+
+/**
+ * Convert features array to newline-separated string for editing
+ * @param features - Array of feature strings
+ * @returns Newline-separated string
+ */
+export const featuresToString = (features?: string[]): string => {
+  if (!features || features.length === 0) return ''
+  return features.join('\n')
+}
+
+/**
+ * Convert newline-separated string to features array
+ * @param text - Newline-separated string
+ * @returns Array of feature strings
+ */
+export const stringToFeatures = (text: string): string[] => {
+  if (!text || text.trim() === '') return []
+  return text
+    .split('\n')
+    .map(f => f.trim())
+    .filter(f => f.length > 0)
 }

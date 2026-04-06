@@ -13,13 +13,18 @@ import ResetPassword from './pages/ResetPassword'
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'))
 const UsersManagement = lazy(() => import('./components/users/UsersManagement'))
 const PremiumManagement = lazy(() => import('./components/premium/PremiumManagement'))
+const PackageManagement = lazy(() => import('./components/subscription/PackageManagement'))
+const AddonsManagement = lazy(() => import('./components/subscription/AddonsManagement'))
 const ReferralManagement = lazy(() => import('./components/referral/ReferralManagement'))
+const ReferralSettings = lazy(() => import('./components/referral/ReferralSettings'))
 const ReportsManagement = lazy(() => import('./components/reports/ReportsManagement'))
 const BannerManagement = lazy(() => import('./components/banner/BannerManagement'))
 const SelfValueManagement = lazy(() => import('./components/selfvalue/SelfValueManagement'))
 const MatchesManagement = lazy(() => import('./components/matches/MatchesManagement'))
 const ChatsManagement = lazy(() => import('./components/chats/ChatsManagement'))
 const BlockedUsersManagement = lazy(() => import('./components/blocked/BlockedUsersManagement'))
+const TestimonialManagement = lazy(() => import('./components/testimonial/TestimonialManagement'))
+const PendampinganManagement = lazy(() => import('./components/pendampingan/PendampinganManagement'))
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -70,11 +75,16 @@ function AppRoutes() {
           <Route index element={<Dashboard />} />
           <Route path="users" element={<UsersManagement />} />
           <Route path="premium" element={<PremiumManagement />} />
+          <Route path="packages" element={<PackageManagement />} />
+          <Route path="addons" element={<AddonsManagement />} />
           <Route path="selfvalue" element={<SelfValueManagement />} />
           <Route path="referral" element={<ReferralManagement />} />
+          <Route path="referral-settings" element={<ReferralSettings />} />
           <Route path="banner" element={<BannerManagement />} />
           <Route path="matches" element={<MatchesManagement />} />
           <Route path="reports" element={<ReportsManagement />} />
+          <Route path="testimonials" element={<TestimonialManagement />} />
+          <Route path="pendampingan" element={<PendampinganManagement />} />
           <Route path="chats" element={<ChatsManagement />} />
           <Route path="blocked" element={<BlockedUsersManagement />} />
           <Route path="settings" element={<SettingsPlaceholder />} />

@@ -22,6 +22,7 @@ import {
   Ban,
   Package,
   Puzzle,
+  MessageSquareQuote,
 } from 'lucide-react'
 
 const LOGO_URL = 'https://okgddlgugdkiswitewdi.supabase.co/storage/v1/object/public/profile-photos/taaruf-samara-logo.png'
@@ -38,9 +39,10 @@ const NAV_SECTIONS = [
   {
     title: 'Subscription',
     items: [
-      { id: 'premium', label: 'Premium', icon: Crown, path: '/admin/premium' },
+      { id: 'premium', label: 'Premium User', icon: Crown, path: '/admin/premium' },
       { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
       { id: 'addons', label: 'Add-ons', icon: Puzzle, path: '/admin/addons' },
+      { id: 'pendampingan', label: 'Premium Pendampingan', icon: Users, path: '/admin/pendampingan' },
     ]
   },
   {
@@ -48,7 +50,9 @@ const NAV_SECTIONS = [
     items: [
       { id: 'selfvalue', label: 'Self-Value', icon: Award, path: '/admin/selfvalue' },
       { id: 'referral', label: 'Referral', icon: Gift, path: '/admin/referral' },
+      { id: 'referral-settings', label: 'Referral Settings', icon: Settings, path: '/admin/referral-settings' },
       { id: 'banner', label: 'Banner', icon: ImageIcon, path: '/admin/banner' },
+      { id: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote, path: '/admin/testimonials' },
     ]
   },
   {
@@ -74,13 +78,22 @@ const NAV_SECTIONS = [
 ]
 
 export default function AdminLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Load sidebar state from localStorage, default to true (open)
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    const saved = localStorage.getItem('taaruf-sidebar-open')
+    return saved === null ? true : saved === 'true'
+  })
   const [isMobile, setIsMobile] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const [errorMessage, setErrorMessage] = useState('')
   const location = useLocation()
   const { signOut } = useAuth()
   const navigate = useNavigate()
+
+  // Save sidebar state to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem('taaruf-sidebar-open', String(sidebarOpen))
+  }, [sidebarOpen])
 
   // Detect mobile viewport
   useEffect(() => {

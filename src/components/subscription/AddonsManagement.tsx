@@ -230,13 +230,15 @@ export default function AddonsManagement() {
                   >
                     <Edit size={16} />
                   </button>
-                  <button
-                    onClick={() => handleDelete(addon.id, addon.name)}
-                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                    title="Delete"
-                  >
-                    <Trash2 size={16} />
-                  </button>
+                  {addon.name !== 'Premium Pendampingan' && (
+                    <button
+                      onClick={() => handleDelete(addon.id, addon.name)}
+                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
+                      title="Delete"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
 

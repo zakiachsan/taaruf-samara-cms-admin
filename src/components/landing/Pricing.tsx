@@ -1,59 +1,39 @@
 import { Check } from 'lucide-react'
-
-const plans = [
-  {
-    name: 'Free',
-    price: 'Rp 0',
-    period: 'Selamanya',
-    description: 'Coba platform taaruf kami tanpa biaya',
-    features: [
-      '3 profil lihat per hari',
-      'Chat terbatas',
-      'Filter dasar',
-      'Profil terverifikasi',
-      'Akses komunitas'
-    ],
-    cta: 'Mulai Gratis',
-    highlighted: false
-  },
-  {
-    name: 'Basic',
-    price: 'Rp 50.000',
-    period: '/bulan',
-    description: 'Untuk yang serius mencari jodoh',
-    features: [
-      'Unlimited profil lihat',
-      'Unlimited chat',
-      'Filter lanjutan',
-      'Lihat yang menyukai Anda',
-      'Badge Basic member',
-      'Prioritas support'
-    ],
-    cta: 'Pilih Basic',
-    highlighted: true
-  },
-  {
-    name: 'Premium',
-    price: 'Rp 300.000',
-    period: 'sekali bayar',
-    description: 'Pendampingan penuh sampai menikah',
-    features: [
-      '3x Kesempatan Taaruf',
-      'Pendampingan Admin via WhatsApp',
-      'Konseling & Tes Lengkap',
-      'Sertifikasi Self-Value',
-      'Akses Member Premium',
-      'Bedah Value & CV',
-      'Tes STIFIn (opsional)',
-      'Nadzor (pendampingan offline)'
-    ],
-    cta: 'Pilih Premium',
-    highlighted: false,
-    badge: 'Paling Populer'
-  }
-]
+import { usePackages, formatPackageForDisplay } from '../../hooks/usePackages'
 
 export default function Pricing() {
+  const { packages, loading, error } = usePackages()
+
+  const plans = packages.map(formatPackageForDisplay)
+
+  if (loading) {
+    return (
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
+            <p className="mt-4 text-gray-500">Memuat paket...</p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (error) {
+    return (
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center py-20">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-red-700">Gagal memuat paket. Silakan coba lagi nanti.</p>
+              <p className="text-red-600 text-sm mt-2">{error}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
   return (
     <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

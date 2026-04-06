@@ -174,3 +174,19 @@ export interface DashboardStats {
   monthlyRevenue: number
   pendingWithdrawals: number
 }
+
+// Testimonial
+export interface Testimonial {
+  id: string
+  author_name: string
+  author_location: string
+  testimonial_text: string
+  rating: number
+  avatar_url?: string
+  is_verified: boolean
+  is_featured: boolean
+  is_active: boolean
+  display_order: number
+  created_at: string
+  updated_at?: string
+}

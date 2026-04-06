@@ -152,14 +152,14 @@ export default function UsersManagement() {
           </div>
 
           {/* Filters */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col md:flex-row gap-2">
             <select
               value={filters.role}
               onChange={(e) => {
                 setFilters({ ...filters, role: e.target.value })
                 setPage(1)
               }}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 flex-1"
             >
               {ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
             </select>
@@ -170,7 +170,7 @@ export default function UsersManagement() {
                 setFilters({ ...filters, isVerified: e.target.value })
                 setPage(1)
               }}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 flex-1"
             >
               {VERIFIED_OPTIONS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
             </select>
@@ -181,14 +181,14 @@ export default function UsersManagement() {
                 setFilters({ ...filters, isPremium: e.target.value })
                 setPage(1)
               }}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 flex-1"
             >
               {PREMIUM_OPTIONS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
 
             <button
               onClick={refetch}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+              className="flex items-center justify-center gap-2 px-3 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
             >
               <RefreshCw size={18} />
               <span className="hidden sm:inline">Refresh</span>
@@ -197,10 +197,10 @@ export default function UsersManagement() {
         </div>
 
         {/* Results count */}
-        <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-gray-500">
           <span>Total: {totalCount} users</span>
-          <div className="flex items-center gap-2">
-            <span>Show:</span>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <span className="hidden sm:inline">Show:</span>
             <select
               value={limit}
               onChange={(e) => {
@@ -246,10 +246,10 @@ export default function UsersManagement() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Verification</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Membership</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Joined</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Role</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Verification</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Membership</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden lg:table-cell">Joined</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                 </tr>
               </thead>
@@ -286,7 +286,7 @@ export default function UsersManagement() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <select
                         value={user.role}
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
@@ -298,7 +298,7 @@ export default function UsersManagement() {
                         <option value="admin">Admin</option>
                       </select>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       {user.is_verified ? (
                         <span className="flex items-center gap-1 text-emerald-600 text-sm">
                           <CheckCircle size={16} /> Verified
@@ -309,7 +309,7 @@ export default function UsersManagement() {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 hidden md:table-cell">
                       <div className="flex flex-col gap-1">
                         {user.profile?.is_premium ? (
                           <span className="flex items-center gap-1 text-amber-600 text-sm">
@@ -325,7 +325,7 @@ export default function UsersManagement() {
                         )}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">
+                    <td className="px-4 py-3 text-sm text-gray-500 hidden lg:table-cell">
                       {formatDate(user.created_at)}
                     </td>
                     <td className="px-4 py-3">
@@ -374,23 +374,23 @@ export default function UsersManagement() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 gap-2">
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="flex items-center gap-1 px-2 md:px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-sm"
             >
-              <ChevronLeft size={16} /> Previous
+              <ChevronLeft size={16} /> <span className="hidden sm:inline">Previous</span>
             </button>
-            <span className="text-sm text-gray-500">
-              Page {page} of {totalPages}
+            <span className="text-xs md:text-sm text-gray-500">
+              {page} / {totalPages}
             </span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+              className="flex items-center gap-1 px-2 md:px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 text-sm"
             >
-              Next <ChevronRight size={16} />
+              <span className="hidden sm:inline">Next</span> <ChevronRight size={16} />
             </button>
           </div>
         )}
