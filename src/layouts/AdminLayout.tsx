@@ -19,33 +19,78 @@ import {
   AlertCircle,
   CheckCircle,
   MessageCircle,
-  Ban
+  Ban,
+  Package,
+  Puzzle,
 } from 'lucide-react'
 
 const LOGO_URL = 'https://okgddlgugdkiswitewdi.supabase.co/storage/v1/object/public/profile-photos/taaruf-samara-logo.png'
 
-// Navigation items
-const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-  { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
-  { id: 'premium', label: 'Premium', icon: Crown, path: '/admin/premium' },
-  { id: 'selfvalue', label: 'Self-Value', icon: Award, path: '/admin/selfvalue' },
-  { id: 'referral', label: 'Referral', icon: Gift, path: '/admin/referral' },
-  { id: 'banner', label: 'Banner', icon: ImageIcon, path: '/admin/banner' },
-  { id: 'matches', label: 'Matches', icon: Heart, path: '/admin/matches' },
-  { id: 'reports', label: 'Laporan', icon: Flag, path: '/admin/reports' },
-  { id: 'chats', label: 'Chats', icon: MessageCircle, path: '/admin/chats' },
-  { id: 'blocked', label: 'Blocked', icon: Ban, path: '/admin/blocked' },
-  { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
+// Navigation items with groups
+const NAV_SECTIONS = [
+  {
+    title: 'Main',
+    items: [
+      { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
+      { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+    ]
+  },
+  {
+    title: 'Subscription',
+    items: [
+      { id: 'premium', label: 'Premium', icon: Crown, path: '/admin/premium' },
+      { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
+      { id: 'addons', label: 'Add-ons', icon: Puzzle, path: '/admin/addons' },
+    ]
+  },
+  {
+    title: 'Features',
+    items: [
+      { id: 'selfvalue', label: 'Self-Value', icon: Award, path: '/admin/selfvalue' },
+      { id: 'referral', label: 'Referral', icon: Gift, path: '/admin/referral' },
+      { id: 'banner', label: 'Banner', icon: ImageIcon, path: '/admin/banner' },
+    ]
+  },
+  {
+    title: 'Matching',
+    items: [
+      { id: 'matches', label: 'Matches', icon: Heart, path: '/admin/matches' },
+      { id: 'chats', label: 'Chats', icon: MessageCircle, path: '/admin/chats' },
+      { id: 'blocked', label: 'Blocked', icon: Ban, path: '/admin/blocked' },
+    ]
+  },
+  {
+    title: 'Reports',
+    items: [
+      { id: 'reports', label: 'Laporan', icon: Flag, path: '/admin/reports' },
+    ]
+  },
+  {
+    title: 'Settings',
+    items: [
+      { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
+    ]
+  },
 ]
 
 export default function AdminLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'error'>('checking')
   const [errorMessage, setErrorMessage] = useState('')
   const location = useLocation()
   const { signOut } = useAuth()
   const navigate = useNavigate()
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => window.innerWidth < 768
+    setIsMobile(checkMobile)
+
+    const handleResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     checkConnection()
@@ -112,12 +157,22 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Mobile Overlay */}
+      {isMobile && sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
+        className={`${!isMobile ? 'translate-x-0' : sidebarOpen ? 'translate-x-0' : '-translate-x-full'} ${
+          sidebarOpen ? 'w-64' : 'w-20'
+        } fixed md:relative z-50 h-full bg-white border-r border-gray-200 transition-all duration-300 flex flex-col`}
       >
         {/* Logo */}
-        <div className="h-16 flex items-center px-6 border-b border-gray-200">
+        <div className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-gray-200">
           {sidebarOpen ? (
             <div className="flex items-center gap-3">
               <img
@@ -126,8 +181,8 @@ export default function AdminLayout() {
                 className="w-8 h-8 object-contain"
               />
               <div>
-                <h1 className="text-xl font-bold text-emerald-600">Taaruf Samara</h1>
-                <p className="text-xs text-gray-500">Admin CMS</p>
+                <h1 className="text-xl font-bold text-emerald-600 hidden sm:block">Taaruf Samara</h1>
+                <p className="text-xs text-gray-500 hidden sm:block">Admin CMS</p>
               </div>
             </div>
           ) : (
@@ -137,35 +192,54 @@ export default function AdminLayout() {
               className="w-8 h-8 object-contain"
             />
           )}
+          {isMobile && (
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 rounded-lg hover:bg-gray-100 md:hidden"
+            >
+              <X size={20} />
+            </button>
+          )}
         </div>
 
         {/* Nav Items */}
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon
-            const isActive = location.pathname === item.path
-            return (
-              <Link
-                key={item.id}
-                to={item.path}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  isActive
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-100'
-                }`}
-              >
-                <Icon size={20} />
-                {sidebarOpen && <span className="font-medium">{item.label}</span>}
-              </Link>
-            )
-          })}
+        <nav className="flex-1 py-4 px-3 space-y-4 overflow-y-auto">
+          {NAV_SECTIONS.map((section) => (
+            <div key={section.title}>
+              {sidebarOpen && (
+                <p className="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                  {section.title}
+                </p>
+              )}
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const Icon = item.icon
+                  const isActive = location.pathname === item.path
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
+                        isActive
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'text-gray-600 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Icon size={20} />
+                      {sidebarOpen && <span className="font-medium">{item.label}</span>}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
 
         {/* Bottom Actions */}
         <div className="p-3 border-t border-gray-200">
           {/* Connection Status */}
           {sidebarOpen && (
-            <div className="mb-3 px-3 py-2 bg-emerald-50 rounded-lg">
+            <div className="mb-3 px-3 py-2 bg-emerald-50 rounded-lg hidden md:block">
               <div className="flex items-center gap-2">
                 <CheckCircle size={16} className="text-emerald-600" />
                 <span className="text-sm text-emerald-700 font-medium">Terhubung</span>
@@ -185,16 +259,16 @@ export default function AdminLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-6">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
             className="p-2 rounded-lg hover:bg-gray-100"
           >
-            {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+            {sidebarOpen && !isMobile ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          <div className="flex items-center gap-4">
-            <div className="text-right">
+          <div className="flex items-center gap-2 md:gap-4">
+            <div className="text-right hidden md:block">
               <p className="text-sm font-medium text-gray-900">Admin User</p>
               <p className="text-xs text-gray-500">Super Admin</p>
             </div>
@@ -205,15 +279,27 @@ export default function AdminLayout() {
         </header>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto p-6">
+        <div className="flex-1 overflow-auto p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
             {/* Page Title */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">
-                {NAV_ITEMS.find(i => i.path === location.pathname)?.label || 'Dashboard'}
+            <div className="mb-4 md:mb-6">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900">
+                {(() => {
+                  for (const section of NAV_SECTIONS) {
+                    const found = section.items.find(i => i.path === location.pathname)
+                    if (found) return found.label
+                  }
+                  return 'Dashboard'
+                })()}
               </h2>
-              <p className="text-gray-500 mt-1">
-                Kelola {(NAV_ITEMS.find(i => i.path === location.pathname)?.label || 'Dashboard').toLowerCase()} aplikasi Taaruf Samara
+              <p className="text-gray-500 mt-1 text-sm md:text-base">
+                Kelola {(() => {
+                  for (const section of NAV_SECTIONS) {
+                    const found = section.items.find(i => i.path === location.pathname)
+                    if (found) return found.label.toLowerCase()
+                  }
+                  return 'dashboard'
+                })()} aplikasi Taaruf Samara
               </p>
             </div>
 
