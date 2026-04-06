@@ -10,9 +10,6 @@ import {
   User as UserIcon,
   Mail,
   TrendingUp,
-  Save,
-  ChevronDown,
-  ChevronUp,
 } from 'lucide-react'
 
 const SESSION_LABELS: Record<number, string> = {
@@ -29,7 +26,7 @@ const STATUS_BADGES: Record<string, { label: string; color: string; icon: any }>
 }
 
 export default function PendampinganManagement() {
-  const { users, loading, error, refetch, fetchSessions, updateSession, getSessionProgress, scheduleSession, completeSession, cancelSession } = usePendampingan()
+  const { users, loading, error, refetch, fetchSessions, getSessionProgress, scheduleSession, completeSession, cancelSession } = usePendampingan()
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<PendampinganUser | null>(null)
   const [userSessions, setUserSessions] = useState<MentoringSession[]>([])
@@ -313,7 +310,7 @@ export default function PendampinganManagement() {
                         <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <StatusIcon size={18} className={statusBadge?.color.split(' ')[1]} />
-                            <span className="font-semibold text-gray-900">{SESSION_LABELS[session.number]}</span>
+                            <span className="font-semibold text-gray-900">{SESSION_LABELS[session.session_number]}</span>
                           </div>
                           <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusBadge?.color}`}>
                             {statusBadge?.label}

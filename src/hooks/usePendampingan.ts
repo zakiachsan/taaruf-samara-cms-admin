@@ -64,7 +64,7 @@ export const usePendampingan = () => {
       const { data: profilesData, error: profilesError } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
-        .in('user_id', `(${userIds.join(',')})`)
+        .in('user_id', userIds)
 
       console.log('Profiles response:', { profilesData, error: profilesError })
 
@@ -74,7 +74,7 @@ export const usePendampingan = () => {
       const { data: authUsersData, error: authError } = await supabaseAdmin
         .from('auth.users')
         .select('id, email')
-        .in('id', `(${userIds.join(',')})`)
+        .in('id', userIds)
 
       console.log('Auth users response:', { authUsersData, error: authError })
 

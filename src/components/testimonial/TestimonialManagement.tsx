@@ -17,7 +17,6 @@ import {
   StarIcon,
   ShieldCheck,
   Sparkles,
-  User,
   MapPin,
   Upload,
 } from 'lucide-react'
@@ -84,7 +83,7 @@ export default function TestimonialManagement() {
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`
 
       // Upload to Supabase Storage
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('testimonial-avatars')
         .upload(fileName, file)
 

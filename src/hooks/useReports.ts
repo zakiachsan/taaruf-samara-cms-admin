@@ -109,8 +109,10 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
       // Step 4: Create a map for quick lookup
       const profileMap = new Map<string, { full_name: string }>()
-      ;(profiles || []).forEach(p => {
-        profileMap.set(p.user_id, { full_name: p.full_name })
+      ;(profiles || []).forEach((p: any) => {
+        if (p?.user_id) {
+          profileMap.set(p.user_id, { full_name: p.full_name })
+        }
       })
 
       // Step 5: Transform reports with profile data
@@ -130,7 +132,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
           description: r.description,
           status: r.status,
           handler_id: r.handler_id,
-          handler_name: null, // Could be added later if needed
+          handler_name: undefined, // Could be added later if needed
           notes: r.notes,
           created_at: r.created_at,
           updated_at: r.updated_at,

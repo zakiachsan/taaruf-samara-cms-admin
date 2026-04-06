@@ -220,7 +220,7 @@ export default function AddonsManagement() {
                 <div className="flex items-center gap-1">
                   {addon.is_popular && (
                     <span className="flex items-center gap-1 text-amber-600 text-xs">
-                      <Star size={12} fill />
+                      <Star size={12} fill="currentColor" />
                     </span>
                   )}
                   <button

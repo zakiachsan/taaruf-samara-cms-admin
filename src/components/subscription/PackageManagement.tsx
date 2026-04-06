@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { usePackages, featuresToString, stringToFeatures } from '../../hooks/usePackages'
 import {
-  DollarSign,
   Edit,
   CheckCircle,
   XCircle,

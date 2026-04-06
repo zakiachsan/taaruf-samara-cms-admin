@@ -237,10 +237,10 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
       if (!error && newSubs) {
         const totalRevenue = newSubs.reduce((sum, s) => sum + (s.total_amount || 0), 0)
         const basicRevenue = newSubs
-          .filter(s => s.package?.name === 'basic')
+          .filter(s => Array.isArray(s.package) && s.package[0]?.name === 'basic')
           .reduce((sum, s) => sum + (s.total_amount || 0), 0)
         const premiumRevenue = newSubs
-          .filter(s => s.package?.name === 'plus')
+          .filter(s => Array.isArray(s.package) && s.package[0]?.name === 'plus')
           .reduce((sum, s) => sum + (s.total_amount || 0), 0)
 
         const activeSubscriptions = newSubs.filter(s => s.status === 'paid').length

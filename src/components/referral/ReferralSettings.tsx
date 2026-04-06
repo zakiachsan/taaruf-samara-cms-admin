@@ -10,7 +10,6 @@ import {
   RefreshCw,
   CheckCircle,
   XCircle,
-  X,
   Settings,
 } from 'lucide-react'
 
