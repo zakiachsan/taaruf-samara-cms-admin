@@ -54,12 +54,6 @@ export default function Hero() {
 
           {/* Center Content */}
           <div className="flex-1 max-w-3xl w-full px-2 sm:px-4 text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 bg-white rounded-full px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm mb-4 sm:mb-6">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-              <span className="text-xs sm:text-sm font-medium text-gray-600">Platform Taaruf Terpercaya</span>
-            </div>
-
             {/* Logo */}
             <div className="mb-6 sm:mb-8">
               <img

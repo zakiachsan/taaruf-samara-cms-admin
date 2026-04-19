@@ -1,8 +1,10 @@
 import { Check } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { usePackages, formatPackageForDisplay } from '../../hooks/usePackages'
 
 export default function Pricing() {
   const { packages, loading, error } = usePackages()
+  const navigate = useNavigate()
 
   const plans = packages.map(formatPackageForDisplay)
 
@@ -110,12 +112,12 @@ export default function Pricing() {
 
               {/* CTA Button */}
               <button
-                disabled
+                onClick={() => navigate(`/user/subscribe?package=${plan.id}`)}
                 className={`w-full py-3 rounded-xl font-medium transition-colors ${
                   plan.highlighted
                     ? 'bg-white text-emerald-600 hover:bg-emerald-50'
                     : 'bg-emerald-600 text-white hover:bg-emerald-700'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+                }`}
               >
                 {plan.cta}
               </button>

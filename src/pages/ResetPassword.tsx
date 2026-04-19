@@ -134,7 +134,7 @@ export default function ResetPassword() {
             </p>
             <div className="space-y-3 w-full">
               <a
-                href="taarufsamara://app"
+                href="taarufsamara:///(auth)/login"
                 className="block w-full bg-emerald-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-emerald-700 transition-colors text-center"
               >
                 Buka Aplikasi Taaruf Samara

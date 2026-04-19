@@ -1,5 +1,4 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { signOut as supabaseSignOut } from '../lib/supabase'
 import type { ReactNode } from 'react'
 
 // Hardcoded admin credentials
@@ -102,7 +101,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
 
   const signOut = async () => {
-    await supabaseSignOut()
     setUser(null)
     setSession(null)
     localStorage.removeItem('admin_auth')

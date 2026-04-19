@@ -1,6 +1,7 @@
-import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
+import { UserAuthProvider } from './contexts/UserAuthContext'
 import { ProtectedRoute } from './pages/auth/ProtectedRoute'
 import AdminLayout from './layouts/AdminLayout'
 import PublicLayout from './layouts/PublicLayout'
@@ -8,6 +9,18 @@ import LoginPage from './pages/LoginPage'
 import LandingPage from './pages/LandingPage'
 import ConfirmEmail from './pages/ConfirmEmail'
 import ResetPassword from './pages/ResetPassword'
+import FAQPage from './pages/FAQPage'
+import RefundPolicyPage from './pages/RefundPolicyPage'
+import TermsPage from './pages/TermsPage'
+import PrivacyPage from './pages/PrivacyPage'
+import FeaturesPage from './pages/FeaturesPage'
+import PremiumPage from './pages/PremiumPage'
+import SelfValuePage from './pages/SelfValuePage'
+import ReferralPage from './pages/ReferralPage'
+import UserLoginPage from './pages/UserLoginPage'
+import UserRegisterPage from './pages/UserRegisterPage'
+import UserDashboardPage from './pages/UserDashboardPage'
+import UserSubscribePage from './pages/UserSubscribePage'
 
 // Lazy load admin page components
 const Dashboard = lazy(() => import('./components/dashboard/Dashboard'))
@@ -47,8 +60,16 @@ const SettingsPlaceholder = () => (
   </div>
 )
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
+
 function AppRoutes() {
   return (
+    <>
+    <ScrollToTop />
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
         {/* Public Routes */}
@@ -59,9 +80,27 @@ function AppRoutes() {
         } />
         <Route path="/login" element={<LoginPage />} />
 
+        {/* Legal Pages */}
+        <Route path="/faq" element={<PublicLayout><FAQPage /></PublicLayout>} />
+        <Route path="/refund" element={<PublicLayout><RefundPolicyPage /></PublicLayout>} />
+        <Route path="/terms" element={<PublicLayout><TermsPage /></PublicLayout>} />
+        <Route path="/privacy" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
+
+        {/* Product Pages */}
+        <Route path="/features" element={<PublicLayout><FeaturesPage /></PublicLayout>} />
+        <Route path="/premium" element={<PublicLayout><PremiumPage /></PublicLayout>} />
+        <Route path="/self-value" element={<PublicLayout><SelfValuePage /></PublicLayout>} />
+        <Route path="/referral" element={<PublicLayout><ReferralPage /></PublicLayout>} />
+
         {/* Email Confirmation & Password Reset Routes */}
         <Route path="/confirm-email" element={<ConfirmEmail />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+
+        {/* User Routes */}
+        <Route path="/user/login" element={<UserLoginPage />} />
+        <Route path="/user/register" element={<UserRegisterPage />} />
+        <Route path="/user/dashboard" element={<UserDashboardPage />} />
+        <Route path="/user/subscribe" element={<UserSubscribePage />} />
 
         {/* Backward compatibility: /landing redirects to / */}
         <Route path="/landing" element={<Navigate to="/" replace />} />
@@ -94,13 +133,16 @@ function AppRoutes() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
+    </>
   )
 }
 
 export default function App() {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <UserAuthProvider>
+        <AppRoutes />
+      </UserAuthProvider>
     </AuthProvider>
   )
 }

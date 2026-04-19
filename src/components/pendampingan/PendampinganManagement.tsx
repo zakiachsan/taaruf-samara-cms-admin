@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { usePendampingan, type MentoringSession, type PendampinganUser } from '../../hooks/usePendampingan'
+import { useAddonAdminAlerts } from '../../hooks/useAddonAdminAlerts'
 import {
   RefreshCw,
   X,
@@ -10,6 +11,11 @@ import {
   User as UserIcon,
   Mail,
   TrendingUp,
+  Bell,
+  Phone,
+  Package,
+  Puzzle,
+  Save,
 } from 'lucide-react'
 
 const SESSION_LABELS: Record<number, string> = {
@@ -25,12 +31,76 @@ const STATUS_BADGES: Record<string, { label: string; color: string; icon: any }>
   cancelled: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700', icon: XCircle },
 }
 
+const ALERT_STATUS_BADGES: Record<string, { label: string; color: string; borderColor: string }> = {
+  pending: { label: 'Menunggu', color: 'bg-amber-50 text-amber-700 border-amber-200', borderColor: 'border-amber-200' },
+  contacted: { label: 'Dihubungi', color: 'bg-blue-50 text-blue-700 border-blue-200', borderColor: 'border-blue-200' },
+  resolved: { label: 'Selesai', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', borderColor: 'border-emerald-200' },
+}
+
+function formatRupiah(amount: number | null) {
+  if (!amount) return '-'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
+function formatRelativeTime(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 1) return 'Baru saja'
+  if (diffMins < 60) return `${diffMins} menit lalu`
+  if (diffHours < 24) return `${diffHours} jam lalu`
+  if (diffDays < 7) return `${diffDays} hari lalu`
+  return date.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
+function cleanWhatsApp(num: string | null): string | null {
+  if (!num) return null
+  const cleaned = num.replace(/\D/g, '').replace(/^0/, '62')
+  return cleaned || null
+}
+
 export default function PendampinganManagement() {
-  const { users, loading, error, refetch, fetchSessions, getSessionProgress, scheduleSession, completeSession, cancelSession } = usePendampingan()
+  const {
+    users,
+    loading,
+    error,
+    refetch,
+    fetchSessions,
+    getSessionProgress,
+    scheduleSession,
+    completeSession,
+    cancelSession,
+  } = usePendampingan()
+
+  const {
+    alerts,
+    loading: alertsLoading,
+    error: alertsError,
+    stats: alertStats,
+    refetch: refetchAlerts,
+    updateAlertStatus,
+    updateAdminNotes,
+  } = useAddonAdminAlerts()
+
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<PendampinganUser | null>(null)
   const [userSessions, setUserSessions] = useState<MentoringSession[]>([])
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Alert filter
+  const [alertFilter, setAlertFilter] = useState<'all' | 'pending' | 'contacted' | 'resolved'>('all')
+
+  // Notes editing state
+  const [editingNotes, setEditingNotes] = useState<Record<string, string>>({})
+  const [savingNotes, setSavingNotes] = useState<string | null>(null)
 
   // Session form state
   const [sessionForms, setSessionForms] = useState<Record<string, {
@@ -40,12 +110,15 @@ export default function PendampinganManagement() {
     notes: string
   }>>({})
 
+  const filteredAlerts = alertFilter === 'all'
+    ? alerts
+    : alerts.filter((a) => a.status === alertFilter)
+
   const openDetailModal = async (user: PendampinganUser) => {
     setSelectedUser(user)
     const sessions = await fetchSessions(user.user_id)
     setUserSessions(sessions)
 
-    // Initialize form data for each session
     const forms: Record<string, any> = {}
     sessions.forEach(session => {
       const scheduledDateTime = session.scheduled_at ? new Date(session.scheduled_at) : null
@@ -74,7 +147,6 @@ export default function PendampinganManagement() {
     setActionLoading(null)
 
     if (result.success) {
-      // Refresh sessions
       if (selectedUser) {
         const updatedSessions = await fetchSessions(selectedUser.user_id)
         setUserSessions(updatedSessions)
@@ -96,7 +168,6 @@ export default function PendampinganManagement() {
     setActionLoading(null)
 
     if (result.success) {
-      // Refresh sessions
       if (selectedUser) {
         const updatedSessions = await fetchSessions(selectedUser.user_id)
         setUserSessions(updatedSessions)
@@ -114,7 +185,6 @@ export default function PendampinganManagement() {
     setActionLoading(null)
 
     if (result.success) {
-      // Refresh sessions
       if (selectedUser) {
         const updatedSessions = await fetchSessions(selectedUser.user_id)
         setUserSessions(updatedSessions)
@@ -132,6 +202,32 @@ export default function PendampinganManagement() {
         [field]: value,
       },
     }))
+  }
+
+  const handleStatusChange = async (alertId: string, newStatus: 'pending' | 'contacted' | 'resolved') => {
+    const result = await updateAlertStatus(alertId, newStatus)
+    if (!result.success) {
+      alert(result.error)
+    }
+  }
+
+  const handleSaveNotes = async (alertId: string) => {
+    const notes = editingNotes[alertId]
+    if (notes === undefined) return
+
+    setSavingNotes(alertId)
+    const result = await updateAdminNotes(alertId, notes)
+    setSavingNotes(null)
+
+    if (!result.success) {
+      alert(result.error)
+    } else {
+      setEditingNotes((prev) => {
+        const next = { ...prev }
+        delete next[alertId]
+        return next
+      })
+    }
   }
 
   const formatExpiryDate = (dateString: string) => {
@@ -160,107 +256,327 @@ export default function PendampinganManagement() {
   const scheduledSessions = allSessions.filter(s => s.status === 'scheduled').length
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Premium Pendampingan</h1>
-          <p className="text-gray-600">
-            {users.length} user • {completedSessions}/{totalSessions} sesi selesai • {scheduledSessions} terjadwal
-          </p>
+    <div className="space-y-8">
+      {/* ============================================ */}
+      {/* SECTION: Notifikasi Add-on Baru (Admin Alerts) */}
+      {/* ============================================ */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center">
+              <Bell className="w-5 h-5 text-amber-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Notifikasi Add-on Baru</h2>
+              <p className="text-sm text-gray-500">
+                {alertStats.pending} menunggu • {alertStats.contacted} dihubungi • {alertStats.resolved} selesai
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={refetchAlerts}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
         </div>
-        <button
-          onClick={refetch}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-        >
-          <RefreshCw size={18} />
-          Refresh
-        </button>
+
+        {/* Alert Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          {([
+            { key: 'all', label: 'Semua', count: alertStats.total, color: 'bg-gray-50 text-gray-700 border-gray-200' },
+            { key: 'pending', label: 'Menunggu', count: alertStats.pending, color: 'bg-amber-50 text-amber-700 border-amber-200' },
+            { key: 'contacted', label: 'Dihubungi', count: alertStats.contacted, color: 'bg-blue-50 text-blue-700 border-blue-200' },
+            { key: 'resolved', label: 'Selesai', count: alertStats.resolved, color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+          ] as const).map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setAlertFilter(item.key)}
+              className={`text-left px-4 py-3 rounded-xl border transition-all ${item.color} ${
+                alertFilter === item.key ? 'ring-2 ring-offset-1 ring-emerald-400' : 'hover:shadow-sm'
+              }`}
+            >
+              <p className="text-2xl font-bold">{item.count}</p>
+              <p className="text-sm font-medium">{item.label}</p>
+            </button>
+          ))}
+        </div>
+
+        {/* Alert Error */}
+        {alertsError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+            {alertsError}
+          </div>
+        )}
+
+        {/* Alerts Table */}
+        {alertsLoading ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400 mb-2" />
+            <p className="text-sm text-gray-500">Memuat alert...</p>
+          </div>
+        ) : filteredAlerts.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
+            <Bell className="w-10 h-10 mx-auto text-gray-300 mb-3" />
+            <p className="text-gray-500 text-sm">
+              {alertFilter === 'all'
+                ? 'Belum ada notifikasi add-on'
+                : `Tidak ada alert dengan status "${ALERT_STATUS_BADGES[alertFilter]?.label || alertFilter}"`}
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">WhatsApp</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paket & Add-on</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Waktu</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Catatan</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-24">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredAlerts.map((alert) => {
+                    const statusBadge = ALERT_STATUS_BADGES[alert.status]
+                    const waNumber = cleanWhatsApp(alert.user_whatsapp)
+                    const isEditingNotes = editingNotes.hasOwnProperty(alert.id)
+
+                    return (
+                      <tr key={alert.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900">
+                            {alert.user_full_name || 'Tanpa Nama'}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          {waNumber ? (
+                            <a
+                              href={`https://wa.me/${waNumber}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-emerald-600 hover:text-emerald-700 hover:underline"
+                            >
+                              <Phone size={14} />
+                              <span>{alert.user_whatsapp}</span>
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-1.5 text-gray-700">
+                              <Package size={14} className="text-gray-400" />
+                              <span className="font-medium">{alert.package_name || '-'}</span>
+                            </div>
+                            {alert.addon_names && alert.addon_names.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {alert.addon_names.map((name, i) => (
+                                  <span
+                                    key={i}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
+                                  >
+                                    <Puzzle size={10} />
+                                    {name}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-medium text-gray-900">
+                          {formatRupiah(alert.total_amount)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${statusBadge.color}`}
+                          >
+                            {statusBadge.label}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">
+                          {formatRelativeTime(alert.created_at)}
+                        </td>
+                        <td className="px-4 py-3 min-w-[180px]">
+                          {isEditingNotes ? (
+                            <div className="flex items-start gap-2">
+                              <textarea
+                                rows={2}
+                                value={editingNotes[alert.id]}
+                                onChange={(e) =>
+                                  setEditingNotes((prev) => ({
+                                    ...prev,
+                                    [alert.id]: e.target.value,
+                                  }))
+                                }
+                                className="w-full px-2 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 resize-none"
+                                placeholder="Catatan admin..."
+                              />
+                              <button
+                                onClick={() => handleSaveNotes(alert.id)}
+                                disabled={savingNotes === alert.id}
+                                className="p-1.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                              >
+                                <Save size={12} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div
+                              onClick={() =>
+                                setEditingNotes((prev) => ({
+                                  ...prev,
+                                  [alert.id]: alert.admin_notes || '',
+                                }))
+                              }
+                              className="cursor-pointer text-gray-500 hover:text-gray-700 text-xs min-h-[2rem] rounded-lg hover:bg-gray-100 px-2 py-1 transition-colors"
+                              title="Klik untuk edit catatan"
+                            >
+                              {alert.admin_notes ? (
+                                <span className="line-clamp-2">{alert.admin_notes}</span>
+                              ) : (
+                                <span className="text-gray-300 italic">Tambah catatan...</span>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end">
+                            <select
+                              value={alert.status}
+                              onChange={(e) =>
+                                handleStatusChange(
+                                  alert.id,
+                                  e.target.value as 'pending' | 'contacted' | 'resolved'
+                                )
+                              }
+                              className="text-xs px-2 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white cursor-pointer"
+                            >
+                              <option value="pending">Menunggu</option>
+                              <option value="contacted">Dihubungi</option>
+                              <option value="resolved">Selesai</option>
+                            </select>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Error */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      {/* Users List */}
-      {loading ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">Loading...</p>
-        </div>
-      ) : users.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <UserIcon className="w-12 h-12 mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">Belum ada user Premium Pendampingan</p>
-        </div>
-      ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Berlaku Sampai</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">Progress</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {users.map((user) => {
-                  const progress = user.sessions ? getSessionProgress(user.sessions) : { completed: 0, scheduled: 0, total: 0, percentage: 0 }
-                  return (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900">{user.user_full_name}</div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1 text-gray-600">
-                          <Mail size={14} />
-                          <span className="text-sm">{user.user_email}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-600">
-                        {formatExpiryDate(user.expires_at)}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-emerald-500 rounded-full transition-all"
-                                style={{ width: `${progress.percentage}%` }}
-                              />
-                            </div>
-                            <span className="text-xs text-gray-600">{progress.total}/3</span>
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {progress.completed} selesai, {progress.scheduled} terjadwal
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center justify-end">
-                          <button
-                            onClick={() => openDetailModal(user)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg"
-                          >
-                            <TrendingUp size={16} />
-                            Detail
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+      {/* ============================================ */}
+      {/* SECTION: Premium Pendampingan (Existing)       */}
+      {/* ============================================ */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Premium Pendampingan</h2>
+            <p className="text-sm text-gray-500">
+              {users.length} user • {completedSessions}/{totalSessions} sesi selesai • {scheduledSessions} terjadwal
+            </p>
           </div>
+          <button
+            onClick={refetch}
+            className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+          >
+            <RefreshCw size={16} />
+            Refresh
+          </button>
         </div>
-      )}
+
+        {/* Error */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        {/* Users List */}
+        {loading ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        ) : users.length === 0 ? (
+          <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+            <UserIcon className="w-12 h-12 mx-auto text-gray-300 mb-4" />
+            <p className="text-gray-500">Belum ada user Premium Pendampingan</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Berlaku Sampai</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">Progress</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {users.map((user) => {
+                    const progress = user.sessions ? getSessionProgress(user.sessions) : { completed: 0, scheduled: 0, total: 0, percentage: 0 }
+                    return (
+                      <tr key={user.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3">
+                          <div className="font-medium text-gray-900">{user.user_full_name}</div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1 text-gray-600">
+                            <Mail size={14} />
+                            <span className="text-sm">{user.user_email}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          {formatExpiryDate(user.expires_at)}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-emerald-500 rounded-full transition-all"
+                                  style={{ width: `${progress.percentage}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-gray-600">{progress.total}/3</span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {progress.completed} selesai, {progress.scheduled} terjadwal
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end">
+                            <button
+                              onClick={() => openDetailModal(user)}
+                              className="flex items-center gap-1 px-3 py-1.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg"
+                            >
+                              <TrendingUp size={16} />
+                              Detail
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Session Detail Modal */}
       {showDetailModal && selectedUser && (

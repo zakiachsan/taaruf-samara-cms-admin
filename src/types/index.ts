@@ -190,3 +190,53 @@ export interface Testimonial {
   created_at: string
   updated_at?: string
 }
+
+// Subscription types (synced with Mobile App)
+export interface SubscriptionPackage {
+  id: string
+  name: string
+  display_name: string
+  duration_months: number
+  price: number
+  description?: string
+  is_active: boolean
+  sort_order: number
+  is_popular?: boolean
+  features?: string[]
+  created_at: string
+  updated_at: string
+}
+
+export interface SubscriptionAddon {
+  id: string
+  name: string
+  description?: string
+  price: number
+  icon?: string
+  features?: string[]
+  is_active: boolean
+  is_popular?: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export interface SubscriptionPurchase {
+  id: string
+  user_id: string
+  package_id: string
+  package?: SubscriptionPackage
+  status: 'pending' | 'paid' | 'expired' | 'cancelled'
+  start_date: string
+  expires_at: string
+  package_price: number
+  addons_total: number
+  total_amount: number
+  payment_method?: string
+  reference_id?: string
+  ipaymu_payment_url?: string
+  ipaymu_trx_id?: string
+  paid_at?: string
+  created_at: string
+  updated_at: string
+}
