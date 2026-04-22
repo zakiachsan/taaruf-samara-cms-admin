@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useReports, type ReportFilters } from '../../hooks/useReports'
+import ChatViolationsTab from './ChatViolationsTab'
+import BannedUsersTab from './BannedUsersTab'
 import {
   Search,
   Flag,
@@ -16,7 +18,17 @@ import {
   X,
   User,
   Ban,
+  MessageSquareWarning,
+  ShieldAlert,
 } from 'lucide-react'
+
+const TABS = [
+  { id: 'reports', label: 'Laporan User', icon: Flag },
+  { id: 'violations', label: 'Chat Violations', icon: MessageSquareWarning },
+  { id: 'banned', label: 'Banned Users', icon: ShieldAlert },
+] as const
+
+type TabId = typeof TABS[number]['id']
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Semua Status' },
@@ -80,6 +92,42 @@ const getStatusBadge = (status: string) => {
 }
 
 export default function ReportsManagement() {
+  const [activeTab, setActiveTab] = useState<TabId>('reports')
+
+  return (
+    <div className="space-y-4">
+      {/* Tab Switcher */}
+      <div className="bg-white rounded-xl border border-gray-200 p-1.5">
+        <div className="flex flex-wrap gap-1">
+          {TABS.map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Icon size={18} />
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {activeTab === 'reports' && <ReportsTab />}
+      {activeTab === 'violations' && <ChatViolationsTab />}
+      {activeTab === 'banned' && <BannedUsersTab />}
+    </div>
+  )
+}
+
+function ReportsTab() {
   const [filters, setFilters] = useState<ReportFilters>({
     search: '',
     status: '',
@@ -117,8 +165,20 @@ export default function ReportsManagement() {
   const handleBlockUser = async (userId: string) => {
     if (!confirm('Block user ini? Mereka tidak akan bisa menggunakan aplikasi.')) return
     setActionLoading(userId)
-    await blockUser(userId)
+    const result = await blockUser(userId)
+
+    if (result.success && selectedReport) {
+      // Also resolve the report since user has been banned
+      await updateStatus(selectedReport.id, 'resolved', 'User diblokir oleh admin')
+    }
+
     setActionLoading(null)
+
+    if (result.success) {
+      alert('User berhasil diblokir dan laporan ditandai selesai.')
+    } else {
+      alert('Gagal memblokir user: ' + result.error)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -292,7 +352,14 @@ export default function ReportsManagement() {
                           </span>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{report.reported_name}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-gray-900">{report.reported_name}</p>
+                            {report.reported_is_blocked && (
+                              <span className="px-1.5 py-0.5 bg-red-100 text-red-700 rounded text-[10px] font-medium">
+                                Diblokir
+                              </span>
+                            )}
+                          </div>
                           <p className="text-xs text-gray-500">{report.reported_email}</p>
                         </div>
                       </div>

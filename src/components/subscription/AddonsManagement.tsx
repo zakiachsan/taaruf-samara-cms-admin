@@ -13,6 +13,7 @@ import {
   Star,
   X,
   AlertCircle,
+  GripVertical,
 } from 'lucide-react'
 
 const formatPrice = (amount: number) => {
@@ -34,12 +35,15 @@ const ICON_OPTIONS = [
 ]
 
 export default function AddonsManagement() {
-  const { addons, loading, error, refetch, createAddon, updateAddon, deleteAddon, toggleAddonActive } = useAddons()
+  const { addons, loading, error, refetch, createAddon, updateAddon, deleteAddon, toggleAddonActive, reorderAddons } = useAddons()
 
   const [showModal, setShowModal] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null)
   const [saving, setSaving] = useState(false)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
+  const [dragOverId, setDragOverId] = useState<string | null>(null)
+  const [reordering, setReordering] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -49,6 +53,67 @@ export default function AddonsManagement() {
     is_popular: false,
     is_active: true,
   })
+
+  const handleDragStart = (e: React.DragEvent, addonId: string) => {
+    setDraggingId(addonId)
+    e.dataTransfer.effectAllowed = 'move'
+    // Required for Firefox
+    e.dataTransfer.setData('text/plain', addonId)
+  }
+
+  const handleDragOver = (e: React.DragEvent, addonId: string) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (addonId !== draggingId) {
+      setDragOverId(addonId)
+    }
+  }
+
+  const handleDragLeave = () => {
+    setDragOverId(null)
+  }
+
+  const handleDrop = async (e: React.DragEvent, targetId: string) => {
+    e.preventDefault()
+    setDragOverId(null)
+
+    if (!draggingId || draggingId === targetId) {
+      setDraggingId(null)
+      return
+    }
+
+    // Reorder locally
+    const fromIndex = addons.findIndex(a => a.id === draggingId)
+    const toIndex = addons.findIndex(a => a.id === targetId)
+
+    if (fromIndex === -1 || toIndex === -1) {
+      setDraggingId(null)
+      return
+    }
+
+    const newAddons = [...addons]
+    const [moved] = newAddons.splice(fromIndex, 1)
+    newAddons.splice(toIndex, 0, moved)
+
+    // Update local state immediately for smooth UX
+    // But we need to call the hook's setter - however useAddons doesn't expose setAddons
+    // So we'll call reorderAddons with the new order
+    const reorderedIds = newAddons.map(a => a.id)
+
+    setReordering(true)
+    const result = await reorderAddons(reorderedIds)
+    setReordering(false)
+    setDraggingId(null)
+
+    if (!result.success) {
+      alert(result.error || 'Gagal mengubah urutan')
+    }
+  }
+
+  const handleDragEnd = () => {
+    setDraggingId(null)
+    setDragOverId(null)
+  }
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return
@@ -205,18 +270,29 @@ export default function AddonsManagement() {
           <p className="text-gray-500">No add-ons found</p>
         </div>
       ) : (
-        /* Add-ons Grid */
+        /* Add-ons Grid (Draggable) */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {addons.map((addon) => (
             <div
               key={addon.id}
-              className={`bg-white rounded-xl border p-4 hover:shadow-md transition-shadow ${
+              draggable={!reordering}
+              onDragStart={(e) => handleDragStart(e, addon.id)}
+              onDragOver={(e) => handleDragOver(e, addon.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, addon.id)}
+              onDragEnd={handleDragEnd}
+              className={`bg-white rounded-xl border p-4 transition-all cursor-move ${
                 !addon.is_active ? 'opacity-60' : 'border-gray-200'
-              }`}
+              } ${draggingId === addon.id ? 'opacity-50 ring-2 ring-emerald-300' : ''} ${
+                dragOverId === addon.id ? 'ring-2 ring-emerald-400 border-emerald-400' : ''
+              } ${reordering ? 'pointer-events-none' : 'hover:shadow-md'}`}
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
-                {getAddonIcon(addon.icon)}
+                <div className="flex items-center gap-2">
+                  <GripVertical size={18} className="text-gray-300" />
+                  {getAddonIcon(addon.icon)}
+                </div>
                 <div className="flex items-center gap-1">
                   {addon.is_popular && (
                     <span className="flex items-center gap-1 text-amber-600 text-xs">
@@ -230,7 +306,7 @@ export default function AddonsManagement() {
                   >
                     <Edit size={16} />
                   </button>
-                  {addon.name !== 'Premium Pendampingan' && (
+                  {addon.name !== 'Premium Pendampingan' && addon.name !== 'Bedah Value' && (
                     <button
                       onClick={() => handleDelete(addon.id, addon.name)}
                       className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"

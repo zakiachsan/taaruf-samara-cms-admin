@@ -9,6 +9,7 @@ export interface Report {
   reported_id: string
   reported_name?: string
   reported_email?: string
+  reported_is_blocked?: boolean
   reason: string
   description?: string
   status: 'open' | 'investigating' | 'resolved' | 'dismissed'
@@ -97,7 +98,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
       const profilePromises = Array.from(userIds).map(async userId => {
         const result = await supabaseAdmin
           .from('user_profiles')
-          .select('user_id, full_name')
+          .select('user_id, full_name, is_blocked')
           .eq('user_id', userId)
           .single()
 
@@ -108,17 +109,17 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
       const profiles = profileResults.map(r => r.data).filter(Boolean)
 
       // Step 4: Create a map for quick lookup
-      const profileMap = new Map<string, { full_name: string }>()
+      const profileMap = new Map<string, { full_name: string; is_blocked: boolean }>()
       ;(profiles || []).forEach((p: any) => {
         if (p?.user_id) {
-          profileMap.set(p.user_id, { full_name: p.full_name })
+          profileMap.set(p.user_id, { full_name: p.full_name, is_blocked: p.is_blocked || false })
         }
       })
 
       // Step 5: Transform reports with profile data
       const transformed: Report[] = (reportsData || []).map((r: any) => {
-        const reporter = profileMap.get(r.reporter_id) || { full_name: 'Unknown' }
-        const reported = profileMap.get(r.reported_id) || { full_name: 'Unknown' }
+        const reporter = profileMap.get(r.reporter_id) || { full_name: 'Unknown', is_blocked: false }
+        const reported = profileMap.get(r.reported_id) || { full_name: 'Unknown', is_blocked: false }
 
         return {
           id: r.id,
@@ -128,6 +129,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
           reported_id: r.reported_id,
           reported_name: reported.full_name,
           reported_email: '',
+          reported_is_blocked: reported.is_blocked,
           reason: r.reason,
           description: r.description,
           status: r.status,
@@ -224,23 +226,15 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
   const blockUser = async (userId: string) => {
     try {
-      // Get current admin user
-      const { data: { user: currentUser } } = await supabaseAdmin.auth.getUser()
+      // Platform ban: update user_profiles.is_blocked
+      // Note: we skip blocked_users insert because CMS admin uses hardcoded auth
+      // and blocker_id must be a valid UUID from auth.users (FK constraint)
+      const { error: profileError } = await supabaseAdmin
+        .from('user_profiles')
+        .update({ is_blocked: true, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
 
-      if (!currentUser) {
-        return { success: false, error: 'No authenticated user found' }
-      }
-
-      // Add to blocked_users table
-      const { error } = await supabaseAdmin
-        .from('blocked_users')
-        .insert({
-          blocker_id: currentUser.id,
-          blocked_id: userId,
-          reason: 'Reported by multiple users',
-        })
-
-      if (error) throw error
+      if (profileError) throw profileError
 
       return { success: true }
     } catch (err) {
