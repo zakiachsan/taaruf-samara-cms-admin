@@ -220,7 +220,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
       fetchStats()
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -238,7 +238,7 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 

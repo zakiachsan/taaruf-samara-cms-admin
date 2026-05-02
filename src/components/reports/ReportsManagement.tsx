@@ -24,15 +24,15 @@ import {
 
 const TABS = [
   { id: 'reports', label: 'Laporan User', icon: Flag },
-  { id: 'violations', label: 'Chat Violations', icon: MessageSquareWarning },
-  { id: 'banned', label: 'Banned Users', icon: ShieldAlert },
+  { id: 'violations', label: 'Pelanggaran Chat', icon: MessageSquareWarning },
+  { id: 'banned', label: 'User Diblokir', icon: ShieldAlert },
 ] as const
 
 type TabId = typeof TABS[number]['id']
 
 const STATUS_OPTIONS = [
   { value: '', label: 'Semua Status' },
-  { value: 'open', label: 'Open' },
+  { value: 'open', label: 'Terbuka' },
   { value: 'investigating', label: 'Investigasi' },
   { value: 'resolved', label: 'Terselesaikan' },
   { value: 'dismissed', label: 'Dihiraukan' },
@@ -77,7 +77,7 @@ const getStatusBadge = (status: string) => {
     dismissed: XCircle,
   }
   const labels = {
-    open: 'Open',
+    open: 'Terbuka',
     investigating: 'Investigasi',
     resolved: 'Terselesaikan',
     dismissed: 'Dihiraukan',
@@ -163,7 +163,7 @@ function ReportsTab() {
   }
 
   const handleBlockUser = async (userId: string) => {
-    if (!confirm('Block user ini? Mereka tidak akan bisa menggunakan aplikasi.')) return
+    if (!confirm('Blokir user ini? Mereka tidak akan bisa menggunakan aplikasi.')) return
     setActionLoading(userId)
     const result = await blockUser(userId)
 
@@ -217,7 +217,7 @@ function ReportsTab() {
           color="bg-blue-500"
         />
         <StatCard
-          title="Open"
+          title="Terbuka"
           value={stats.openReports}
           icon={AlertCircle}
           color="bg-red-500"
@@ -537,7 +537,7 @@ function ReportsTab() {
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
               >
                 <Ban size={18} />
-                Block User
+                Blokir User
               </button>
 
               {selectedReport.status !== 'resolved' && (

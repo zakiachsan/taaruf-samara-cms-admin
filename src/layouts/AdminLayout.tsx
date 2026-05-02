@@ -23,6 +23,8 @@ import {
   Package,
   Puzzle,
   MessageSquareQuote,
+  ShieldAlert,
+  UserCircle,
 } from 'lucide-react'
 
 const LOGO_URL = 'https://okgddlgugdkiswitewdi.supabase.co/storage/v1/object/public/profile-photos/taaruf-samara-logo.png'
@@ -30,49 +32,51 @@ const LOGO_URL = 'https://okgddlgugdkiswitewdi.supabase.co/storage/v1/object/pub
 // Navigation items with groups
 const NAV_SECTIONS = [
   {
-    title: 'Main',
+    title: 'Utama',
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
-      { id: 'users', label: 'Users', icon: Users, path: '/admin/users' },
+      { id: 'users', label: 'Pengguna', icon: Users, path: '/admin/users' },
     ]
   },
   {
-    title: 'Subscription',
+    title: 'Langganan',
     items: [
-      { id: 'premium', label: 'Premium User', icon: Crown, path: '/admin/premium' },
-      { id: 'packages', label: 'Packages', icon: Package, path: '/admin/packages' },
-      { id: 'addons', label: 'Add-ons', icon: Puzzle, path: '/admin/addons' },
+      { id: 'premium', label: 'Pengguna Premium', icon: Crown, path: '/admin/premium' },
+      { id: 'packages', label: 'Paket', icon: Package, path: '/admin/packages' },
+      { id: 'addons', label: 'Tambahan', icon: Puzzle, path: '/admin/addons' },
       { id: 'pendampingan', label: 'Premium Pendampingan', icon: Users, path: '/admin/pendampingan' },
     ]
   },
   {
-    title: 'Features',
+    title: 'Fitur',
     items: [
       { id: 'selfvalue', label: 'Self-Value', icon: Award, path: '/admin/selfvalue' },
       { id: 'referral', label: 'Referral', icon: Gift, path: '/admin/referral' },
-      { id: 'referral-settings', label: 'Referral Settings', icon: Settings, path: '/admin/referral-settings' },
+      { id: 'referral-settings', label: 'Pengaturan Referral', icon: Settings, path: '/admin/referral-settings' },
       { id: 'banner', label: 'Banner', icon: ImageIcon, path: '/admin/banner' },
-      { id: 'testimonials', label: 'Testimonials', icon: MessageSquareQuote, path: '/admin/testimonials' },
+      { id: 'testimonials', label: 'Testimoni', icon: MessageSquareQuote, path: '/admin/testimonials' },
     ]
   },
   {
-    title: 'Matching',
+    title: 'Pencocokan',
     items: [
-      { id: 'matches', label: 'Matches', icon: Heart, path: '/admin/matches' },
-      { id: 'chats', label: 'Chats', icon: MessageCircle, path: '/admin/chats' },
-      { id: 'blocked', label: 'Blocked', icon: Ban, path: '/admin/blocked' },
+      { id: 'matches', label: 'Pencocokan', icon: Heart, path: '/admin/matches' },
+      { id: 'chats', label: 'Obrolan', icon: MessageCircle, path: '/admin/chats' },
+      { id: 'chat-keywords', label: 'Sensor Chat', icon: ShieldAlert, path: '/admin/chat-keywords' },
+      { id: 'blocked', label: 'Diblokir', icon: Ban, path: '/admin/blocked' },
     ]
   },
   {
-    title: 'Reports',
+    title: 'Laporan',
     items: [
       { id: 'reports', label: 'Laporan', icon: Flag, path: '/admin/reports' },
     ]
   },
   {
-    title: 'Settings',
+    title: 'Pengaturan',
     items: [
-      { id: 'settings', label: 'Settings', icon: Settings, path: '/admin/settings' },
+      { id: 'settings', label: 'Pengaturan', icon: Settings, path: '/admin/settings' },
+      { id: 'profile', label: 'Profil Admin', icon: UserCircle, path: '/admin/profile' },
     ]
   },
 ]
@@ -115,7 +119,7 @@ export default function AdminLayout() {
       setConnectionStatus('connected')
     } catch (err) {
       setConnectionStatus('error')
-      setErrorMessage(err instanceof Error ? err.message : 'Failed to connect to Supabase')
+      setErrorMessage(err instanceof Error ? err.message : 'Gagal terhubung ke Supabase')
     }
   }
 
@@ -135,16 +139,16 @@ export default function AdminLayout() {
             Supabase Belum Terkonfigurasi
           </h1>
           <p className="text-gray-600 text-center mb-6">
-            Silakan konfigurasi environment variables Supabase untuk melanjutkan.
+            Silakan konfigurasi variabel lingkungan Supabase untuk melanjutkan.
           </p>
 
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm font-medium text-gray-700 mb-2">Langkah-langkah:</p>
             <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
-              <li>Copy <code className="bg-gray-200 px-1 rounded">.env.example</code> menjadi <code className="bg-gray-200 px-1 rounded">.env</code></li>
+              <li>Salin <code className="bg-gray-200 px-1 rounded">.env.example</code> menjadi <code className="bg-gray-200 px-1 rounded">.env</code></li>
               <li>Isi <code className="bg-gray-200 px-1 rounded">VITE_SUPABASE_URL</code> dengan URL project Supabase</li>
               <li>Isi <code className="bg-gray-200 px-1 rounded">VITE_SUPABASE_ANON_KEY</code> dengan anon key</li>
-              <li>Refresh halaman</li>
+              <li>Segarkan halaman</li>
             </ol>
           </div>
 
@@ -264,7 +268,7 @@ export default function AdminLayout() {
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
           >
             <LogOut size={20} />
-            {sidebarOpen && <span className="font-medium">Logout</span>}
+            {sidebarOpen && <span className="font-medium">Keluar</span>}
           </button>
         </div>
       </aside>
@@ -280,15 +284,15 @@ export default function AdminLayout() {
             {sidebarOpen && !isMobile ? <X size={20} /> : <Menu size={20} />}
           </button>
 
-          <div className="flex items-center gap-2 md:gap-4">
+          <Link to="/admin/profile" className="flex items-center gap-2 md:gap-4 hover:opacity-80 transition-opacity">
             <div className="text-right hidden md:block">
-              <p className="text-sm font-medium text-gray-900">Admin User</p>
+              <p className="text-sm font-medium text-gray-900">Pengguna Admin</p>
               <p className="text-xs text-gray-500">Super Admin</p>
             </div>
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
               <span className="text-emerald-700 font-bold">A</span>
             </div>
-          </div>
+          </Link>
         </header>
 
         {/* Content Area */}

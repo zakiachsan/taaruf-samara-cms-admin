@@ -17,10 +17,10 @@ import {
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All Status' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'successful', label: 'Successful' },
-  { value: 'failed', label: 'Failed' },
+  { value: '', label: 'Semua Status' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'successful', label: 'Berhasil' },
+  { value: 'failed', label: 'Gagal' },
 ]
 
 const StatCard = ({ title, value, icon: Icon, color, subtitle }: any) => (
@@ -59,14 +59,14 @@ export default function ReferralManagement() {
   } = useReferrals(filters, page)
 
   const handleApprove = async (withdrawalId: string) => {
-    if (!confirm('Approve this withdrawal?')) return
+    if (!confirm('Setujui penarikan ini?')) return
     setActionLoading(withdrawalId)
     await approveWithdrawal(withdrawalId)
     setActionLoading(null)
   }
 
   const handleReject = async (withdrawalId: string) => {
-    if (!confirm('Reject this withdrawal?')) return
+    if (!confirm('Tolak penarikan ini?')) return
     setActionLoading(withdrawalId)
     await rejectWithdrawal(withdrawalId)
     setActionLoading(null)
@@ -92,9 +92,16 @@ export default function ReferralManagement() {
       approved: 'bg-emerald-100 text-emerald-700',
       rejected: 'bg-red-100 text-red-700',
     }
+    const labels: Record<string, string> = {
+      pending: 'Menunggu',
+      successful: 'Berhasil',
+      failed: 'Gagal',
+      approved: 'Disetujui',
+      rejected: 'Ditolak',
+    }
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status as keyof typeof styles]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {labels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
   }
@@ -107,25 +114,25 @@ export default function ReferralManagement() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Referrers"
+          title="Total Referrer"
           value={stats.totalReferrers}
           icon={Users}
           color="bg-blue-500"
         />
         <StatCard
-          title="Successful Referrals"
+          title="Referral Berhasil"
           value={stats.totalSuccessful}
           icon={CheckCircle}
           color="bg-emerald-500"
         />
         <StatCard
-          title="Commission Paid"
+          title="Komisi Dibayar"
           value={formatCurrency(stats.totalCommissionPaid)}
           icon={DollarSign}
           color="bg-purple-500"
         />
         <StatCard
-          title="Pending Withdrawals"
+          title="Penarikan Menunggu"
           value={stats.pendingWithdrawals}
           icon={Clock}
           color="bg-amber-500"
@@ -145,7 +152,7 @@ export default function ReferralManagement() {
             }`}
           >
             <Gift size={18} />
-            Referrals
+            Referral
           </button>
           <button
             onClick={() => setActiveTab('withdrawals')}
@@ -156,7 +163,7 @@ export default function ReferralManagement() {
             }`}
           >
             <Wallet size={18} />
-            Withdrawals
+            Penarikan
             {pendingWithdrawals.length > 0 && (
               <span className="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">
                 {pendingWithdrawals.length}
@@ -172,7 +179,7 @@ export default function ReferralManagement() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder={activeTab === 'referrals' ? "Search by name or code..." : "Search by user..."}
+                placeholder={activeTab === 'referrals' ? "Cari berdasarkan nama atau kode..." : "Cari berdasarkan user..."}
                 value={filters.search}
                 onChange={(e) => {
                   setFilters({ ...filters, search: e.target.value })
@@ -207,7 +214,7 @@ export default function ReferralManagement() {
           {loading ? (
             <div className="p-12 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-              <p className="mt-4 text-gray-500">Loading...</p>
+              <p className="mt-4 text-gray-500">Memuat...</p>
             </div>
           ) : activeTab === 'referrals' ? (
             // Referrals Table
@@ -217,11 +224,11 @@ export default function ReferralManagement() {
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referrer</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Referred User</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Code</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User yang Direferral</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reward</th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hadiah</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
@@ -229,7 +236,7 @@ export default function ReferralManagement() {
                       <tr>
                         <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
                           <Gift size={48} className="mx-auto text-gray-300 mb-4" />
-                          No referrals found
+                          Tidak ada referral ditemukan
                         </td>
                       </tr>
                     ) : (
@@ -266,17 +273,17 @@ export default function ReferralManagement() {
                     disabled={page === 1}
                     className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50"
                   >
-                    <ChevronLeft size={16} /> Previous
+                    <ChevronLeft size={16} /> Sebelumnya
                   </button>
                   <span className="text-sm text-gray-500">
-                    Page {page} of {totalPages}
+                    Halaman {page} dari {totalPages}
                   </span>
                   <button
                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
                     className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg disabled:opacity-50"
                   >
-                    Next <ChevronRight size={16} />
+                    Berikutnya <ChevronRight size={16} />
                   </button>
                 </div>
               )}
@@ -288,12 +295,12 @@ export default function ReferralManagement() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <AlertCircle className="text-amber-500" size={20} />
-                  Pending Withdrawals ({pendingWithdrawals.length})
+                  Penarikan Menunggu ({pendingWithdrawals.length})
                 </h3>
                 {pendingWithdrawals.length === 0 ? (
                   <div className="bg-gray-50 rounded-lg p-8 text-center text-gray-500">
                     <CheckCircle size={48} className="mx-auto text-emerald-400 mb-4" />
-                    No pending withdrawals
+                    Tidak ada penarikan menunggu
                   </div>
                 ) : (
                   <div className="space-y-3">
@@ -314,7 +321,7 @@ export default function ReferralManagement() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm mt-3">
                               <div>
-                                <p className="text-gray-500">Amount</p>
+                                <p className="text-gray-500">Jumlah</p>
                                 <p className="font-semibold text-gray-900">{formatCurrency(w.amount)}</p>
                               </div>
                               <div>
@@ -322,11 +329,11 @@ export default function ReferralManagement() {
                                 <p className="font-medium text-gray-900">{w.bank_name || '-'}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500">Account Number</p>
+                                <p className="text-gray-500">Nomor Rekening</p>
                                 <p className="font-medium text-gray-900">{w.account_number || '-'}</p>
                               </div>
                               <div>
-                                <p className="text-gray-500">Account Name</p>
+                                <p className="text-gray-500">Nama Rekening</p>
                                 <p className="font-medium text-gray-900">{w.account_name || '-'}</p>
                               </div>
                             </div>
@@ -342,7 +349,7 @@ export default function ReferralManagement() {
                               ) : (
                                 <Check size={18} />
                               )}
-                              Approve
+                              Setujui
                             </button>
                             <button
                               onClick={() => handleReject(w.id)}
@@ -350,7 +357,7 @@ export default function ReferralManagement() {
                               className="flex items-center gap-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                             >
                               <X size={18} />
-                              Reject
+                              Tolak
                             </button>
                           </div>
                         </div>
@@ -362,10 +369,10 @@ export default function ReferralManagement() {
 
               {/* Processed Withdrawals */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Processed Withdrawals</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Penarikan yang Diproses</h3>
                 {processedWithdrawals.length === 0 ? (
                   <div className="bg-gray-50 rounded-lg p-8 text-center text-gray-500">
-                    No processed withdrawals yet
+                    Belum ada penarikan yang diproses
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -373,10 +380,10 @@ export default function ReferralManagement() {
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bank</th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200">

@@ -60,7 +60,7 @@ export default function BannedUsersTab() {
               <Ban size={20} className="text-red-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-500">Total Banned</p>
+              <p className="text-sm text-gray-500">Total Dibanned</p>
               <p className="text-xl font-bold text-gray-900">{totalCount}</p>
             </div>
           </div>
@@ -121,7 +121,7 @@ export default function BannedUsersTab() {
         {loading ? (
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-            <p className="mt-4 text-gray-500">Memuat banned users...</p>
+            <p className="mt-4 text-gray-500">Memuat user dibanned...</p>
           </div>
         ) : bannedUsers.length === 0 ? (
           <div className="p-12 text-center">
@@ -135,7 +135,7 @@ export default function BannedUsersTab() {
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pelanggaran</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Tanggal Banned</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">Tanggal Dibanned</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
@@ -168,7 +168,7 @@ export default function BannedUsersTab() {
                     <td className="px-4 py-3">
                       <span className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
                         <Ban size={12} />
-                        Banned
+                        Dibanned
                       </span>
                     </td>
                     <td className="px-4 py-3">

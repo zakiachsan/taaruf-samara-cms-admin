@@ -95,7 +95,7 @@ export default function ChatViolationsTab() {
           icon={MessageSquareWarning}
           color="bg-rose-500"
         />
-        <StatCard title="User Terflag" value={stats.uniqueUsers} icon={Users} color="bg-blue-500" />
+        <StatCard title="User Ditandai" value={stats.uniqueUsers} icon={Users} color="bg-blue-500" />
       </div>
 
       {/* Filters */}

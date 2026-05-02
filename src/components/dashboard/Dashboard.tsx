@@ -83,9 +83,9 @@ const ActivityItem = ({ activity }: { activity: any }) => {
     const hours = Math.floor(diff / 3600000)
     const days = Math.floor(diff / 86400000)
     
-    if (minutes < 60) return `${minutes}m ago`
-    if (hours < 24) return `${hours}h ago`
-    return `${days}d ago`
+    if (minutes < 60) return `${minutes} menit lalu`
+    if (hours < 24) return `${hours} jam lalu`
+    return `${days} hari lalu`
   }
   
   return (
@@ -126,14 +126,14 @@ export default function Dashboard() {
           className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
         >
           <RefreshCw size={18} />
-          <span>Refresh Data</span>
+          <span>Segarkan Data</span>
         </button>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          title="Total Users"
+          title="Total Pengguna"
           value={statsLoading ? '...' : stats.totalUsers.toLocaleString('id-ID')}
           icon={Users}
           trend="+12%"
@@ -141,21 +141,21 @@ export default function Dashboard() {
           color="bg-blue-500"
         />
         <StatCard
-          title="New Users Today"
+          title="Pengguna Baru Hari Ini"
           value={statsLoading ? '...' : stats.newUsersToday}
           icon={UserPlus}
           trend="Hari ini"
           color="bg-emerald-500"
         />
         <StatCard
-          title="Active Premium"
+          title="Premium Aktif"
           value={statsLoading ? '...' : stats.activePremiumUsers}
           icon={Crown}
           trend="Aktif"
           color="bg-amber-500"
         />
         <StatCard
-          title="Pending Verifications"
+          title="Verifikasi Tertunda"
           value={statsLoading ? '...' : stats.pendingVerifications}
           icon={ShieldAlert}
           trend="Butuh review"
@@ -170,11 +170,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Registrasi 7 Hari Terakhir</h3>
-              <p className="text-sm text-gray-500">Grafik user baru yang mendaftar</p>
+              <p className="text-sm text-gray-500">Grafik pengguna baru yang mendaftar</p>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Calendar size={16} />
-              <span>Last 7 days</span>
+              <span>7 Hari Terakhir</span>
             </div>
           </div>
           
@@ -252,7 +252,7 @@ export default function Dashboard() {
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-emerald-100 text-sm mb-1">Total Revenue</p>
+              <p className="text-emerald-100 text-sm mb-1">Total Pendapatan</p>
               <h3 className="text-2xl font-bold">
                 {statsLoading ? '...' : formatCurrency(stats.totalRevenue)}
               </h3>
@@ -263,14 +263,14 @@ export default function Dashboard() {
           </div>
           <div className="mt-4 flex items-center gap-2 text-sm text-emerald-100">
             <TrendingUp size={16} />
-            <span>All time earnings</span>
+            <span>Pendapatan Sepanjang Waktu</span>
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-blue-100 text-sm mb-1">Monthly Revenue</p>
+              <p className="text-blue-100 text-sm mb-1">Pendapatan Bulanan</p>
               <h3 className="text-2xl font-bold">
                 {statsLoading ? '...' : formatCurrency(stats.monthlyRevenue)}
               </h3>
@@ -281,14 +281,14 @@ export default function Dashboard() {
           </div>
           <div className="mt-4 flex items-center gap-2 text-sm text-blue-100">
             <TrendingUp size={16} />
-            <span>This month</span>
+            <span>Bulan Ini</span>
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-purple-100 text-sm mb-1">Today's Matches</p>
+              <p className="text-purple-100 text-sm mb-1">Pencocokan Hari Ini</p>
               <h3 className="text-2xl font-bold">
                 {statsLoading ? '...' : stats.todayMatches}
               </h3>
@@ -299,7 +299,7 @@ export default function Dashboard() {
           </div>
           <div className="mt-4 flex items-center gap-2 text-sm text-purple-100">
             <TrendingUp size={16} />
-            <span>Match requests today</span>
+            <span>Permintaan Pencocokan Hari Ini</span>
           </div>
         </div>
       </div>

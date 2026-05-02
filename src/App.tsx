@@ -38,6 +38,8 @@ const ChatsManagement = lazy(() => import('./components/chats/ChatsManagement'))
 const BlockedUsersManagement = lazy(() => import('./components/blocked/BlockedUsersManagement'))
 const TestimonialManagement = lazy(() => import('./components/testimonial/TestimonialManagement'))
 const PendampinganManagement = lazy(() => import('./components/pendampingan/PendampinganManagement'))
+const ChatKeywordSensor = lazy(() => import('./components/chats/ChatKeywordSensor'))
+const AdminProfile = lazy(() => import('./components/settings/AdminProfile'))
 
 // Loading fallback
 const LoadingFallback = () => (
@@ -55,7 +57,7 @@ const SettingsPlaceholder = () => (
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     </div>
-    <h3 className="text-lg font-semibold text-gray-900 mb-2">Halaman Settings</h3>
+    <h3 className="text-lg font-semibold text-gray-900 mb-2">Halaman Pengaturan</h3>
     <p className="text-gray-500 max-w-md mx-auto">Halaman ini sedang dalam pengembangan.</p>
   </div>
 )
@@ -127,6 +129,8 @@ function AppRoutes() {
           <Route path="chats" element={<ChatsManagement />} />
           <Route path="blocked" element={<BlockedUsersManagement />} />
           <Route path="settings" element={<SettingsPlaceholder />} />
+          <Route path="chat-keywords" element={<ChatKeywordSensor />} />
+          <Route path="profile" element={<AdminProfile />} />
         </Route>
 
         {/* Default redirect */}

@@ -21,7 +21,7 @@ export const useBanners = () => {
 
       setBanners(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch banners')
+      setError(err instanceof Error ? err.message : 'Gagal memuat banner')
     } finally {
       setLoading(false)
     }
@@ -48,7 +48,7 @@ export const useBanners = () => {
       setBanners(prev => [...prev, data].sort((a, b) => a.display_order - b.display_order))
       return { success: true, data }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to create banner' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal membuat banner' }
     }
   }
 
@@ -71,7 +71,7 @@ export const useBanners = () => {
       )
       return { success: true, data }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update banner' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui banner' }
     }
   }
 
@@ -87,7 +87,7 @@ export const useBanners = () => {
       setBanners(prev => prev.filter(b => b.id !== id))
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete banner' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menghapus banner' }
     }
   }
 
@@ -115,7 +115,7 @@ export const useBanners = () => {
       await fetchBanners()
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to reorder' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal mengurutkan ulang' }
     }
   }
 

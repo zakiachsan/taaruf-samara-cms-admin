@@ -36,7 +36,7 @@ export const usePackages = () => {
       setPackages(data || [])
     } catch (err) {
       console.error('[usePackages] Error fetching packages:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch packages')
+      setError(err instanceof Error ? err.message : 'Gagal memuat paket')
     } finally {
       setLoading(false)
     }
@@ -59,7 +59,7 @@ export const usePackages = () => {
       return { success: true }
     } catch (err) {
       console.error('[usePackages] Error updating price:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update price' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui harga' }
     }
   }, [])
 
@@ -83,7 +83,7 @@ export const usePackages = () => {
       return { success: true }
     } catch (err) {
       console.error('[usePackages] Error updating package:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update package' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui paket' }
     }
   }, [])
 

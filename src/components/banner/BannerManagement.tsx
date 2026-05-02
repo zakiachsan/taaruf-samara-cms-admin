@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
+import { supabase } from '../../lib/supabase'
 import { useBanners } from '../../hooks/useBanners'
 import { type Banner } from '../../types'
 import {
@@ -13,13 +14,24 @@ import {
   RefreshCw,
   ArrowUp,
   ArrowDown,
+  Upload,
+  Loader2,
 } from 'lucide-react'
+
+type CropRatio = 'none' | '16:9' | '4:3' | '1:1'
 
 export default function BannerManagement() {
   const { banners, loading, refetch, createBanner, updateBanner, deleteBanner, toggleActive } = useBanners()
   const [showModal, setShowModal] = useState(false)
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Upload & crop state
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [cropRatio, setCropRatio] = useState<CropRatio>('16:9')
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -45,6 +57,98 @@ export default function BannerManagement() {
       end_date: '',
     })
     setEditingBanner(null)
+    setSelectedFile(null)
+    setPreviewUrl(null)
+    setCropRatio('16:9')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      alert('Format file harus JPG, JPEG, PNG, atau WebP')
+      return
+    }
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      alert('Ukuran file maksimal 5MB')
+      return
+    }
+
+    setSelectedFile(file)
+    const preview = URL.createObjectURL(file)
+    setPreviewUrl(preview)
+  }
+
+  const cropAndUpload = async (): Promise<string | null> => {
+    if (!selectedFile) return formData.image_url || null
+
+    setUploadingImage(true)
+    try {
+      let fileToUpload = selectedFile
+
+      if (cropRatio !== 'none') {
+        const img = await loadImage(previewUrl!)
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')!
+
+        const ratioMap = { '16:9': 16 / 9, '4:3': 4 / 3, '1:1': 1 }
+        const targetRatio = ratioMap[cropRatio]
+
+        const imgRatio = img.width / img.height
+        let cropWidth = img.width
+        let cropHeight = img.height
+
+        if (imgRatio > targetRatio) {
+          cropWidth = img.height * targetRatio
+        } else {
+          cropHeight = img.width / targetRatio
+        }
+
+        const cropX = (img.width - cropWidth) / 2
+        const cropY = (img.height - cropHeight) / 2
+
+        canvas.width = cropWidth
+        canvas.height = cropHeight
+        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
+
+        const blob = await new Promise<Blob>((resolve) => {
+          canvas.toBlob((b) => resolve(b!), selectedFile.type, 0.9)
+        })
+        fileToUpload = new File([blob], selectedFile.name, { type: selectedFile.type })
+      }
+
+      const fileExt = fileToUpload.name.split('.').pop()
+      const fileName = `banners/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`
+
+      const { error } = await supabase.storage.from('public').upload(fileName, fileToUpload, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(fileName)
+      return publicUrl
+    } catch (err) {
+      console.error('Upload error:', err)
+      alert('Gagal mengupload gambar. Silakan coba lagi.')
+      return null
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const loadImage = (src: string): Promise<HTMLImageElement> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => resolve(img)
+      img.onerror = reject
+      img.src = src
+    })
   }
 
   const openCreateModal = () => {
@@ -71,8 +175,15 @@ export default function BannerManagement() {
     e.preventDefault()
     setActionLoading('submit')
 
+    const imageUrl = await cropAndUpload()
+    if (selectedFile && !imageUrl) {
+      setActionLoading(null)
+      return
+    }
+
     const bannerData = {
       ...formData,
+      image_url: imageUrl || formData.image_url,
       start_date: formData.start_date || undefined,
       end_date: formData.end_date || undefined,
     }
@@ -153,7 +264,7 @@ export default function BannerManagement() {
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw size={18} />
-            Refresh
+            Segarkan
           </button>
           <button
             onClick={openCreateModal}
@@ -169,7 +280,7 @@ export default function BannerManagement() {
       {loading ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">Loading banners...</p>
+          <p className="text-gray-500">Memuat banner...</p>
         </div>
       ) : banners.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -189,13 +300,13 @@ export default function BannerManagement() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Preview</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Link</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Urutan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pratinjau</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Judul</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tautan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -255,7 +366,7 @@ export default function BannerManagement() {
                           <p>s/d {formatDate(banner.end_date)}</p>
                         </div>
                       ) : (
-                        'Always'
+                        'Selalu'
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -269,7 +380,7 @@ export default function BannerManagement() {
                         }`}
                       >
                         {banner.is_active ? <Eye size={14} /> : <EyeOff size={14} />}
-                        {banner.is_active ? 'Active' : 'Inactive'}
+                        {banner.is_active ? 'Aktif' : 'Nonaktif'}
                       </button>
                     </td>
                     <td className="px-4 py-3">
@@ -303,7 +414,7 @@ export default function BannerManagement() {
           <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">
-                {editingBanner ? 'Edit Banner' : 'Tambah Banner'}
+                {editingBanner ? 'Ubah Banner' : 'Tambah Banner'}
               </h3>
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <X size={20} />
@@ -313,7 +424,7 @@ export default function BannerManagement() {
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Title *
+                  Judul *
                 </label>
                 <input
                   type="text"
@@ -327,43 +438,92 @@ export default function BannerManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Subtitle
+                  Subjudul
                 </label>
                 <input
                   type="text"
                   value={formData.subtitle}
                   onChange={(e) => setFormData({ ...formData, subtitle: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  placeholder="Subtitle (opsional)"
+                  placeholder="Subjudul (opsional)"
                 />
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Image URL
+                  Gambar Banner
                 </label>
                 <div className="flex gap-2">
                   <input
-                    type="url"
-                    value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="https://..."
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileChange}
+                    className="hidden"
                   />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    <Upload size={18} />
+                    {selectedFile ? 'Ganti Gambar' : 'Pilih Gambar'}
+                  </button>
+                  {selectedFile && (
+                    <span className="text-sm text-gray-500 self-center">{selectedFile.name}</span>
+                  )}
+                  {editingBanner && formData.image_url && !selectedFile && (
+                    <span className="text-sm text-gray-500 self-center">Gambar sudah ada</span>
+                  )}
                 </div>
-                {formData.image_url && (
-                  <img
-                    src={formData.image_url}
-                    alt="Preview"
-                    className="mt-2 w-full h-32 object-cover rounded-lg"
-                    onError={(e) => (e.currentTarget.style.display = 'none')}
-                  />
+
+                {/* Crop Ratio */}
+                {selectedFile && (
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Rasio Crop</label>
+                    <div className="flex gap-2">
+                      {(['none', '16:9', '4:3', '1:1'] as CropRatio[]).map((r) => (
+                        <button
+                          key={r}
+                          type="button"
+                          onClick={() => setCropRatio(r)}
+                          className={`px-3 py-1 text-xs rounded-lg border ${
+                            cropRatio === r
+                              ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                              : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                          }`}
+                        >
+                          {r === 'none' ? 'Tidak' : r}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Preview */}
+                {(previewUrl || formData.image_url) && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-500 mb-1">
+                      {previewUrl ? 'Pratinjau' : 'Gambar Saat Ini'}
+                    </p>
+                    <img
+                      src={previewUrl || formData.image_url}
+                      alt="Pratinjau"
+                      className={`w-full rounded-lg border border-gray-200 ${
+                        cropRatio === '16:9' ? 'aspect-video object-cover' :
+                        cropRatio === '4:3' ? 'aspect-[4/3] object-cover' :
+                        cropRatio === '1:1' ? 'aspect-square object-cover' :
+                        'h-32 object-cover'
+                      }`}
+                      onError={(e) => (e.currentTarget.style.display = 'none')}
+                    />
+                  </div>
                 )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Link To (Screen/URL)
+                  Tautan Ke (Layar/URL)
                 </label>
                 <input
                   type="text"
@@ -377,7 +537,7 @@ export default function BannerManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Start Date
+                    Tanggal Mulai
                   </label>
                   <input
                     type="date"
@@ -388,7 +548,7 @@ export default function BannerManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    End Date
+                    Tanggal Selesai
                   </label>
                   <input
                     type="date"
@@ -408,7 +568,7 @@ export default function BannerManagement() {
                   className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                 />
                 <label htmlFor="is_active" className="text-sm text-gray-700">
-                  Active (tampilkan di app)
+                  Aktif (tampilkan di aplikasi)
                 </label>
               </div>
 
@@ -422,11 +582,25 @@ export default function BannerManagement() {
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading === 'submit'}
+                  disabled={actionLoading === 'submit' || uploadingImage}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
-                  <Save size={18} />
-                  {actionLoading === 'submit' ? 'Saving...' : 'Simpan'}
+                  {uploadingImage ? (
+                    <>
+                      <Loader2 size={18} className="animate-spin" />
+                      Mengupload...
+                    </>
+                  ) : actionLoading === 'submit' ? (
+                    <>
+                      <Save size={18} />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Save size={18} />
+                      Simpan
+                    </>
+                  )}
                 </button>
               </div>
             </form>

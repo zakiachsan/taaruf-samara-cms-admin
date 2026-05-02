@@ -124,7 +124,7 @@ export default function LoginPage() {
         {/* Branding */}
         <div className="text-center mt-8">
           <p className="text-gray-500 text-sm">
-            © 2025 Taaruf Samara. CMS Admin Panel
+            © 2025 Taaruf Samara. Panel Admin CMS
           </p>
         </div>
       </div>

@@ -65,7 +65,7 @@ export default function ChatDetail({ chatId, participants = [], onBack }: Props)
             </button>
           )}
           <div>
-            <h3 className="font-semibold text-gray-900">Conversation</h3>
+            <h3 className="font-semibold text-gray-900">Percakapan</h3>
             <p className="text-sm text-gray-500">
               {participants.map(p => p.full_name).join(', ')}
             </p>
@@ -80,13 +80,13 @@ export default function ChatDetail({ chatId, participants = [], onBack }: Props)
               onChange={(e) => setAutoRefresh(e.target.checked)}
               className="rounded border-gray-300"
             />
-            Auto-refresh
+            Segarkan Otomatis
           </label>
           <button
             onClick={handleMarkAllRead}
             className="px-3 py-1.5 text-sm text-emerald-600 hover:bg-emerald-50 rounded-lg"
           >
-            Mark All Read
+            Tandai Semua Sudah Dibaca
           </button>
         </div>
       </div>
@@ -99,7 +99,7 @@ export default function ChatDetail({ chatId, participants = [], onBack }: Props)
           </div>
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-gray-500">
-            <p>No messages yet</p>
+            <p>Belum ada pesan</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -130,7 +130,7 @@ export default function ChatDetail({ chatId, participants = [], onBack }: Props)
 
                       <div className={`flex flex-col ${isOwnMessage ? 'items-end' : 'items-start'} max-w-[70%]`}>
                         <div className="text-xs text-gray-500 mb-1">
-                          {sender?.full_name || msg.sender_name || 'Unknown'}
+                          {sender?.full_name || msg.sender_name || 'Tidak Dikenal'}
                         </div>
                         <div className={`px-4 py-2 rounded-lg ${
                           isOwnMessage
@@ -144,7 +144,7 @@ export default function ChatDetail({ chatId, participants = [], onBack }: Props)
                             {formatTime(msg.created_at)}
                           </span>
                           {msg.is_read && isOwnMessage && (
-                            <span className="text-xs text-emerald-500">Read</span>
+                            <span className="text-xs text-emerald-500">Dibaca</span>
                           )}
                         </div>
                       </div>
@@ -159,7 +159,7 @@ export default function ChatDetail({ chatId, participants = [], onBack }: Props)
 
       {/* Footer info */}
       <div className="p-3 border-t border-gray-200 bg-white text-center text-xs text-gray-500">
-        Showing {messages.length} messages • Chat ID: {chatId.slice(0, 8)}...
+        Menampilkan {messages.length} pesan • ID Chat: {chatId.slice(0, 8)}...
       </div>
     </div>
   )

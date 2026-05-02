@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseAdmin } from '../lib/supabase'
 
 export interface User {
   id: string
@@ -21,6 +21,8 @@ export interface User {
     photos?: string[]
     has_bedah_value_cert?: boolean
     bedah_value_cert_code?: string
+    whatsapp?: string
+    phone?: string
   }
 }
 
@@ -106,6 +108,8 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
           photos: p.photos,
           has_bedah_value_cert: p.has_bedah_value_cert,
           bedah_value_cert_code: p.bedah_value_cert_code,
+          whatsapp: p.whatsapp,
+          phone: p.phone,
         },
       }))
 
@@ -147,7 +151,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       setUsers(transformedUsers)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setLoading(false)
     }
@@ -180,7 +184,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -207,7 +211,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -234,7 +238,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -257,7 +261,101 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
+    }
+  }
+
+  const deleteUser = async (userId: string) => {
+    try {
+      // Step 1: Hapus data dari tabel public yang mungkin punya data user
+      // Urutan: child tables dulu, parent tables belakangan
+      const tables = [
+        { name: 'mentoring_sessions', col: 'user_id' },
+        { name: 'purchase_addons', col: 'purchase_id', sub: 'subscription_purchases' },
+        { name: 'subscription_purchases', col: 'user_id' },
+        { name: 'premium_subscriptions', col: 'user_id' },
+        { name: 'chat_messages', col: 'sender_id' },
+        { name: 'reports', col: 'reporter_id' },
+        { name: 'blocked_users', col: 'blocker_id' },
+        { name: 'match_requests', col: 'requester_id' },
+        { name: 'referral_withdrawals', col: 'user_id' },
+        { name: 'referrals', col: 'referrer_id' },
+        { name: 'self_value_registrations', col: 'user_id' },
+        { name: 'chat_violations', col: 'user_id' },
+        { name: 'addon_admin_alerts', col: 'user_id' },
+      ]
+
+      for (const t of tables) {
+        try {
+          if (t.sub) {
+            // Untuk purchase_addons: hapus berdasarkan purchase_id dari subscription_purchases
+            const { data: purchaseIds } = await supabaseAdmin
+              .from(t.sub)
+              .select('id')
+              .eq('user_id', userId)
+            if (purchaseIds && purchaseIds.length > 0) {
+              await supabaseAdmin
+                .from(t.name)
+                .delete()
+                .in(t.col, purchaseIds.map((p: any) => p.id))
+            }
+          } else if (t.name === 'reports') {
+            await supabaseAdmin.from(t.name).delete().eq('reporter_id', userId)
+            await supabaseAdmin.from(t.name).delete().eq('reported_id', userId)
+          } else if (t.name === 'blocked_users') {
+            await supabaseAdmin.from(t.name).delete().eq('blocker_id', userId)
+            await supabaseAdmin.from(t.name).delete().eq('blocked_id', userId)
+          } else if (t.name === 'match_requests') {
+            await supabaseAdmin.from(t.name).delete().eq('requester_id', userId)
+            await supabaseAdmin.from(t.name).delete().eq('recipient_id', userId)
+          } else if (t.name === 'referrals') {
+            await supabaseAdmin.from(t.name).delete().eq('referrer_id', userId)
+            await supabaseAdmin.from(t.name).delete().eq('referred_id', userId)
+          } else if (t.name === 'chat_messages') {
+            await supabaseAdmin.from(t.name).delete().eq('sender_id', userId)
+          } else {
+            await supabaseAdmin.from(t.name).delete().eq(t.col as string, userId)
+          }
+        } catch (e) {
+          // Abaikan error kalau tabel/kolom nggak ada
+          console.log(`Skip ${t.name}:`, e)
+        }
+      }
+
+      // Hapus chats (participant_ids adalah array)
+      try {
+        const { data: userChats } = await supabaseAdmin
+          .from('chats')
+          .select('id')
+          .or(`participant_ids.cs.{${userId}}`)
+        if (userChats && userChats.length > 0) {
+          for (const chat of userChats) {
+            await supabaseAdmin.from('chat_messages').delete().eq('chat_id', chat.id)
+            await supabaseAdmin.from('chats').delete().eq('id', chat.id)
+          }
+        }
+      } catch (e) {
+        console.log('Skip chats:', e)
+      }
+
+      // Step 2: Hapus user_profiles dan public.users
+      try { await supabaseAdmin.from('user_profiles').delete().eq('user_id', userId) } catch (e) {}
+      try { await supabaseAdmin.from('users').delete().eq('id', userId) } catch (e) {}
+
+      // Step 3: Hapus user dari auth.users via admin API
+      const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
+      if (authError) {
+        console.error('Delete auth user error:', authError)
+        throw authError
+      }
+
+      // Update local state
+      setUsers(prevUsers => prevUsers.filter(u => u.id !== userId))
+      setTotalCount(prev => Math.max(0, prev - 1))
+
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -272,5 +370,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     blockUser,
     unblockUser,
     changeRole,
+    deleteUser,
   }
 }

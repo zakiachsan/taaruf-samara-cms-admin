@@ -125,14 +125,18 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         created_at: s.created_at,
       }))
 
-      // Filter by search (client-side due to join)
+      // Filter by search and type (client-side due to join)
       let filtered = transformed
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
-        filtered = transformed.filter(s =>
+        filtered = filtered.filter(s =>
           s.user_name?.toLowerCase().includes(searchLower) ||
           s.user_email?.toLowerCase().includes(searchLower)
         )
+      }
+
+      if (filters.type) {
+        filtered = filtered.filter(s => s.plan_type === filters.type)
       }
 
       setSubscriptions(filtered)
@@ -232,16 +236,26 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
       // Try fetching from new subscription_purchases table
       const { data: newSubs, error } = await supabase
         .from('subscription_purchases')
-        .select('total_amount, expires_at, status, package:subscription_packages(name)')
+        .select('total_amount, package_price, expires_at, status, package:subscription_packages(name)')
 
       if (!error && newSubs) {
-        const totalRevenue = newSubs.reduce((sum, s) => sum + (s.total_amount || 0), 0)
+        // Helper to get package name from Supabase join result (object or array)
+        const getPkgName = (pkg: any) => {
+          if (Array.isArray(pkg)) return pkg[0]?.name
+          if (pkg && typeof pkg === 'object') return pkg.name
+          return undefined
+        }
+
+        const totalRevenue = newSubs.reduce((sum, s) => sum + (s.total_amount || s.package_price || 0), 0)
         const basicRevenue = newSubs
-          .filter(s => Array.isArray(s.package) && s.package[0]?.name === 'basic')
-          .reduce((sum, s) => sum + (s.total_amount || 0), 0)
+          .filter(s => getPkgName(s.package) === 'basic')
+          .reduce((sum, s) => sum + (s.total_amount || s.package_price || 0), 0)
         const premiumRevenue = newSubs
-          .filter(s => Array.isArray(s.package) && s.package[0]?.name === 'plus')
-          .reduce((sum, s) => sum + (s.total_amount || 0), 0)
+          .filter(s => {
+            const name = getPkgName(s.package)
+            return name === 'plus' || name === 'premium'
+          })
+          .reduce((sum, s) => sum + (s.total_amount || s.package_price || 0), 0)
 
         const activeSubscriptions = newSubs.filter(s => s.status === 'paid').length
 
@@ -340,7 +354,7 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -371,7 +385,7 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 

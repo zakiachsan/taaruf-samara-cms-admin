@@ -79,7 +79,7 @@ export default function PackageManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Package Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Manajemen Paket</h2>
           <p className="text-gray-500 mt-1">Kelola harga dan informasi paket berlangganan</p>
         </div>
         <button
@@ -87,7 +87,7 @@ export default function PackageManagement() {
           className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
         >
           <RefreshCw size={18} />
-          Refresh
+          Segarkan
         </button>
       </div>
 
@@ -103,7 +103,7 @@ export default function PackageManagement() {
       {loading ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading packages...</p>
+          <p className="mt-4 text-gray-500">Memuat paket...</p>
         </div>
       ) : (
         /* Packages Grid */
@@ -126,13 +126,13 @@ export default function PackageManagement() {
                         <Star size={16} className="text-yellow-500 fill-yellow-500" />
                       )}
                     </h3>
-                    <p className="text-sm text-gray-500 capitalize">{pkg.name} Package</p>
+                    <p className="text-sm text-gray-500 capitalize">{pkg.name} Paket</p>
                   </div>
                 </div>
                 <button
                   onClick={() => openEditModal(pkg)}
                   className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
-                  title="Edit Package"
+                  title="Ubah Paket"
                 >
                   <Edit size={18} />
                 </button>
@@ -141,12 +141,12 @@ export default function PackageManagement() {
               {/* Details */}
               <div className="space-y-3 mb-4">
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Duration</span>
+                  <span className="text-gray-500">Durasi</span>
                   <span className="font-medium text-gray-900">{formatDuration(pkg.duration_months)}</span>
                 </div>
 
                 <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-gray-500">Price</span>
+                  <span className="text-gray-500">Harga</span>
                   <span className="text-lg font-bold text-emerald-600">
                     {formatPrice(pkg.price)}
                   </span>
@@ -164,7 +164,7 @@ export default function PackageManagement() {
                 <div className="mb-4">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                     <List size={16} />
-                    <span>Features</span>
+                    <span>Fitur</span>
                   </div>
                   <ul className="space-y-1">
                     {pkg.features.slice(0, 3).map((feature: string, idx: number) => (
@@ -175,7 +175,7 @@ export default function PackageManagement() {
                     ))}
                     {pkg.features.length > 3 && (
                       <li className="text-sm text-gray-500 pl-6">
-                        +{pkg.features.length - 3} more...
+                        +{pkg.features.length - 3} lainnya...
                       </li>
                     )}
                   </ul>
@@ -185,11 +185,11 @@ export default function PackageManagement() {
               {/* Info */}
               <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-500 space-y-1">
                 <div className="flex items-center justify-between">
-                  <span>Sort Order: {pkg.sort_order}</span>
+                  <span>Urutan: {pkg.sort_order}</span>
                   {pkg.is_popular && (
                     <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full flex items-center gap-1">
                       <Star size={10} className="fill-yellow-500 text-yellow-500" />
-                      Popular
+                      Populer
                     </span>
                   )}
                 </div>
@@ -207,7 +207,7 @@ export default function PackageManagement() {
             {/* Modal Header */}
             <div className="p-4 border-b border-gray-200 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Edit Package</h3>
+                <h3 className="text-lg font-semibold text-gray-900">Ubah Paket</h3>
                 <button
                   onClick={() => {
                     setShowEditModal(false)
@@ -225,13 +225,13 @@ export default function PackageManagement() {
               {/* Display Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Name
+                  Nama Tampilan
                 </label>
                 <input
                   type="text"
                   value={formData.display_name}
                   onChange={(e) => setFormData({ ...formData, display_name: e.target.value })}
-                  placeholder="e.g., Basic (3 Bulan)"
+                  placeholder="misal: Basic (3 Bulan)"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -239,7 +239,7 @@ export default function PackageManagement() {
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Deskripsi
                 </label>
                 <textarea
                   value={formData.description}
@@ -253,7 +253,7 @@ export default function PackageManagement() {
               {/* Price */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Price (Rp)
+                  Harga (Rp)
                 </label>
                 <input
                   type="number"
@@ -267,7 +267,7 @@ export default function PackageManagement() {
               {/* Features */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Features (Satu fitur per baris)
+                  Fitur (Satu fitur per baris)
                 </label>
                 <textarea
                   value={formData.features}
@@ -311,14 +311,14 @@ export default function PackageManagement() {
                 }}
                 className="px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={handleSavePackage}
                 disabled={saving}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
               >
-                {saving ? 'Saving...' : 'Save Changes'}
+                {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
               </button>
             </div>
           </div>

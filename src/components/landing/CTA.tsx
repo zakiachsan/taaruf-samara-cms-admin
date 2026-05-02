@@ -50,7 +50,7 @@ export default function CTA() {
         {/* Trust Note */}
         <p className="mt-6 sm:mt-8 text-emerald-100 text-xs sm:text-sm flex items-center justify-center gap-2 px-2">
           <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4" />
-          Gratis untuk didownload. No credit card required.
+          Gratis untuk didownload. Tidak perlu kartu kredit.
         </p>
       </div>
     </section>

@@ -31,7 +31,7 @@ export const useReferralSettings = () => {
       setSettings(data)
     } catch (err) {
       console.error('[useReferralSettings] Error fetching settings:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch referral settings')
+      setError(err instanceof Error ? err.message : 'Gagal memuat pengaturan referral')
     } finally {
       setLoading(false)
     }
@@ -43,18 +43,18 @@ export const useReferralSettings = () => {
     try {
       // Validate inputs
       if (updates.reward_amount !== undefined && updates.reward_amount <= 0) {
-        return { success: false, error: 'Reward amount must be greater than 0' }
+        return { success: false, error: 'Jumlah reward harus lebih besar dari 0' }
       }
       if (updates.min_withdrawal !== undefined && updates.min_withdrawal <= 0) {
-        return { success: false, error: 'Minimum withdrawal must be greater than 0' }
+        return { success: false, error: 'Minimum penarikan harus lebih besar dari 0' }
       }
       if (updates.max_withdrawal !== undefined && updates.min_withdrawal !== undefined) {
         if (updates.max_withdrawal !== null && updates.max_withdrawal < updates.min_withdrawal) {
-          return { success: false, error: 'Maximum withdrawal must be greater than or equal to minimum withdrawal' }
+          return { success: false, error: 'Maksimum penarikan harus lebih besar atau sama dengan minimum penarikan' }
         }
       }
       if (updates.withdrawal_processing_days !== undefined && updates.withdrawal_processing_days < 1) {
-        return { success: false, error: 'Processing days must be at least 1' }
+        return { success: false, error: 'Hari pemrosesan minimal 1' }
       }
 
       const { error } = await supabase
@@ -70,7 +70,7 @@ export const useReferralSettings = () => {
       return { success: true }
     } catch (err) {
       console.error('[useReferralSettings] Error updating settings:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update referral settings' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui pengaturan referral' }
     }
   }, [settings?.id])
 

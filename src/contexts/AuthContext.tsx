@@ -1,11 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-
-// Hardcoded admin credentials
-const ADMIN_CREDENTIALS = {
-  email: 'taarufsamara2026@gmail.com',
-  password: 'xj1lAIFO3G8SQFVI'
-}
+import { supabase } from '../lib/supabase'
 
 // User type definition
 interface User {
@@ -48,62 +43,107 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
-// Create a fake admin user for hardcoded login
-const createAdminUser = (): User => ({
-  id: 'admin-hardcoded',
-  email: ADMIN_CREDENTIALS.email,
-  email_confirmed_at: new Date().toISOString(),
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString()
-})
-
-const createAdminSession = (user: User): Session => ({
-  access_token: 'hardcoded-token',
-  refresh_token: 'hardcoded-refresh',
-  expires_in: 3600,
-  token_type: 'bearer',
-  user
-})
-
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check for hardcoded admin in localStorage
-    const storedAuth = localStorage.getItem('admin_auth')
-    if (storedAuth === 'true') {
-      const adminUser = createAdminUser()
-      setUser(adminUser)
-      setSession(createAdminSession(adminUser))
+    let mounted = true
+
+    const initAuth = async () => {
+      // Check for existing Supabase session
+      const { data: { session: existingSession } } = await supabase.auth.getSession()
+
+      if (mounted && existingSession?.user) {
+        const u = existingSession.user
+        setUser({
+          id: u.id,
+          email: u.email ?? '',
+          email_confirmed_at: u.email_confirmed_at,
+          created_at: u.created_at,
+          updated_at: u.updated_at,
+        })
+        setSession({
+          access_token: existingSession.access_token,
+          refresh_token: existingSession.refresh_token,
+          expires_in: existingSession.expires_in ?? 3600,
+          token_type: existingSession.token_type,
+          user: {
+            id: u.id,
+            email: u.email ?? '',
+            email_confirmed_at: u.email_confirmed_at,
+            created_at: u.created_at,
+            updated_at: u.updated_at,
+          },
+        })
+      }
+
+      if (!mounted) return
+      setLoading(false)
+
+      // Listen for auth state changes
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+        (_event, newSession) => {
+          if (!mounted) return
+          if (newSession?.user) {
+            const u = newSession.user
+            setUser({
+              id: u.id,
+              email: u.email ?? '',
+              email_confirmed_at: u.email_confirmed_at,
+              created_at: u.created_at,
+              updated_at: u.updated_at,
+            })
+            setSession({
+              access_token: newSession.access_token,
+              refresh_token: newSession.refresh_token,
+              expires_in: newSession.expires_in ?? 3600,
+              token_type: newSession.token_type,
+              user: {
+                id: u.id,
+                email: u.email ?? '',
+                email_confirmed_at: u.email_confirmed_at,
+                created_at: u.created_at,
+                updated_at: u.updated_at,
+              },
+            })
+          } else {
+            setUser(null)
+            setSession(null)
+          }
+        }
+      )
+
+      return () => {
+        sub.unsubscribe()
+      }
     }
-    setLoading(false)
+
+    initAuth()
+
+    return () => {
+      mounted = false
+    }
   }, [])
 
   const signIn = async (email: string, password: string) => {
-    // Check against hardcoded credentials
-    if (email !== ADMIN_CREDENTIALS.email || password !== ADMIN_CREDENTIALS.password) {
-      return { success: false, error: 'Email atau password salah' }
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      return { success: false, error: error.message === 'Invalid login credentials' ? 'Email atau password salah' : error.message }
     }
-
-    // Create admin user and session
-    const adminUser = createAdminUser()
-    const adminSession = createAdminSession(adminUser)
-
-    setUser(adminUser)
-    setSession(adminSession)
-
-    // Store in localStorage
-    localStorage.setItem('admin_auth', 'true')
-
     return { success: true }
   }
 
   const signOut = async () => {
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // Force clear if signOut fails
+      localStorage.removeItem('sb-okgddlgugdkiswitewdi-auth-token')
+    }
     setUser(null)
     setSession(null)
-    localStorage.removeItem('admin_auth')
   }
 
   const value = {

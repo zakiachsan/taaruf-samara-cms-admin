@@ -21,7 +21,7 @@ export const useTestimonials = () => {
 
       setTestimonials(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch testimonials')
+      setError(err instanceof Error ? err.message : 'Gagal memuat testimoni')
     } finally {
       setLoading(false)
     }
@@ -44,7 +44,7 @@ export const useTestimonials = () => {
       setTestimonials(prev => [...prev, data].sort((a, b) => a.display_order - b.display_order))
       return { success: true, data }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to create testimonial' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal membuat testimoni' }
     }
   }
 
@@ -67,7 +67,7 @@ export const useTestimonials = () => {
       )
       return { success: true, data }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update testimonial' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui testimoni' }
     }
   }
 
@@ -83,7 +83,7 @@ export const useTestimonials = () => {
       setTestimonials(prev => prev.filter(t => t.id !== id))
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete testimonial' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menghapus testimoni' }
     }
   }
 
@@ -119,7 +119,7 @@ export const useTestimonials = () => {
       await fetchTestimonials()
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to reorder' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal mengurutkan ulang' }
     }
   }
 

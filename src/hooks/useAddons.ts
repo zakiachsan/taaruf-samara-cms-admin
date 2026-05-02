@@ -46,7 +46,7 @@ export const useAddons = () => {
       setAddons(data || [])
     } catch (err) {
       console.error('[useAddons] Error fetching add-ons:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch add-ons')
+      setError(err instanceof Error ? err.message : 'Gagal memuat add-on')
     } finally {
       setLoading(false)
     }
@@ -83,7 +83,7 @@ export const useAddons = () => {
       return { success: true, addon: newAddon }
     } catch (err) {
       console.error('[useAddons] Error creating add-on:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to create add-on' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal membuat add-on' }
     }
   }, [])
 
@@ -107,7 +107,7 @@ export const useAddons = () => {
       return { success: true }
     } catch (err) {
       console.error('[useAddons] Error updating add-on:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update add-on' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui add-on' }
     }
   }, [])
 
@@ -126,14 +126,14 @@ export const useAddons = () => {
       return { success: true }
     } catch (err) {
       console.error('[useAddons] Error deleting add-on:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete add-on' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menghapus add-on' }
     }
   }, [])
 
   const toggleAddonActive = useCallback(async (id: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const addon = addons.find(a => a.id === id)
-      if (!addon) return { success: false, error: 'Add-on not found' }
+      if (!addon) return { success: false, error: 'Add-on tidak ditemukan' }
 
       const { error } = await supabase
         .from('subscription_addons')
@@ -150,7 +150,7 @@ export const useAddons = () => {
       return { success: true }
     } catch (err) {
       console.error('[useAddons] Error toggling add-on:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to toggle add-on' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal mengubah status add-on' }
     }
   }, [addons])
 
@@ -172,7 +172,7 @@ export const useAddons = () => {
       return { success: true }
     } catch (err) {
       console.error('[useAddons] Error reordering add-ons:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to reorder add-ons' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal mengurutkan ulang add-on' }
     }
   }, [fetchAddons])
 

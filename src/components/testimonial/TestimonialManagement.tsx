@@ -241,9 +241,9 @@ export default function TestimonialManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Testimonials</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Testimoni</h1>
           <p className="text-gray-600">
-            Total {testimonials.length} testimoni • {activeCount} active • {featuredCount} featured • {verifiedCount} verified
+            Total {testimonials.length} testimoni • {activeCount} aktif • {featuredCount} unggulan • {verifiedCount} terverifikasi
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -252,7 +252,7 @@ export default function TestimonialManagement() {
             className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw size={18} />
-            Refresh
+            Segarkan
           </button>
           <button
             onClick={openCreateModal}
@@ -268,7 +268,7 @@ export default function TestimonialManagement() {
       {loading ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-          <p className="text-gray-500">Loading testimonials...</p>
+          <p className="text-gray-500">Memuat testimoni...</p>
         </div>
       ) : testimonials.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -288,15 +288,15 @@ export default function TestimonialManagement() {
             <table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-16">Order</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Author</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24">Rating</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">Location</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Text</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Verified</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Featured</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-16">Urutan</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penulis</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-24">Penilaian</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-32">Lokasi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teks</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Terverifikasi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Unggulan</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-20">Status</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-32">Actions</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -396,7 +396,7 @@ export default function TestimonialManagement() {
                         }`}
                       >
                         {testimonial.is_active ? <Eye size={14} /> : <EyeOff size={14} />}
-                        {testimonial.is_active ? 'Active' : 'Inactive'}
+                        {testimonial.is_active ? 'Aktif' : 'Nonaktif'}
                       </button>
                     </td>
                     <td className="px-4 py-3">
@@ -430,7 +430,7 @@ export default function TestimonialManagement() {
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <h3 className="text-lg font-bold text-gray-900">
-                {editingTestimonial ? 'Edit Testimoni' : 'Tambah Testimoni'}
+                {editingTestimonial ? 'Ubah Testimoni' : 'Tambah Testimoni'}
               </h3>
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <X size={20} />
@@ -441,7 +441,7 @@ export default function TestimonialManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Author Name *
+                    Nama Penulis *
                   </label>
                   <input
                     type="text"
@@ -454,7 +454,7 @@ export default function TestimonialManagement() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location *
+                    Lokasi *
                   </label>
                   <input
                     type="text"
@@ -469,7 +469,7 @@ export default function TestimonialManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Testimonial Text *
+                  Teks Testimoni *
                 </label>
                 <textarea
                   required
@@ -483,7 +483,7 @@ export default function TestimonialManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Rating *
+                  Penilaian *
                 </label>
                 <div className="flex items-center gap-2">
                   {[1, 2, 3, 4, 5].map((rating) => (
@@ -496,7 +496,7 @@ export default function TestimonialManagement() {
                       <Star size={24} className={rating <= formData.rating ? 'fill-amber-400' : ''} />
                     </button>
                   ))}
-                  <span className="ml-2 text-sm text-gray-600">({formData.rating} stars)</span>
+                  <span className="ml-2 text-sm text-gray-600">({formData.rating} bintang)</span>
                 </div>
               </div>
 
@@ -523,17 +523,17 @@ export default function TestimonialManagement() {
                       }`}
                     >
                       <Upload size={18} />
-                      {uploadingFile ? 'Uploading...' : 'Upload Foto'}
+                      {uploadingFile ? 'Mengupload...' : 'Upload Foto'}
                     </label>
                     <span className="text-sm text-gray-500">Maksimal 5MB • JPG, PNG, WebP</span>
                   </div>
 
-                  {/* Avatar Preview */}
+                  {/* Pratinjau Avatar */}
                   {(formData.avatar_url || previewUrl) && (
                     <div className="flex items-center gap-4">
                       <img
                         src={previewUrl || formData.avatar_url}
-                        alt="Avatar Preview"
+                        alt="Pratinjau Avatar"
                         className="w-20 h-20 rounded-full object-cover border-2 border-gray-200"
                       />
                       <button
@@ -572,7 +572,7 @@ export default function TestimonialManagement() {
                     className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                   />
                   <label htmlFor="is_verified" className="text-sm text-gray-700">
-                    Verified
+                    Terverifikasi
                   </label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -584,7 +584,7 @@ export default function TestimonialManagement() {
                     className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                   />
                   <label htmlFor="is_featured" className="text-sm text-gray-700">
-                    Featured
+                    Unggulan
                   </label>
                 </div>
                 <div className="flex items-center gap-2">
@@ -596,14 +596,14 @@ export default function TestimonialManagement() {
                     className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
                   />
                   <label htmlFor="is_active" className="text-sm text-gray-700">
-                    Active
+                    Aktif
                   </label>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Display Order
+                  Urutan Tampilan
                 </label>
                 <input
                   type="number"
@@ -628,7 +628,7 @@ export default function TestimonialManagement() {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
                   <Save size={18} />
-                  {actionLoading === 'submit' ? 'Saving...' : 'Simpan'}
+                  {actionLoading === 'submit' ? 'Menyimpan...' : 'Simpan'}
                 </button>
               </div>
             </form>

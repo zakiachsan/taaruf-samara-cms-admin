@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
 import { useSelfValue, type SelfValueFilters } from '../../hooks/useSelfValue'
 import { type SelfValueRegistration } from '../../types'
 import {
@@ -13,14 +14,16 @@ import {
   ChevronRight,
   Award,
   X,
+  Plus,
+  UserPlus,
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All Status' },
-  { value: 'registered', label: 'Registered' },
-  { value: 'scheduled', label: 'Scheduled' },
-  { value: 'completed', label: 'Completed' },
-  { value: 'cancelled', label: 'Cancelled' },
+  { value: '', label: 'Semua Status' },
+  { value: 'registered', label: 'Terdaftar' },
+  { value: 'scheduled', label: 'Dijadwalkan' },
+  { value: 'completed', label: 'Selesai' },
+  { value: 'cancelled', label: 'Dibatalkan' },
 ]
 
 export default function SelfValueManagement() {
@@ -33,7 +36,37 @@ export default function SelfValueManagement() {
   const [showScheduleModal, setShowScheduleModal] = useState(false)
   const [showCompleteModal, setShowCompleteModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showManualModal, setShowManualModal] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Manual creation form
+  const [manualUserSearch, setManualUserSearch] = useState('')
+  const [manualUsers, setManualUsers] = useState<Array<{ id: string; full_name: string; email: string }>>([])
+  const [manualUserLoading, setManualUserLoading] = useState(false)
+  const [selectedManualUser, setSelectedManualUser] = useState<{ id: string; full_name: string; email: string } | null>(null)
+
+  // Debounced search for manual user selection
+  useEffect(() => {
+    const trimmed = manualUserSearch.trim()
+    if (!trimmed) {
+      setManualUsers([])
+      return
+    }
+    const timer = setTimeout(() => {
+      searchManualUsers(trimmed)
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [manualUserSearch])
+
+  const [manualFormData, setManualFormData] = useState({
+    quality_score: 0,
+    mental_readiness_score: 0,
+    emotional_baggage_notes: '',
+    life_needs_notes: '',
+    partner_category: '',
+    consultant_notes: '',
+    certificate_code: '',
+  })
 
   // Schedule form
   const [scheduleData, setScheduleData] = useState({
@@ -188,6 +221,67 @@ export default function SelfValueManagement() {
     setShowEditModal(true)
   }
 
+  const searchManualUsers = async (query?: string) => {
+    const searchTerm = query || manualUserSearch
+    if (!searchTerm.trim()) return
+    setManualUserLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, full_name, email')
+        .or(`full_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
+        .limit(10)
+
+      if (error) {
+        console.error('Error searching users:', error)
+        setManualUsers([])
+      } else if (data) {
+        setManualUsers(data.map((u: any) => ({ id: u.id, full_name: u.full_name, email: u.email })))
+      }
+    } catch (e) {
+      console.error('Error searching users:', e)
+    }
+    setManualUserLoading(false)
+  }
+
+  const handleManualCreate = async () => {
+    if (!selectedManualUser) {
+      alert('Pilih pengguna terlebih dahulu')
+      return
+    }
+
+    setActionLoading('manual')
+    const result = await saveTestResults(selectedManualUser.id, {
+      quality_score: manualFormData.quality_score,
+      mental_readiness_score: manualFormData.mental_readiness_score,
+      emotional_baggage_notes: manualFormData.emotional_baggage_notes,
+      life_needs_notes: manualFormData.life_needs_notes,
+      partner_category: manualFormData.partner_category,
+      consultant_notes: manualFormData.consultant_notes,
+      certificate_code: manualFormData.certificate_code || undefined,
+    })
+    setActionLoading(null)
+
+    if (result.success) {
+      setShowManualModal(false)
+      setSelectedManualUser(null)
+      setManualUserSearch('')
+      setManualUsers([])
+      setManualFormData({
+        quality_score: 0,
+        mental_readiness_score: 0,
+        emotional_baggage_notes: '',
+        life_needs_notes: '',
+        partner_category: '',
+        consultant_notes: '',
+        certificate_code: '',
+      })
+      alert('Hasil Bedah Value berhasil dibuat')
+    } else {
+      alert(result.error)
+    }
+  }
+
   const handleSaveEdit = async () => {
     if (!selectedRegistration) return
 
@@ -230,9 +324,15 @@ export default function SelfValueManagement() {
       completed: 'bg-emerald-100 text-emerald-700',
       cancelled: 'bg-red-100 text-red-700',
     }
+    const labels: Record<string, string> = {
+      registered: 'Terdaftar',
+      scheduled: 'Dijadwalkan',
+      completed: 'Selesai',
+      cancelled: 'Dibatalkan',
+    }
     return (
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100'}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {labels[status] || status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
     )
   }
@@ -248,7 +348,7 @@ export default function SelfValueManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.registered}</p>
-              <p className="text-sm text-gray-500">Registered</p>
+              <p className="text-sm text-gray-500">Terdaftar</p>
             </div>
           </div>
         </div>
@@ -259,7 +359,7 @@ export default function SelfValueManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.scheduled}</p>
-              <p className="text-sm text-gray-500">Scheduled</p>
+              <p className="text-sm text-gray-500">Dijadwalkan</p>
             </div>
           </div>
         </div>
@@ -270,7 +370,7 @@ export default function SelfValueManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
-              <p className="text-sm text-gray-500">Completed</p>
+              <p className="text-sm text-gray-500">Selesai</p>
             </div>
           </div>
         </div>
@@ -281,7 +381,7 @@ export default function SelfValueManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.cancelled}</p>
-              <p className="text-sm text-gray-500">Cancelled</p>
+              <p className="text-sm text-gray-500">Dibatalkan</p>
             </div>
           </div>
         </div>
@@ -313,7 +413,14 @@ export default function SelfValueManagement() {
           className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
         >
           <RefreshCw size={18} />
-          Refresh
+          Segarkan
+        </button>
+        <button
+          onClick={() => setShowManualModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
+        >
+          <Plus size={18} />
+          Tambah Hasil Manual
         </button>
       </div>
 
@@ -322,7 +429,7 @@ export default function SelfValueManagement() {
         {loading ? (
           <div className="p-12 text-center">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-gray-500">Memuat...</p>
           </div>
         ) : registrations.length === 0 ? (
           <div className="p-12 text-center">
@@ -330,91 +437,93 @@ export default function SelfValueManagement() {
             <p className="text-gray-500">Belum ada registrasi Self-Value</p>
           </div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Schedule</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Location</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Registered</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {registrations.map((reg) => (
-                <tr key={reg.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                        <User size={20} className="text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900">{(reg as any).user?.full_name || '-'}</p>
-                        <p className="text-sm text-gray-500">{(reg as any).user?.email || '-'}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">{getStatusBadge(reg.status)}</td>
-                  <td className="px-4 py-3">
-                    {reg.scheduled_date ? (
-                      <div className="text-sm">
-                        <p className="font-medium">{formatDate(reg.scheduled_date)}</p>
-                        <p className="text-gray-500">{reg.scheduled_time || '-'}</p>
-                      </div>
-                    ) : (
-                      <span className="text-gray-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{reg.location || '-'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{formatDate(reg.created_at)}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      {reg.status === 'registered' && (
-                        <button
-                          onClick={() => {
-                            setSelectedRegistration(reg)
-                            setShowScheduleModal(true)
-                          }}
-                          className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200"
-                        >
-                          Schedule
-                        </button>
-                      )}
-                      {reg.status === 'scheduled' && (
-                        <button
-                          onClick={() => {
-                            setSelectedRegistration(reg)
-                            setShowCompleteModal(true)
-                          }}
-                          className="px-3 py-1 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
-                        >
-                          Input Hasil Test
-                        </button>
-                      )}
-                      {reg.status === 'completed' && (
-                        <button
-                          onClick={() => handleEdit(reg)}
-                          className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
-                        >
-                          Edit Hasil
-                        </button>
-                      )}
-                      {(reg.status === 'registered' || reg.status === 'scheduled') && (
-                        <button
-                          onClick={() => handleCancel(reg)}
-                          disabled={actionLoading === reg.id}
-                          className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jadwal</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Terdaftar</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {registrations.map((reg) => (
+                  <tr key={reg.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                          <User size={20} className="text-emerald-600" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900">{(reg as any).user?.full_name || '-'}</p>
+                          <p className="text-sm text-gray-500">{(reg as any).user?.email || '-'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">{getStatusBadge(reg.status)}</td>
+                    <td className="px-4 py-3">
+                      {reg.scheduled_date ? (
+                        <div className="text-sm">
+                          <p className="font-medium">{formatDate(reg.scheduled_date)}</p>
+                          <p className="text-gray-500">{reg.scheduled_time || '-'}</p>
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600">{reg.location || '-'}</td>
+                    <td className="px-4 py-3 text-sm text-gray-500">{formatDate(reg.created_at)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        {reg.status === 'registered' && (
+                          <button
+                            onClick={() => {
+                              setSelectedRegistration(reg)
+                              setShowScheduleModal(true)
+                            }}
+                            className="px-3 py-1 text-sm bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200"
+                          >
+                            Jadwalkan
+                          </button>
+                        )}
+                        {reg.status === 'scheduled' && (
+                          <button
+                            onClick={() => {
+                              setSelectedRegistration(reg)
+                              setShowCompleteModal(true)
+                            }}
+                            className="px-3 py-1 text-sm bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
+                          >
+                            Input Hasil Test
+                          </button>
+                        )}
+                        {reg.status === 'completed' && (
+                          <button
+                            onClick={() => handleEdit(reg)}
+                            className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
+                          >
+                            Edit Hasil
+                          </button>
+                        )}
+                        {(reg.status === 'registered' || reg.status === 'scheduled') && (
+                          <button
+                            onClick={() => handleCancel(reg)}
+                            disabled={actionLoading === reg.id}
+                            className="px-3 py-1 text-sm bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50"
+                          >
+                            Batal
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* Pagination */}
@@ -425,15 +534,15 @@ export default function SelfValueManagement() {
               disabled={page === 1}
               className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
             >
-              <ChevronLeft size={16} /> Prev
+              <ChevronLeft size={16} /> Sebelumnya
             </button>
-            <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
+            <span className="text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
             >
-              Next <ChevronRight size={16} />
+              Berikutnya <ChevronRight size={16} />
             </button>
           </div>
         )}
@@ -491,7 +600,7 @@ export default function SelfValueManagement() {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
                   <Calendar size={18} />
-                  {actionLoading === 'schedule' ? 'Saving...' : 'Jadwalkan'}
+                  {actionLoading === 'schedule' ? 'Menyimpan...' : 'Jadwalkan'}
                 </button>
               </div>
             </div>
@@ -512,7 +621,7 @@ export default function SelfValueManagement() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quality Score (0-100)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Skor Kualitas (0-100)</label>
                   <input
                     type="number"
                     min="0"
@@ -524,7 +633,7 @@ export default function SelfValueManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mental Readiness (0-100)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Kesiapan Mental (0-100)</label>
                   <input
                     type="number"
                     min="0"
@@ -537,7 +646,7 @@ export default function SelfValueManagement() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Emotional Baggage Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Beban Emosional</label>
                 <textarea
                   value={completeData.emotional_baggage_notes}
                   onChange={(e) => setCompleteData({ ...completeData, emotional_baggage_notes: e.target.value })}
@@ -547,7 +656,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Life Needs Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Kebutuhan Hidup</label>
                 <textarea
                   value={completeData.life_needs_notes}
                   onChange={(e) => setCompleteData({ ...completeData, life_needs_notes: e.target.value })}
@@ -557,7 +666,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Partner</label>
                 <input
                   type="text"
                   value={completeData.partner_category}
@@ -567,7 +676,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Consultant Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Konsultan</label>
                 <textarea
                   value={completeData.consultant_notes}
                   onChange={(e) => setCompleteData({ ...completeData, consultant_notes: e.target.value })}
@@ -577,7 +686,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Kode Sertifikat (auto-generated if empty)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kode Sertifikat (dibuat otomatis jika kosong)</label>
                 <input
                   type="text"
                   value={completeData.certificate_code}
@@ -619,7 +728,7 @@ export default function SelfValueManagement() {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
                 >
                   <CheckCircle size={18} />
-                  {actionLoading === 'complete' ? 'Saving...' : 'Simpan & Selesaikan'}
+                  {actionLoading === 'complete' ? 'Menyimpan...' : 'Simpan & Selesaikan'}
                 </button>
               </div>
             </div>
@@ -640,7 +749,7 @@ export default function SelfValueManagement() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Quality Score (0-100)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Skor Kualitas (0-100)</label>
                   <input
                     type="number"
                     min="0"
@@ -652,7 +761,7 @@ export default function SelfValueManagement() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Mental Readiness (0-100)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Kesiapan Mental (0-100)</label>
                   <input
                     type="number"
                     min="0"
@@ -665,7 +774,7 @@ export default function SelfValueManagement() {
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Emotional Baggage Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Beban Emosional</label>
                 <textarea
                   value={completeData.emotional_baggage_notes}
                   onChange={(e) => setCompleteData({ ...completeData, emotional_baggage_notes: e.target.value })}
@@ -675,7 +784,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Life Needs Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Kebutuhan Hidup</label>
                 <textarea
                   value={completeData.life_needs_notes}
                   onChange={(e) => setCompleteData({ ...completeData, life_needs_notes: e.target.value })}
@@ -685,7 +794,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Partner Category</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Partner</label>
                 <input
                   type="text"
                   value={completeData.partner_category}
@@ -695,7 +804,7 @@ export default function SelfValueManagement() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Consultant Notes</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Konsultan</label>
                 <textarea
                   value={completeData.consultant_notes}
                   onChange={(e) => setCompleteData({ ...completeData, consultant_notes: e.target.value })}
@@ -737,7 +846,161 @@ export default function SelfValueManagement() {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
                 >
                   <CheckCircle size={18} />
-                  {actionLoading === 'edit' ? 'Saving...' : 'Simpan Perubahan'}
+                  {actionLoading === 'edit' ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manual Creation Modal */}
+      {showManualModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Tambah Hasil Bedah Value Manual</h3>
+              <button onClick={() => setShowManualModal(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {/* User Search */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Cari Pengguna</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                  <input
+                    type="text"
+                    value={manualUserSearch}
+                    onChange={(e) => {
+                      setManualUserSearch(e.target.value)
+                      setSelectedManualUser(null)
+                    }}
+                    placeholder="Ketik nama pengguna..."
+                    className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg"
+                  />
+                  {manualUserLoading && (
+                    <RefreshCw className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 animate-spin" size={16} />
+                  )}
+                </div>
+                {manualUsers.length > 0 && (
+                  <div className="mt-2 border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-40 overflow-y-auto">
+                    {manualUsers.map((u) => (
+                      <button
+                        key={u.id}
+                        onClick={() => setSelectedManualUser(u)}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-50 ${
+                          selectedManualUser?.id === u.id ? 'bg-emerald-50 text-emerald-700' : ''
+                        }`}
+                      >
+                        <p className="font-medium text-sm">{u.full_name}</p>
+                        <p className="text-xs text-gray-500">{u.email}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {manualUserSearch.trim() && !manualUserLoading && manualUsers.length === 0 && (
+                  <p className="mt-2 text-sm text-gray-500">Tidak ada pengguna ditemukan</p>
+                )}
+                {selectedManualUser && (
+                  <div className="mt-2 p-3 bg-emerald-50 rounded-lg flex items-center gap-2">
+                    <UserPlus size={16} className="text-emerald-600" />
+                    <p className="text-sm text-emerald-700">
+                      Dipilih: <strong>{selectedManualUser.full_name}</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Skor Kualitas (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={manualFormData.quality_score || ''}
+                    onChange={(e) => setManualFormData({ ...manualFormData, quality_score: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Kesiapan Mental (0-100)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={manualFormData.mental_readiness_score || ''}
+                    onChange={(e) => setManualFormData({ ...manualFormData, mental_readiness_score: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Beban Emosional</label>
+                <textarea
+                  value={manualFormData.emotional_baggage_notes}
+                  onChange={(e) => setManualFormData({ ...manualFormData, emotional_baggage_notes: e.target.value })}
+                  placeholder="Catatan tentang beban emosional..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Kebutuhan Hidup</label>
+                <textarea
+                  value={manualFormData.life_needs_notes}
+                  onChange={(e) => setManualFormData({ ...manualFormData, life_needs_notes: e.target.value })}
+                  placeholder="Catatan tentang kebutuhan hidup..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kategori Partner</label>
+                <input
+                  type="text"
+                  value={manualFormData.partner_category}
+                  onChange={(e) => setManualFormData({ ...manualFormData, partner_category: e.target.value })}
+                  placeholder="Kategori partner yang cocok..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Catatan Konsultan</label>
+                <textarea
+                  value={manualFormData.consultant_notes}
+                  onChange={(e) => setManualFormData({ ...manualFormData, consultant_notes: e.target.value })}
+                  placeholder="Catatan konsultan..."
+                  rows={2}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Kode Sertifikat</label>
+                <input
+                  type="text"
+                  value={manualFormData.certificate_code}
+                  onChange={(e) => setManualFormData({ ...manualFormData, certificate_code: e.target.value })}
+                  placeholder="BV-2026-XXXXX"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowManualModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={handleManualCreate}
+                  disabled={actionLoading === 'manual' || !selectedManualUser}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                >
+                  <CheckCircle size={18} />
+                  {actionLoading === 'manual' ? 'Menyimpan...' : 'Simpan Hasil'}
                 </button>
               </div>
             </div>

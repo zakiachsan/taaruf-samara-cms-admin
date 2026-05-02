@@ -99,7 +99,7 @@ export const useDashboardStats = () => {
         monthlyRevenue,
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error')
+      setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
       setLoading(false)
     }

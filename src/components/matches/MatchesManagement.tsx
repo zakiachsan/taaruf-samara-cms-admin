@@ -17,11 +17,11 @@ import {
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All Status' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'accepted', label: 'Accepted' },
-  { value: 'rejected', label: 'Rejected' },
-  { value: 'completed', label: 'Completed' },
+  { value: '', label: 'Semua Status' },
+  { value: 'pending', label: 'Menunggu' },
+  { value: 'accepted', label: 'Diterima' },
+  { value: 'rejected', label: 'Ditolak' },
+  { value: 'completed', label: 'Selesai' },
 ]
 
 export default function MatchesManagement() {
@@ -78,7 +78,7 @@ export default function MatchesManagement() {
     return (
       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${bg} ${text}`}>
         <Icon size={12} />
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+        {({ pending: 'Menunggu', accepted: 'Diterima', rejected: 'Ditolak', completed: 'Selesai' }[status] || status.charAt(0).toUpperCase() + status.slice(1))}
       </span>
     )
   }
@@ -105,7 +105,7 @@ export default function MatchesManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-              <p className="text-sm text-gray-500">Pending</p>
+              <p className="text-sm text-gray-500">Menunggu</p>
             </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function MatchesManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.accepted}</p>
-              <p className="text-sm text-gray-500">Accepted</p>
+              <p className="text-sm text-gray-500">Diterima</p>
             </div>
           </div>
         </div>
@@ -127,7 +127,7 @@ export default function MatchesManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
-              <p className="text-sm text-gray-500">Rejected</p>
+              <p className="text-sm text-gray-500">Ditolak</p>
             </div>
           </div>
         </div>
@@ -138,7 +138,7 @@ export default function MatchesManagement() {
             </div>
             <div>
               <p className="text-2xl font-bold text-gray-900">{stats.completed}</p>
-              <p className="text-sm text-gray-500">Completed</p>
+              <p className="text-sm text-gray-500">Selesai</p>
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function MatchesManagement() {
           className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
         >
           <RefreshCw size={18} />
-          Refresh
+          Segarkan
         </button>
       </div>
 
@@ -179,7 +179,7 @@ export default function MatchesManagement() {
         {loading ? (
           <div className="p-12 text-center">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-gray-500">Memuat...</p>
           </div>
         ) : matches.length === 0 ? (
           <div className="p-12 text-center">
@@ -190,13 +190,13 @@ export default function MatchesManagement() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Requester</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengirim</th>
                 <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase"></th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recipient</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Penerima</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Message</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pesan</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -250,7 +250,7 @@ export default function MatchesManagement() {
                             onClick={() => handleStatusChange(match.id, 'accepted')}
                             disabled={actionLoading === match.id}
                             className="p-2 hover:bg-emerald-50 rounded-lg"
-                            title="Accept"
+                            title="Terima"
                           >
                             <CheckCircle size={16} className="text-emerald-600" />
                           </button>
@@ -258,7 +258,7 @@ export default function MatchesManagement() {
                             onClick={() => handleStatusChange(match.id, 'rejected')}
                             disabled={actionLoading === match.id}
                             className="p-2 hover:bg-red-50 rounded-lg"
-                            title="Reject"
+                            title="Tolak"
                           >
                             <XCircle size={16} className="text-red-600" />
                           </button>
@@ -270,14 +270,14 @@ export default function MatchesManagement() {
                           disabled={actionLoading === match.id}
                           className="px-2 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200"
                         >
-                          Complete
+                          Selesaikan
                         </button>
                       )}
                       <button
                         onClick={() => handleDelete(match.id)}
                         disabled={actionLoading === match.id}
                         className="p-2 hover:bg-red-50 rounded-lg"
-                        title="Delete"
+                        title="Hapus"
                       >
                         <Trash2 size={16} className="text-red-600" />
                       </button>
@@ -297,15 +297,15 @@ export default function MatchesManagement() {
               disabled={page === 1}
               className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
             >
-              <ChevronLeft size={16} /> Prev
+              <ChevronLeft size={16} /> Sebelumnya
             </button>
-            <span className="text-sm text-gray-600">Page {page} of {totalPages}</span>
+            <span className="text-sm text-gray-600">Halaman {page} dari {totalPages}</span>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               className="flex items-center gap-1 px-3 py-1 border border-gray-300 rounded-lg disabled:opacity-50"
             >
-              Next <ChevronRight size={16} />
+              Berikutnya <ChevronRight size={16} />
             </button>
           </div>
         )}

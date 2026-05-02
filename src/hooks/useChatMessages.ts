@@ -88,7 +88,7 @@ export const useChatMessages = (chatId: string, page: number = 1, limit: number 
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 
@@ -106,7 +106,7 @@ export const useChatMessages = (chatId: string, page: number = 1, limit: number 
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' }
+      return { success: false, error: err instanceof Error ? err.message : 'Terjadi kesalahan' }
     }
   }
 

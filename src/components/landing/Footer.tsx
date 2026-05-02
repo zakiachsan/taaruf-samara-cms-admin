@@ -102,7 +102,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Copyright */}
             <p className="text-sm">
-              &copy; {currentYear} Taaruf Samara. All rights reserved.
+              &copy; {currentYear} Taaruf Samara. Hak cipta dilindungi undang-undang.
             </p>
 
             {/* Hidden Login Link - inconspicuous */}

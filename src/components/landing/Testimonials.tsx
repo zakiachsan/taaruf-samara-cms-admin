@@ -97,7 +97,7 @@ export default function Testimonials() {
             </div>
             <div>
               <div className="text-4xl font-bold mb-2">4.9/5</div>
-              <div className="text-emerald-100">Rating App</div>
+              <div className="text-emerald-100">Rating Aplikasi</div>
             </div>
           </div>
         </div>

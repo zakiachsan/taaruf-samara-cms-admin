@@ -67,7 +67,7 @@ export default function UserDashboardPage() {
     paid: { color: 'bg-emerald-100 text-emerald-700', icon: <Check size={14} />, label: 'Berhasil' },
     success: { color: 'bg-emerald-100 text-emerald-700', icon: <Check size={14} />, label: 'Berhasil' },
     pending: { color: 'bg-amber-100 text-amber-700', icon: <Clock size={14} />, label: 'Menunggu' },
-    expired: { color: 'bg-gray-100 text-gray-600', icon: <AlertCircle size={14} />, label: 'Expired' },
+    expired: { color: 'bg-gray-100 text-gray-600', icon: <AlertCircle size={14} />, label: 'Kadaluarsa' },
     cancelled: { color: 'bg-red-100 text-red-700', icon: <AlertCircle size={14} />, label: 'Dibatalkan' },
   }
 
@@ -93,7 +93,7 @@ export default function UserDashboardPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold">
-                  {user?.profile?.full_name || 'User'}
+                  {user?.profile?.full_name || 'Pengguna'}
                 </h1>
                 <p className="text-emerald-100 text-sm">{user?.email}</p>
                 <div className="flex items-center gap-2 mt-1">
@@ -108,7 +108,7 @@ export default function UserDashboardPage() {
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-xs text-gray-700 bg-gray-200 px-2 py-0.5 rounded-full">
-                      <Package size={12} /> Free
+                      <Package size={12} /> Gratis
                     </span>
                   )}
                 </div>

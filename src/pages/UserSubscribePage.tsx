@@ -246,7 +246,7 @@ export default function UserSubscribePage() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">Add-on Pendukung</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">Fitur Tambahan Pendukung</h2>
                   <p className="text-sm text-gray-500">Tingkatkan pengalaman dengan fitur tambahan</p>
                 </div>
                 <Sparkles className="text-emerald-500" size={20} />
@@ -276,7 +276,7 @@ export default function UserSubscribePage() {
                               <span className="font-medium text-gray-900">{addon.name}</span>
                               {addon.is_popular && (
                                 <span className="bg-pink-100 text-pink-600 text-xs font-semibold px-2 py-0.5 rounded-full">
-                                  Popular
+                                  Populer
                                 </span>
                               )}
                             </div>
@@ -305,7 +305,7 @@ export default function UserSubscribePage() {
                       {showAllAddons ? (
                         <>Sembunyikan <ChevronUp size={16} /></>
                       ) : (
-                        <>Lihat {addons.length - 4} add-on lainnya <ChevronDown size={16} /></>
+                        <>Lihat {addons.length - 4} fitur tambahan lainnya <ChevronDown size={16} /></>
                       )}
                     </button>
                   )}
@@ -327,7 +327,7 @@ export default function UserSubscribePage() {
 
                 {selectedAddons.size > 0 && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Add-on ({selectedAddons.size})</span>
+                    <span className="text-gray-500">Fitur Tambahan ({selectedAddons.size})</span>
                     <span className="font-medium text-gray-900">{formatPrice(addonsPrice)}</span>
                   </div>
                 )}

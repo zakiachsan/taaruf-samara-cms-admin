@@ -78,7 +78,7 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
 
       setMatches(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch matches')
+      setError(err instanceof Error ? err.message : 'Gagal memuat permintaan pertandingan')
     } finally {
       setLoading(false)
     }
@@ -103,7 +103,7 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
       setMatches(prev => prev.map(m => m.id === id ? { ...m, status } : m))
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui' }
     }
   }
 
@@ -120,7 +120,7 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
       setTotalCount(prev => prev - 1)
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to delete' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menghapus' }
     }
   }
 

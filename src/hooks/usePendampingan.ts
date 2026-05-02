@@ -106,7 +106,7 @@ export const usePendampingan = () => {
       setUsers(formattedUsers)
     } catch (err) {
       console.error('Error fetching pendampingan users:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch pendampingan users')
+      setError(err instanceof Error ? err.message : 'Gagal memuat pengguna pendampingan')
     } finally {
       setLoading(false)
     }
@@ -149,7 +149,7 @@ export const usePendampingan = () => {
 
       return { success: true, data }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update session' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui sesi' }
     }
   }, [])
 

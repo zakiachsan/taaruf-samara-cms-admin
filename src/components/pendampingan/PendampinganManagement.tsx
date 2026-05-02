@@ -25,7 +25,7 @@ const SESSION_LABELS: Record<number, string> = {
 }
 
 const STATUS_BADGES: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: 'Pending', color: 'bg-gray-100 text-gray-700', icon: Clock },
+  pending: { label: 'Menunggu', color: 'bg-gray-100 text-gray-700', icon: Clock },
   scheduled: { label: 'Terjadwal', color: 'bg-blue-100 text-blue-700', icon: Calendar },
   completed: { label: 'Selesai', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle2 },
   cancelled: { label: 'Dibatalkan', color: 'bg-red-100 text-red-700', icon: XCircle },
@@ -278,7 +278,7 @@ export default function PendampinganManagement() {
             className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw size={16} />
-            Refresh
+            Segarkan
           </button>
         </div>
 
@@ -314,7 +314,7 @@ export default function PendampinganManagement() {
         {alertsLoading ? (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400 mb-2" />
-            <p className="text-sm text-gray-500">Memuat alert...</p>
+            <p className="text-sm text-gray-500">Memuat notifikasi...</p>
           </div>
         ) : filteredAlerts.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center">
@@ -322,7 +322,7 @@ export default function PendampinganManagement() {
             <p className="text-gray-500 text-sm">
               {alertFilter === 'all'
                 ? 'Belum ada notifikasi add-on'
-                : `Tidak ada alert dengan status "${ALERT_STATUS_BADGES[alertFilter]?.label || alertFilter}"`}
+                : `Tidak ada notifikasi dengan status "${ALERT_STATUS_BADGES[alertFilter]?.label || alertFilter}"`}
             </p>
           </div>
         ) : (
@@ -331,7 +331,7 @@ export default function PendampinganManagement() {
               <table className="w-full text-sm">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengguna</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">WhatsApp</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Paket & Add-on</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
@@ -489,7 +489,7 @@ export default function PendampinganManagement() {
             className="flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw size={16} />
-            Refresh
+            Segarkan
           </button>
         </div>
 
@@ -504,7 +504,7 @@ export default function PendampinganManagement() {
         {loading ? (
           <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
             <RefreshCw className="w-8 h-8 animate-spin mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">Loading...</p>
+            <p className="text-gray-500">Memuat...</p>
           </div>
         ) : users.length === 0 ? (
           <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -517,10 +517,10 @@ export default function PendampinganManagement() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pengguna</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Berlaku Sampai</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">Progress</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-48">Progres</th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase w-32">Aksi</th>
                   </tr>
                 </thead>

@@ -81,7 +81,7 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
       if (error) throw error
       setProfile(data as FullUserProfile)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load profile')
+      setError(err instanceof Error ? err.message : 'Gagal memuat profil')
     } finally {
       setLoading(false)
     }
@@ -115,7 +115,7 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
         <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden mx-4">
           <div className="p-12 text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading profile...</p>
+            <p className="mt-4 text-gray-600">Memuat profil...</p>
           </div>
         </div>
       </div>
@@ -128,13 +128,13 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
         <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden mx-4">
           <div className="p-12 text-center">
             <XCircle size={48} className="mx-auto text-red-400 mb-4" />
-            <p className="text-red-600 font-medium mb-2">Failed to load profile</p>
-            <p className="text-gray-500 text-sm mb-4">{error || 'Profile not found'}</p>
+            <p className="text-red-600 font-medium mb-2">Gagal memuat profil</p>
+            <p className="text-gray-500 text-sm mb-4">{error || 'Profil tidak ditemukan'}</p>
             <button
               onClick={onClose}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
             >
-              Close
+              Tutup
             </button>
           </div>
         </div>
@@ -145,7 +145,7 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
   const allPhotos = [
     ...(profile.photo_closeup ? [{ url: profile.photo_closeup, type: 'Close-up' as const }] : []),
     ...(profile.photo_fullbody ? [{ url: profile.photo_fullbody, type: 'Full Body' as const }] : []),
-    ...(profile.photos?.map(p => ({ url: p, type: 'Additional' as const })) || [])
+    ...(profile.photos?.map(p => ({ url: p, type: 'Tambahan' as const })) || [])
   ]
 
   return (
@@ -159,7 +159,7 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">{profile.full_name || userName}</h2>
-              <p className="text-emerald-100 text-sm">User ID: {userId.slice(0, 8)}...</p>
+              <p className="text-emerald-100 text-sm">ID Pengguna: {userId.slice(0, 8)}...</p>
             </div>
           </div>
           <button
@@ -185,12 +185,12 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
                   {profile.is_verified ? (
                     <div className="flex items-center gap-2 text-emerald-600 text-sm">
                       <CheckCircle size={16} />
-                      <span>Verified</span>
+                      <span>Terverifikasi</span>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2 text-amber-600 text-sm">
                       <XCircle size={16} />
-                      <span>Unverified</span>
+                      <span>Belum Terverifikasi</span>
                     </div>
                   )}
                   {profile.is_premium && (
@@ -340,7 +340,7 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
 
               {/* Background */}
               <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <h3 className="font-semibold text-gray-900 mb-4 pb-2 border-b">Background</h3>
+                <h3 className="font-semibold text-gray-900 mb-4 pb-2 border-b">Latar Belakang</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="text-gray-400 mt-0.5">🕌</div>
@@ -430,12 +430,12 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-500">Referral Code</p>
+                    <p className="text-gray-500">Kode Referral</p>
                     <p className="font-mono font-medium">{profile.referral_code || '-'}</p>
                   </div>
                   {profile.bedah_value_cert_code && (
                     <div>
-                      <p className="text-gray-500">Sertifikat Code</p>
+                      <p className="text-gray-500">Kode Sertifikat</p>
                       <p className="font-mono font-medium">{profile.bedah_value_cert_code}</p>
                     </div>
                   )}
@@ -448,7 +448,7 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
         {/* Footer */}
         <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-between items-center">
           <p className="text-sm text-gray-500">
-            User ID: <span className="font-mono">{userId}</span>
+            ID Pengguna: <span className="font-mono">{userId}</span>
           </p>
           <button
             onClick={onClose}

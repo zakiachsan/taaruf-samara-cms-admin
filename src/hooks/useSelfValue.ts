@@ -52,7 +52,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
 
       setRegistrations(data || [])
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch registrations')
+      setError(err instanceof Error ? err.message : 'Gagal memuat pendaftaran')
     } finally {
       setLoading(false)
     }
@@ -84,7 +84,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
       setRegistrations(prev => prev.map(r => r.id === id ? { ...r, ...data } : r))
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui' }
     }
   }
 
@@ -134,7 +134,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
         .single()
 
       if (profileError || !profile) {
-        throw new Error('User profile not found')
+        throw new Error('Profil pengguna tidak ditemukan')
       }
 
       // Generate certificate code if not provided
@@ -174,7 +174,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
 
       return { success: true, certificate_code: certCode }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to save results' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal menyimpan hasil' }
     }
   }
 
@@ -257,7 +257,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
 
       return { success: true }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to update results' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui hasil' }
     }
   }
 
@@ -287,7 +287,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
 
       return { success: true, data }
     } catch (err) {
-      return { success: false, error: err instanceof Error ? err.message : 'Failed to fetch results' }
+      return { success: false, error: err instanceof Error ? err.message : 'Gagal memuat hasil' }
     }
   }
 

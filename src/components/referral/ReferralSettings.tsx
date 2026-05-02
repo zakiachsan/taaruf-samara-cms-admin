@@ -83,22 +83,22 @@ export default function ReferralSettings() {
 
     // Client-side validation
     if (isNaN(rewardAmount) || rewardAmount <= 0) {
-      setFormError('Reward amount must be greater than 0')
+      setFormError('Jumlah hadiah harus lebih dari 0')
       setSaving(false)
       return
     }
     if (isNaN(minWithdrawal) || minWithdrawal <= 0) {
-      setFormError('Minimum withdrawal must be greater than 0')
+      setFormError('Minimum penarikan harus lebih dari 0')
       setSaving(false)
       return
     }
     if (maxWithdrawal !== null && maxWithdrawal < minWithdrawal) {
-      setFormError('Maximum withdrawal must be greater than or equal to minimum withdrawal')
+      setFormError('Maksimum penarikan harus lebih besar atau sama dengan minimum penarikan')
       setSaving(false)
       return
     }
     if (isNaN(processingDays) || processingDays < 1) {
-      setFormError('Processing days must be at least 1')
+      setFormError('Hari pemrosesan minimal 1 hari')
       setSaving(false)
       return
     }
@@ -114,7 +114,7 @@ export default function ReferralSettings() {
     if (result.success) {
       setEditing(false)
     } else {
-      setFormError(result.error || 'Failed to update settings')
+      setFormError(result.error || 'Gagal memperbarui pengaturan')
     }
   }
 
@@ -124,7 +124,7 @@ export default function ReferralSettings() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Edit Referral Settings</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Edit Pengaturan Referral</h2>
             <p className="text-gray-500 mt-1">Ubah konfigurasi sistem referral</p>
           </div>
         </div>
@@ -139,10 +139,10 @@ export default function ReferralSettings() {
 
         {/* Form */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-6">
-          {/* Reward Amount */}
+          {/* Jumlah Hadiah */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Reward Amount
+              Jumlah Hadiah
             </label>
             <input
               type="text"
@@ -155,10 +155,10 @@ export default function ReferralSettings() {
             <p className="text-xs text-gray-500 mt-1">Komisi per referral berhasil (dalam Rupiah)</p>
           </div>
 
-          {/* Minimum Withdrawal */}
+          {/* Minimum Penarikan */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Minimum Withdrawal
+              Minimum Penarikan
             </label>
             <input
               type="text"
@@ -171,10 +171,10 @@ export default function ReferralSettings() {
             <p className="text-xs text-gray-500 mt-1">Minimum penarikan yang diizinkan (dalam Rupiah)</p>
           </div>
 
-          {/* Maximum Withdrawal */}
+          {/* Maksimum Penarikan */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Maximum Withdrawal <span className="text-gray-400">(Opsional)</span>
+              Maksimum Penarikan <span className="text-gray-400">(Opsional)</span>
             </label>
             <input
               type="text"
@@ -187,10 +187,10 @@ export default function ReferralSettings() {
             <p className="text-xs text-gray-500 mt-1">Biarkan kosong untuk tanpa batas penarikan</p>
           </div>
 
-          {/* Processing Days */}
+          {/* Hari Pemrosesan */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Processing Days
+              Hari Pemrosesan
             </label>
             <input
               type="number"
@@ -240,7 +240,7 @@ export default function ReferralSettings() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Referral Settings</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Pengaturan Referral</h2>
           <p className="text-gray-500 mt-1">Konfigurasi sistem referral aplikasi</p>
         </div>
         <div className="flex items-center gap-2">
@@ -249,14 +249,14 @@ export default function ReferralSettings() {
             className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw size={18} />
-            Refresh
+            Segarkan
           </button>
           <button
             onClick={handleEdit}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
           >
             <Edit size={18} />
-            Edit Settings
+            Edit Pengaturan
           </button>
         </div>
       </div>
@@ -291,14 +291,14 @@ export default function ReferralSettings() {
         <>
           {/* Settings Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Reward Amount */}
+            {/* Jumlah Hadiah */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-emerald-100 rounded-lg">
                   <DollarSign size={24} className="text-emerald-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Reward Amount</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Jumlah Hadiah</h3>
                   <p className="text-sm text-gray-500">Komisi per referral</p>
                 </div>
               </div>
@@ -307,14 +307,14 @@ export default function ReferralSettings() {
               </div>
             </div>
 
-            {/* Minimum Withdrawal */}
+            {/* Minimum Penarikan */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-blue-100 rounded-lg">
                   <Wallet size={24} className="text-blue-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Minimum Withdrawal</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Minimum Penarikan</h3>
                   <p className="text-sm text-gray-500">Minimum penarikan</p>
                 </div>
               </div>
@@ -323,14 +323,14 @@ export default function ReferralSettings() {
               </div>
             </div>
 
-            {/* Maximum Withdrawal */}
+            {/* Maksimum Penarikan */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-purple-100 rounded-lg">
                   <Lock size={24} className="text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Maximum Withdrawal</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Maksimum Penarikan</h3>
                   <p className="text-sm text-gray-500">Maksimum penarikan</p>
                 </div>
               </div>
@@ -339,14 +339,14 @@ export default function ReferralSettings() {
               </div>
             </div>
 
-            {/* Processing Days */}
+            {/* Hari Pemrosesan */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-3 bg-amber-100 rounded-lg">
                   <Clock size={24} className="text-amber-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Processing Days</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Hari Pemrosesan</h3>
                   <p className="text-sm text-gray-500">Hari pemrosesan</p>
                 </div>
               </div>

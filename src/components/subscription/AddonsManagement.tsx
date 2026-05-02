@@ -116,18 +116,18 @@ export default function AddonsManagement() {
   }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) return
+    if (!confirm(`Apakah Anda yakin ingin menghapus "${name}"? Tindakan ini tidak dapat dibatalkan.`)) return
 
     const result = await deleteAddon(id)
     if (!result.success) {
-      alert(result.error || 'Failed to delete add-on')
+      alert(result.error || 'Gagal menghapus add-on')
     }
   }
 
   const handleToggleActive = async (id: string) => {
     const result = await toggleAddonActive(id)
     if (!result.success) {
-      alert(result.error || 'Failed to toggle add-on')
+      alert(result.error || 'Gagal mengubah status add-on')
     }
   }
 
@@ -163,13 +163,13 @@ export default function AddonsManagement() {
   const handleSubmit = async () => {
     // Validation
     if (!formData.name.trim()) {
-      alert('Name is required')
+      alert('Nama wajib diisi')
       return
     }
 
     const price = parseInt(formData.price)
     if (isNaN(price) || price < 0) {
-      alert('Price must be a valid number')
+      alert('Harga harus berupa angka yang valid')
       return
     }
 
@@ -196,7 +196,7 @@ export default function AddonsManagement() {
       if (result.success) {
         setShowModal(false)
       } else {
-        alert(result.error || 'Failed to create add-on')
+        alert(result.error || 'Gagal membuat add-on')
       }
     } else {
       if (editingAddon) {
@@ -205,7 +205,7 @@ export default function AddonsManagement() {
           setShowModal(false)
           setEditingAddon(null)
         } else {
-          alert(result.error || 'Failed to update add-on')
+          alert(result.error || 'Gagal mengupdate add-on')
         }
       }
     }
@@ -229,7 +229,7 @@ export default function AddonsManagement() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Add-ons Management</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Manajemen Add-on</h2>
           <p className="text-gray-500 mt-1">Kelola fitur tambahan yang dapat dibeli pengguna</p>
         </div>
         <div className="flex items-center gap-2">
@@ -238,14 +238,14 @@ export default function AddonsManagement() {
             className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
           >
             <RefreshCw size={18} />
-            Refresh
+            Segarkan
           </button>
           <button
             onClick={openCreateModal}
             className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700"
           >
             <Plus size={18} />
-            Add New
+            Tambah Baru
           </button>
         </div>
       </div>
@@ -262,12 +262,12 @@ export default function AddonsManagement() {
       {loading ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500 mx-auto"></div>
-          <p className="mt-4 text-gray-500">Loading add-ons...</p>
+          <p className="mt-4 text-gray-500">Memuat add-on...</p>
         </div>
       ) : addons.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Puzzle size={48} className="mx-auto text-gray-300 mb-4" />
-          <p className="text-gray-500">No add-ons found</p>
+          <p className="text-gray-500">Tidak ada add-on ditemukan</p>
         </div>
       ) : (
         /* Add-ons Grid (Draggable) */
@@ -302,7 +302,7 @@ export default function AddonsManagement() {
                   <button
                     onClick={() => openEditModal(addon)}
                     className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg"
-                    title="Edit"
+                    title="Ubah"
                   >
                     <Edit size={16} />
                   </button>
@@ -310,7 +310,7 @@ export default function AddonsManagement() {
                     <button
                       onClick={() => handleDelete(addon.id, addon.name)}
                       className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg"
-                      title="Delete"
+                      title="Hapus"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -337,12 +337,12 @@ export default function AddonsManagement() {
                   {addon.is_active ? (
                     <span className="flex items-center gap-1 text-emerald-600 text-sm">
                       <CheckCircle size={14} />
-                      Active
+                      Aktif
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 text-gray-400 text-sm">
                       <XCircle size={14} />
-                      Inactive
+                      Nonaktif
                     </span>
                   )}
                 </div>
@@ -353,7 +353,7 @@ export default function AddonsManagement() {
                       ? 'text-amber-600 hover:bg-amber-50'
                       : 'text-emerald-600 hover:bg-emerald-50'
                   }`}
-                  title={addon.is_active ? 'Deactivate' : 'Activate'}
+                  title={addon.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                 >
                   <Power size={16} />
                 </button>
@@ -361,7 +361,7 @@ export default function AddonsManagement() {
 
               {/* Info */}
               <div className="mt-3 text-xs text-gray-400">
-                Order: {addon.sort_order}
+                Urutan: {addon.sort_order}
               </div>
             </div>
           ))}
@@ -376,7 +376,7 @@ export default function AddonsManagement() {
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold text-gray-900">
-                  {modalMode === 'create' ? 'Add New Add-on' : 'Edit Add-on'}
+                  {modalMode === 'create' ? 'Tambah Add-on Baru' : 'Ubah Add-on'}
                 </h3>
                 <button
                   onClick={() => {
@@ -395,13 +395,13 @@ export default function AddonsManagement() {
               {/* Name */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name <span className="text-red-500">*</span>
+                  Nama <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="e.g., Bedah Value"
+                  placeholder="misal: Bedah Value"
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -409,12 +409,12 @@ export default function AddonsManagement() {
               {/* Description */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Description
+                  Deskripsi
                 </label>
                 <textarea
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Brief description of the add-on..."
+                  placeholder="Deskripsi singkat add-on..."
                   rows={2}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 />
@@ -424,7 +424,7 @@ export default function AddonsManagement() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Price (Rp) <span className="text-red-500">*</span>
+                    Harga (Rp) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="number"
@@ -437,7 +437,7 @@ export default function AddonsManagement() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Icon
+                    Ikon
                   </label>
                   <select
                     value={formData.icon}
@@ -456,16 +456,16 @@ export default function AddonsManagement() {
               {/* Features */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Features (one per line)
+                  Fitur (satu per baris)
                 </label>
                 <textarea
                   value={formData.features}
                   onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                  placeholder="Feature 1&#10;Feature 2&#10;Feature 3"
+                  placeholder="Fitur 1&#10;Fitur 2&#10;Fitur 3"
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 font-mono text-sm"
                 />
-                <p className="text-xs text-gray-500 mt-1">Enter each feature on a new line</p>
+                <p className="text-xs text-gray-500 mt-1">Masukkan setiap fitur pada baris baru</p>
               </div>
 
               {/* Checkboxes */}
@@ -477,7 +477,7 @@ export default function AddonsManagement() {
                     onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
                     className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Popular</span>
+                  <span className="text-sm font-medium text-gray-700">Populer</span>
                 </label>
 
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -487,7 +487,7 @@ export default function AddonsManagement() {
                     onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                     className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
                   />
-                  <span className="text-sm font-medium text-gray-700">Active</span>
+                  <span className="text-sm font-medium text-gray-700">Aktif</span>
                 </label>
               </div>
             </div>
@@ -501,14 +501,14 @@ export default function AddonsManagement() {
                 }}
                 className="px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
               >
-                Cancel
+                Batal
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={saving}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50"
               >
-                {saving ? 'Saving...' : modalMode === 'create' ? 'Create Add-on' : 'Save Changes'}
+                {saving ? 'Menyimpan...' : modalMode === 'create' ? 'Buat Add-on' : 'Simpan Perubahan'}
               </button>
             </div>
           </div>

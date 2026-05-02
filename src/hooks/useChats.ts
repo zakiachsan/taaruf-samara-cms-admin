@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseAdmin } from '../lib/supabase'
 
 export interface Chat {
   id: string
@@ -24,6 +24,7 @@ export interface ChatFilters {
   search: string
   dateFrom?: string
   dateTo?: string
+  userId?: string
 }
 
 export const useChats = (filters: ChatFilters, page: number = 1, limit: number = 20) => {
@@ -35,7 +36,7 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
     try {
       setLoading(true)
 
-      let query = supabase
+      let query = supabaseAdmin
         .from('chats')
         .select('*', { count: 'exact' })
         .order('updated_at', { ascending: false })
@@ -47,6 +48,8 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
       if (filters.dateTo) {
         query = query.lte('created_at', filters.dateTo + 'T23:59:59')
       }
+
+      // Note: userId filter is applied client-side since participant_ids is an array
 
       const { count } = await query
       setTotalCount(count || 0)
@@ -70,7 +73,7 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
             .in('id', chat.participant_ids)
 
           // Get last message
-          const { data: lastMsg } = await supabase
+          const { data: lastMsg } = await supabaseAdmin
             .from('chat_messages')
             .select('content, created_at, sender_id')
             .eq('chat_id', chat.id)
@@ -79,7 +82,7 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
             .single()
 
           // Get unread count for each participant (we'll calculate total)
-          const { data: unreadData } = await supabase
+          const { data: unreadData } = await supabaseAdmin
             .from('chat_messages')
             .select('sender_id')
             .eq('chat_id', chat.id)
@@ -108,12 +111,18 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
       let filtered = chatsWithParticipants
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
-        filtered = chatsWithParticipants.filter((chat: Chat) =>
+        filtered = filtered.filter((chat: Chat) =>
           chat.participants?.some((p: { id: string; full_name: string; email: string }) =>
             p.full_name?.toLowerCase().includes(searchLower) ||
             p.email?.toLowerCase().includes(searchLower)
           ) ||
           chat.last_message?.content?.toLowerCase().includes(searchLower)
+        )
+      }
+
+      if (filters.userId) {
+        filtered = filtered.filter((chat: Chat) =>
+          chat.participant_ids?.includes(filters.userId!)
         )
       }
 
