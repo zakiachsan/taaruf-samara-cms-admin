@@ -4,6 +4,9 @@ on:
   push:
     branches: [ main ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -26,17 +29,10 @@ jobs:
           TSC_COMPILE_ON_ERROR: true
 
       - name: Deploy to dist branch
-        env:
-          GH_TOKEN: ${{ secrets.TAARUF_PAT }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git remote set-url origin https://x-access-token:${GH_TOKEN}@github.com/zakiachsan/taaruf-samara-cms-admin.git
-          git checkout --orphan dist-temp
-          git rm -rf --cached .
-          cp -r dist/* .
-          if [ -f dist/index.html ]; then cp dist/index.html .; fi
-          touch .nojekyll
-          git add -A
-          git commit -m "deploy: $(date +'%Y-%m-%d %H:%M:%S')"
-          git push -f origin dist-temp:dist
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          destination_dir: ./
+          publish_branch: dist
+          force_orphan: true
