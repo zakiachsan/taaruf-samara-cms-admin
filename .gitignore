@@ -15,6 +15,10 @@ dist-ssr
 *.tar.gz
 *.tar
 
+# Environment variables
+.env
+.env.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
