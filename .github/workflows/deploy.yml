@@ -1,29 +1,35 @@
-name: 🚀 Deploy to cPanel
+name: Auto Deploy to Production Branch
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+
   workflow_dispatch:
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: Checkout source
         uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
 
-      - name: 🟢 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
+          cache-dependency-path: package-lock.json
 
-      - name: 📦 Install Dependencies
+      - name: Install dependencies
         run: npm ci
 
-      - name: 🏗️ Build Project
+      - name: Build for production
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
@@ -31,26 +37,68 @@ jobs:
           TSC_COMPILE_ON_ERROR: true
         run: npm run build
 
-      - name: 📝 Create .htaccess for SPA
+      - name: Prepare Production Branch
         run: |
-          cat > dist/.htaccess << 'EOF'
-          <IfModule mod_rewrite.c>
-            RewriteEngine On
-            RewriteBase /
-            RewriteRule ^index\.html$ - [L]
-            RewriteCond %{REQUEST_FILENAME} !-f
-            RewriteCond %{REQUEST_FILENAME} !-d
-            RewriteRule . /index.html [L]
-          </IfModule>
-          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: 🚀 Deploy to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT || '21' }}
-          local-dir: ./dist/
-          server-dir: ./public_html/
-          protocol: ${{ secrets.FTP_PROTOCOL || 'ftp' }}
+          # 1. Simpan hasil build ke temp (diluar repo)
+          mkdir -p /tmp/deploy
+          cp -r dist/* /tmp/deploy/
+
+          # 2. Buat .htaccess untuk SPA routing (React Router)
+          cat > /tmp/deploy/.htaccess << 'EOF'
+# Taaruf Samara CMS Admin - SPA Configuration
+
+# Enable rewrite engine
+RewriteEngine On
+
+# Handle CORS
+<IfModule mod_headers.c>
+    Header always set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header always set Access-Control-Allow-Headers "Content-Type, Authorization, X-Requested-With"
+</IfModule>
+
+# React Router - redirect all non-file/directory requests to index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule .* index.html [L]
+
+# Disable directory browsing
+Options -Indexes
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Enable gzip compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json
+</IfModule>
+EOF
+
+          # 3. Fetch existing production branch
+          git fetch origin production || true
+
+          # 4. Checkout production branch dari origin/production kalau sudah ada
+          if git show-ref --verify --quiet refs/remotes/origin/production; then
+            git checkout -B production origin/production
+          else
+            git checkout -B production
+          fi
+
+          # 5. Remove old tracked files
+          git rm -rf . > /dev/null 2>&1 || true
+
+          # 6. Copy file deploy bersih ke root
+          cp -r /tmp/deploy/* . 2>/dev/null || true
+          if [ -f /tmp/deploy/.htaccess ]; then
+            cp /tmp/deploy/.htaccess .
+          fi
+
+          # 7. Commit (normal commit, no force needed)
+          git add -A
+          git commit -m "Auto-deploy from main @ $(date -u '+%Y-%m-%d %H:%M UTC')" --allow-empty
+
+          # 8. Push normally (NOT force) - creates linear history
+          git push origin production
