@@ -361,7 +361,7 @@ export default function UserSubscribePage() {
           {/* Trust badge */}
           <div className="flex items-center justify-center gap-2 text-sm text-gray-400 mb-8">
             <Shield size={16} />
-            <span>Pembayaran aman melalui iPaymu</span>
+            <span>Pembayaran aman melalui Midtrans</span>
           </div>
         </div>
       </div>

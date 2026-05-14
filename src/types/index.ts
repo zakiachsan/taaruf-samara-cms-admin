@@ -191,6 +191,14 @@ export interface Testimonial {
   updated_at?: string
 }
 
+export interface ChatKeyword {
+  id: string
+  word: string
+  category: 'harsh_words' | 'contact_info' | 'inappropriate'
+  is_active: boolean
+  created_at: string
+}
+
 // Subscription types (synced with Mobile App)
 export interface SubscriptionPackage {
   id: string
@@ -236,6 +244,9 @@ export interface SubscriptionPurchase {
   reference_id?: string
   ipaymu_payment_url?: string
   ipaymu_trx_id?: string
+  midtrans_snap_token?: string
+  midtrans_redirect_url?: string
+  midtrans_transaction_id?: string
   paid_at?: string
   created_at: string
   updated_at: string

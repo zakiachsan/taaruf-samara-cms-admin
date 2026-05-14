@@ -8,6 +8,14 @@ interface UserDetailProps {
   onClose: () => void
 }
 
+interface SubscriptionInfo {
+  package_name?: string
+  package_display_name?: string
+  status?: string
+  expires_at?: string
+  start_date?: string
+}
+
 interface FullUserProfile {
   // Basic info
   user_id: string
@@ -61,6 +69,7 @@ const STORAGE_URL = 'https://okgddlgugdkiswitewdi.supabase.co/storage/v1/object/
 
 export default function UserDetail({ userId, userName, onClose }: UserDetailProps) {
   const [profile, setProfile] = useState<FullUserProfile | null>(null)
+  const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [imageLoading, setImageLoading] = useState<string | null>(null)
@@ -80,6 +89,35 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
 
       if (error) throw error
       setProfile(data as FullUserProfile)
+
+      // Fetch active subscription info
+      const now = new Date().toISOString()
+      const { data: subData } = await supabase
+        .from('subscription_purchases')
+        .select(`
+          status,
+          expires_at,
+          start_date,
+          package:subscription_packages(display_name, name)
+        `)
+        .eq('user_id', userId)
+        .eq('status', 'paid')
+        .gt('expires_at', now)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      if (subData) {
+        setSubscription({
+          package_name: (subData.package as any)?.name,
+          package_display_name: (subData.package as any)?.display_name,
+          status: subData.status,
+          expires_at: subData.expires_at,
+          start_date: subData.start_date,
+        })
+      } else {
+        setSubscription(null)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memuat profil')
     } finally {
@@ -193,10 +231,17 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
                       <span>Belum Terverifikasi</span>
                     </div>
                   )}
-                  {profile.is_premium && (
+                  {(profile.is_premium || subscription) && (
                     <div className="flex items-center gap-2 text-amber-600 text-sm">
                       <Crown size={16} />
-                      <span>Premium</span>
+                      <span>
+                        {subscription?.package_display_name || subscription?.package_name || 'Premium'}
+                      </span>
+                    </div>
+                  )}
+                  {subscription?.expires_at && (
+                    <div className="text-xs text-gray-500">
+                      Berlaku sampai: {formatDate(subscription.expires_at)}
                     </div>
                   )}
                   {profile.has_bedah_value_cert && (

@@ -12,24 +12,16 @@ import {
   CheckCircle2,
   XCircle,
   Sparkles,
+  Loader2,
 } from 'lucide-react'
+import { supabaseAdmin } from '../../lib/supabase'
+import type { ChatKeyword } from '../../types'
 
 // ─── Types ──────────────────────────────────────────────
 
-type Severity = 'low' | 'medium' | 'high'
 type Category = 'harsh_words' | 'contact_info' | 'inappropriate'
 
-interface KeywordItem {
-  id: string
-  word: string
-  category: Category
-  severity: Severity
-  createdAt: string
-}
-
 // ─── Constants ──────────────────────────────────────────
-
-const STORAGE_KEY = 'taaruf_chat_keywords'
 
 const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: 'harsh_words', label: 'Kata Kasar' },
@@ -37,71 +29,10 @@ const CATEGORY_OPTIONS: { value: Category; label: string }[] = [
   { value: 'inappropriate', label: 'Tidak Pantas' },
 ]
 
-const SEVERITY_OPTIONS: { value: Severity; label: string }[] = [
-  { value: 'low', label: 'Rendah' },
-  { value: 'medium', label: 'Sedang' },
-  { value: 'high', label: 'Tinggi' },
-]
-
-const DEFAULT_KEYWORDS: Omit<KeywordItem, 'id' | 'createdAt'>[] = [
-  { word: 'kontak', category: 'contact_info', severity: 'medium' },
-  { word: 'wa', category: 'contact_info', severity: 'medium' },
-  { word: 'whatsapp', category: 'contact_info', severity: 'medium' },
-  { word: 'telepon', category: 'contact_info', severity: 'medium' },
-  { word: 'no hp', category: 'contact_info', severity: 'medium' },
-  { word: 'jamin', category: 'inappropriate', severity: 'low' },
-  { word: 'pasti', category: 'inappropriate', severity: 'low' },
-]
-
 // ─── Helpers ────────────────────────────────────────────
-
-function generateId() {
-  return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
-}
-
-function loadKeywords(): KeywordItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as KeywordItem[]
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed
-    }
-  } catch {
-    // ignore
-  }
-  // Preload defaults
-  const defaults = DEFAULT_KEYWORDS.map((k) => ({
-    ...k,
-    id: generateId(),
-    createdAt: new Date().toISOString(),
-  }))
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(defaults))
-  return defaults
-}
-
-function saveKeywords(items: KeywordItem[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
-}
 
 function getCategoryLabel(cat: Category) {
   return CATEGORY_OPTIONS.find((c) => c.value === cat)?.label ?? cat
-}
-
-function getSeverityLabel(sev: Severity) {
-  return SEVERITY_OPTIONS.find((s) => s.value === sev)?.label ?? sev
-}
-
-function getSeverityColor(sev: Severity) {
-  switch (sev) {
-    case 'high':
-      return 'bg-red-100 text-red-700'
-    case 'medium':
-      return 'bg-amber-100 text-amber-700'
-    case 'low':
-      return 'bg-blue-100 text-blue-700'
-    default:
-      return 'bg-gray-100 text-gray-700'
-  }
 }
 
 function getCategoryIcon(cat: Category) {
@@ -137,27 +68,64 @@ function escapeRegExp(str: string) {
 // ─── Component ──────────────────────────────────────────
 
 export default function ChatKeywordSensor() {
-  const [keywords, setKeywords] = useState<KeywordItem[]>(loadKeywords)
+  const [keywords, setKeywords] = useState<ChatKeyword[]>([])
+  const [loading, setLoading] = useState(true)
   const [newWord, setNewWord] = useState('')
   const [newCategory, setNewCategory] = useState<Category>('contact_info')
-  const [newSeverity, setNewSeverity] = useState<Severity>('medium')
   const [searchTerm, setSearchTerm] = useState('')
   const [testMessage, setTestMessage] = useState('')
+  const [actionLoading, setActionLoading] = useState(false)
 
-  // Persist on change
+  // Fetch keywords from Supabase
+  const fetchKeywords = async () => {
+    setLoading(true)
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('chat_keywords')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Error fetching keywords:', error)
+        return
+      }
+      setKeywords(data || [])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    saveKeywords(keywords)
-  }, [keywords])
+    fetchKeywords()
+
+    // Subscribe to realtime changes
+    const channel = supabaseAdmin
+      .channel('chat-keywords-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_keywords',
+        },
+        () => {
+          fetchKeywords()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabaseAdmin.removeChannel(channel)
+    }
+  }, [])
 
   const stats = useMemo(() => {
     const total = keywords.length
-    const low = keywords.filter((k) => k.severity === 'low').length
-    const medium = keywords.filter((k) => k.severity === 'medium').length
-    const high = keywords.filter((k) => k.severity === 'high').length
     const harshWords = keywords.filter((k) => k.category === 'harsh_words').length
     const contactInfo = keywords.filter((k) => k.category === 'contact_info').length
     const inappropriate = keywords.filter((k) => k.category === 'inappropriate').length
-    return { total, low, medium, high, harshWords, contactInfo, inappropriate }
+    return { total, harshWords, contactInfo, inappropriate }
   }, [keywords])
 
   const filteredKeywords = useMemo(() => {
@@ -179,27 +147,55 @@ export default function ChatKeywordSensor() {
     })
   }, [testMessage, keywords])
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     const trimmed = newWord.trim().toLowerCase()
     if (!trimmed) return
     if (keywords.some((k) => k.word.toLowerCase() === trimmed)) {
       alert('Kata kunci sudah ada dalam daftar.')
       return
     }
-    const item: KeywordItem = {
-      id: generateId(),
-      word: trimmed,
-      category: newCategory,
-      severity: newSeverity,
-      createdAt: new Date().toISOString(),
+
+    setActionLoading(true)
+    try {
+      const { error } = await supabaseAdmin.from('chat_keywords').insert({
+        word: trimmed,
+        category: newCategory,
+        is_active: true,
+      })
+
+      if (error) {
+        console.error('Error adding keyword:', error)
+        alert('Gagal menambah kata kunci: ' + error.message)
+        return
+      }
+
+      setNewWord('')
+      await fetchKeywords()
+    } finally {
+      setActionLoading(false)
     }
-    setKeywords((prev) => [item, ...prev])
-    setNewWord('')
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Hapus kata kunci ini?')) return
-    setKeywords((prev) => prev.filter((k) => k.id !== id))
+
+    setActionLoading(true)
+    try {
+      const { error } = await supabaseAdmin
+        .from('chat_keywords')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        console.error('Error deleting keyword:', error)
+        alert('Gagal menghapus kata kunci: ' + error.message)
+        return
+      }
+
+      await fetchKeywords()
+    } finally {
+      setActionLoading(false)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -228,7 +224,7 @@ export default function ChatKeywordSensor() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 border border-gray-200">
           <div className="flex items-start justify-between">
             <div>
@@ -241,45 +237,6 @@ export default function ChatKeywordSensor() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Keparahan Tinggi</p>
-              <h3 className="text-2xl font-bold text-gray-900">{stats.high}</h3>
-            </div>
-            <div className="p-2 rounded-lg bg-red-500">
-              <AlertTriangle size={20} className="text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Keparahan Sedang</p>
-              <h3 className="text-2xl font-bold text-gray-900">{stats.medium}</h3>
-            </div>
-            <div className="p-2 rounded-lg bg-amber-500">
-              <MessageSquareWarning size={20} className="text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-4 border border-gray-200">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm text-gray-500 mb-1">Keparahan Rendah</p>
-              <h3 className="text-2xl font-bold text-gray-900">{stats.low}</h3>
-            </div>
-            <div className="p-2 rounded-lg bg-blue-500">
-              <Sparkles size={20} className="text-white" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Category Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white rounded-xl p-4 border border-gray-200 flex items-center gap-4">
           <div className="p-2 rounded-lg bg-rose-100">
             <Frown size={20} className="text-rose-600" />
@@ -289,6 +246,7 @@ export default function ChatKeywordSensor() {
             <p className="text-xl font-bold text-gray-900">{stats.harshWords}</p>
           </div>
         </div>
+
         <div className="bg-white rounded-xl p-4 border border-gray-200 flex items-center gap-4">
           <div className="p-2 rounded-lg bg-blue-100">
             <Phone size={20} className="text-blue-600" />
@@ -298,6 +256,7 @@ export default function ChatKeywordSensor() {
             <p className="text-xl font-bold text-gray-900">{stats.contactInfo}</p>
           </div>
         </div>
+
         <div className="bg-white rounded-xl p-4 border border-gray-200 flex items-center gap-4">
           <div className="p-2 rounded-lg bg-purple-100">
             <MessageSquareWarning size={20} className="text-purple-600" />
@@ -334,23 +293,12 @@ export default function ChatKeywordSensor() {
               </option>
             ))}
           </select>
-          <select
-            value={newSeverity}
-            onChange={(e) => setNewSeverity(e.target.value as Severity)}
-            className="px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
-          >
-            {SEVERITY_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
           <button
             onClick={handleAdd}
-            disabled={!newWord.trim()}
+            disabled={!newWord.trim() || actionLoading}
             className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            <Plus size={18} />
+            {actionLoading ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
             Tambah
           </button>
         </div>
@@ -375,7 +323,12 @@ export default function ChatKeywordSensor() {
 
       {/* Keywords Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {keywords.length === 0 ? (
+        {loading ? (
+          <div className="p-12 text-center">
+            <Loader2 size={48} className="mx-auto text-gray-300 mb-4 animate-spin" />
+            <p className="text-gray-500 font-medium">Memuat kata kunci...</p>
+          </div>
+        ) : keywords.length === 0 ? (
           <div className="p-12 text-center">
             <ShieldAlert size={48} className="mx-auto text-gray-300 mb-4" />
             <p className="text-gray-500 font-medium">Belum ada kata kunci</p>
@@ -398,9 +351,6 @@ export default function ChatKeywordSensor() {
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Kategori
-                  </th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Keparahan
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden md:table-cell">
                     Tanggal Ditambahkan
@@ -428,22 +378,14 @@ export default function ChatKeywordSensor() {
                           {getCategoryLabel(k.category)}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(
-                            k.severity
-                          )}`}
-                        >
-                          {getSeverityLabel(k.severity)}
-                        </span>
-                      </td>
                       <td className="px-4 py-3 text-sm text-gray-500 hidden md:table-cell">
-                        {formatDate(k.createdAt)}
+                        {formatDate(k.created_at)}
                       </td>
                       <td className="px-4 py-3">
                         <button
                           onClick={() => handleDelete(k.id)}
-                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          disabled={actionLoading}
+                          className="flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                           title="Hapus"
                         >
                           <Trash2 size={16} />
@@ -524,13 +466,6 @@ export default function ChatKeywordSensor() {
                       >
                         <CatIcon size={10} />
                         {getCategoryLabel(k.category)}
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(
-                          k.severity
-                        )}`}
-                      >
-                        {getSeverityLabel(k.severity)}
                       </span>
                     </div>
                   )

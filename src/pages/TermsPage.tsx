@@ -68,7 +68,7 @@ export default function TermsPage() {
               <li className="flex items-start gap-2"><span className="text-gray-400 mt-1">&#8226;</span><span>Paket Premium: Fitur lengkap termasuk pendampingan dan konseling</span></li>
             </ul>
             <p className="text-gray-600 leading-relaxed mt-3">
-              Pembayaran dilakukan melalui mitra pembayaran pihak ketiga (iPaymu). Semua transaksi bersifat final dan tidak dapat dikembalikan kecuali ditentukan lain oleh <Link to="/refund" className="text-emerald-600 hover:underline">kebijakan refund kami</Link>.
+              Pembayaran dilakukan melalui mitra pembayaran pihak ketiga (Midtrans). Semua transaksi bersifat final dan tidak dapat dikembalikan kecuali ditentukan lain oleh <Link to="/refund" className="text-emerald-600 hover:underline">kebijakan refund kami</Link>.
             </p>
           </section>
 

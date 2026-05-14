@@ -84,8 +84,19 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         return
       }
 
-      // Get user_ids for fetching auth.users emails
+      // Get user_ids for fetching auth.users emails and subscriptions
       const userIds = profiles.map(p => p.user_id)
+
+      // Fetch active subscriptions from subscription_purchases for all users in this page
+      const now = new Date().toISOString()
+      const { data: subscriptions } = await supabase
+        .from('subscription_purchases')
+        .select('user_id, status, expires_at')
+        .in('user_id', userIds)
+        .eq('status', 'paid')
+        .gt('expires_at', now)
+
+      const premiumUserIds = new Set((subscriptions || []).map(s => s.user_id))
 
       // Transform data - use user_profiles data as source of truth
       let transformedUsers: User[] = profiles.map((p: any) => ({
@@ -103,7 +114,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
           education: p.education,
           location: p.location,
           bio: p.bio,
-          is_premium: p.is_premium,
+          is_premium: premiumUserIds.has(p.user_id) || p.is_premium,
           is_blurred: p.is_blurred,
           photos: p.photos,
           has_bedah_value_cert: p.has_bedah_value_cert,
@@ -132,7 +143,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         console.log('Could not fetch emails from users table:', e)
       }
 
-      // Filter by premium status
+      // Filter by premium status (already computed from subscription_purchases)
       if (filters.isPremium) {
         const isPremium = filters.isPremium === 'true'
         transformedUsers = transformedUsers.filter(u =>

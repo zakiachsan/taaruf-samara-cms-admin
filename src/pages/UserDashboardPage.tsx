@@ -58,8 +58,9 @@ export default function UserDashboardPage() {
   }
 
   const handlePurchaseClick = (p: SubscriptionPurchase) => {
-    if (p.ipaymu_payment_url) {
-      window.open(p.ipaymu_payment_url, '_blank')
+    const paymentUrl = p.midtrans_redirect_url || p.ipaymu_payment_url
+    if (paymentUrl) {
+      window.open(paymentUrl, '_blank')
     }
   }
 

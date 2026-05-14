@@ -147,7 +147,7 @@ export const useWebSubscription = (userId?: string) => {
   }, 0)
   const totalPrice = packagePrice + addonsPrice
 
-  // Purchase and redirect to iPaymu
+  // Purchase and redirect to Midtrans
   const purchase = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
     if (!selectedPackage) return { success: false, error: 'Pilih paket terlebih dahulu' }
     if (!userId) return { success: false, error: 'Silakan login terlebih dahulu' }
@@ -225,7 +225,7 @@ export const useWebSubscription = (userId?: string) => {
         return { success: false, error: 'Gagal mendapatkan halaman pembayaran.' }
       }
 
-      // Redirect browser to iPaymu
+      // Redirect browser to Midtrans
       window.location.href = paymentData.url
       return { success: true }
     } catch (err) {

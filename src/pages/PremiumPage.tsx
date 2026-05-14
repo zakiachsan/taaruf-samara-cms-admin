@@ -132,7 +132,7 @@ export default function PremiumPage() {
         {/* Trust */}
         <div className="mt-8 text-center">
           <p className="text-sm text-gray-500">
-            Pembayaran aman dan terpercaya melalui iPaymu. <Link to="/refund" className="text-emerald-600 hover:underline">Lihat kebijakan refund</Link>.
+            Pembayaran aman dan terpercaya melalui Midtrans. <Link to="/refund" className="text-emerald-600 hover:underline">Lihat kebijakan refund</Link>.
           </p>
         </div>
       </div>
