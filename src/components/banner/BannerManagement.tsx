@@ -18,8 +18,6 @@ import {
   Loader2,
 } from 'lucide-react'
 
-type CropRatio = 'none' | '16:9' | '4:3' | '1:1'
-
 export default function BannerManagement() {
   const { banners, loading, refetch, createBanner, updateBanner, deleteBanner, toggleActive } = useBanners()
   const [showModal, setShowModal] = useState(false)
@@ -29,9 +27,16 @@ export default function BannerManagement() {
   // Upload & crop state
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [cropRatio, setCropRatio] = useState<CropRatio>('16:9')
   const [uploadingImage, setUploadingImage] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Visual crop state (fixed 16:9)
+  const [cropPos, setCropPos] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
+  const [imgSize, setImgSize] = useState({ naturalWidth: 0, naturalHeight: 0, renderedWidth: 0, renderedHeight: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -59,7 +64,8 @@ export default function BannerManagement() {
     setEditingBanner(null)
     setSelectedFile(null)
     setPreviewUrl(null)
-    setCropRatio('16:9')
+    setCropPos({ x: 0, y: 0 })
+    setImgSize({ naturalWidth: 0, naturalHeight: 0, renderedWidth: 0, renderedHeight: 0 })
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -84,43 +90,110 @@ export default function BannerManagement() {
     setPreviewUrl(preview)
   }
 
+  const ASPECT_RATIO = 16 / 9
+
+  const getCropBoxSize = () => {
+    const { renderedWidth, renderedHeight } = imgSize
+    let w = renderedWidth
+    let h = renderedWidth / ASPECT_RATIO
+    if (h > renderedHeight) {
+      h = renderedHeight
+      w = renderedHeight * ASPECT_RATIO
+    }
+    return { width: w, height: h }
+  }
+
+  const clampCropPos = (x: number, y: number) => {
+    const { renderedWidth, renderedHeight } = imgSize
+    const { width, height } = getCropBoxSize()
+    return {
+      x: Math.max(0, Math.min(renderedWidth - width, x)),
+      y: Math.max(0, Math.min(renderedHeight - height, y)),
+    }
+  }
+
+  const handleImageLoad = () => {
+    const img = imageRef.current
+    const container = containerRef.current
+    if (!img || !container) return
+    const renderedWidth = img.clientWidth
+    const renderedHeight = img.clientHeight
+    const naturalWidth = img.naturalWidth
+    const naturalHeight = img.naturalHeight
+    setImgSize({ naturalWidth, naturalHeight, renderedWidth, renderedHeight })
+    // Center initial crop position
+    const { width, height } = (() => {
+      let w = renderedWidth
+      let h = renderedWidth / ASPECT_RATIO
+      if (h > renderedHeight) {
+        h = renderedHeight
+        w = renderedHeight * ASPECT_RATIO
+      }
+      return { width: w, height: h }
+    })()
+    setCropPos({
+      x: (renderedWidth - width) / 2,
+      y: (renderedHeight - height) / 2,
+    })
+  }
+
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+    setIsDragging(true)
+    setDragOffset({
+      x: clientX - rect.left - cropPos.x,
+      y: clientY - rect.top - cropPos.y,
+    })
+  }
+
+  const handleDragMove = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDragging) return
+    const container = containerRef.current
+    if (!container) return
+    const rect = container.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
+    const newX = clientX - rect.left - dragOffset.x
+    const newY = clientY - rect.top - dragOffset.y
+    setCropPos(clampCropPos(newX, newY))
+  }
+
+  const handleDragEnd = () => {
+    setIsDragging(false)
+  }
+
   const cropAndUpload = async (): Promise<string | null> => {
     if (!selectedFile) return formData.image_url || null
 
     setUploadingImage(true)
     try {
-      let fileToUpload = selectedFile
+      const img = await loadImage(previewUrl!)
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')!
 
-      if (cropRatio !== 'none') {
-        const img = await loadImage(previewUrl!)
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')!
+      const { naturalWidth, naturalHeight, renderedWidth, renderedHeight } = imgSize
+      const { width: cropBoxWidth, height: cropBoxHeight } = getCropBoxSize()
 
-        const ratioMap = { '16:9': 16 / 9, '4:3': 4 / 3, '1:1': 1 }
-        const targetRatio = ratioMap[cropRatio]
+      const scaleX = naturalWidth / renderedWidth
+      const scaleY = naturalHeight / renderedHeight
 
-        const imgRatio = img.width / img.height
-        let cropWidth = img.width
-        let cropHeight = img.height
+      const sx = cropPos.x * scaleX
+      const sy = cropPos.y * scaleY
+      const sWidth = cropBoxWidth * scaleX
+      const sHeight = cropBoxHeight * scaleY
 
-        if (imgRatio > targetRatio) {
-          cropWidth = img.height * targetRatio
-        } else {
-          cropHeight = img.width / targetRatio
-        }
+      canvas.width = sWidth
+      canvas.height = sHeight
+      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight)
 
-        const cropX = (img.width - cropWidth) / 2
-        const cropY = (img.height - cropHeight) / 2
-
-        canvas.width = cropWidth
-        canvas.height = cropHeight
-        ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight)
-
-        const blob = await new Promise<Blob>((resolve) => {
-          canvas.toBlob((b) => resolve(b!), selectedFile.type, 0.9)
-        })
-        fileToUpload = new File([blob], selectedFile.name, { type: selectedFile.type })
-      }
+      const blob = await new Promise<Blob>((resolve) => {
+        canvas.toBlob((b) => resolve(b!), selectedFile.type, 0.9)
+      })
+      const fileToUpload = new File([blob], selectedFile.name, { type: selectedFile.type })
 
       const fileExt = fileToUpload.name.split('.').pop()
       const fileName = `banners/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`
@@ -145,6 +218,7 @@ export default function BannerManagement() {
   const loadImage = (src: string): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
       const img = new Image()
+      img.crossOrigin = 'anonymous'
       img.onload = () => resolve(img)
       img.onerror = reject
       img.src = src
@@ -477,46 +551,68 @@ export default function BannerManagement() {
                   )}
                 </div>
 
-                {/* Crop Ratio */}
-                {selectedFile && (
-                  <div className="mt-3">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Rasio Crop</label>
-                    <div className="flex gap-2">
-                      {(['none', '16:9', '4:3', '1:1'] as CropRatio[]).map((r) => (
-                        <button
-                          key={r}
-                          type="button"
-                          onClick={() => setCropRatio(r)}
-                          className={`px-3 py-1 text-xs rounded-lg border ${
-                            cropRatio === r
-                              ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                              : 'border-gray-200 text-gray-600 hover:bg-gray-50'
-                          }`}
-                        >
-                          {r === 'none' ? 'Tidak' : r}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Preview */}
+                {/* Visual Crop Preview */}
                 {(previewUrl || formData.image_url) && (
                   <div className="mt-3">
                     <p className="text-xs text-gray-500 mb-1">
-                      {previewUrl ? 'Pratinjau' : 'Gambar Saat Ini'}
+                      {previewUrl ? 'Pratinjau & Atur Crop (16:9)' : 'Gambar Saat Ini'}
                     </p>
-                    <img
-                      src={previewUrl || formData.image_url}
-                      alt="Pratinjau"
-                      className={`w-full rounded-lg border border-gray-200 ${
-                        cropRatio === '16:9' ? 'aspect-video object-cover' :
-                        cropRatio === '4:3' ? 'aspect-[4/3] object-cover' :
-                        cropRatio === '1:1' ? 'aspect-square object-cover' :
-                        'h-32 object-cover'
-                      }`}
-                      onError={(e) => (e.currentTarget.style.display = 'none')}
-                    />
+                    <div
+                      ref={containerRef}
+                      className="relative w-full rounded-lg border border-gray-200 overflow-hidden select-none"
+                      style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                      onMouseMove={handleDragMove}
+                      onMouseUp={handleDragEnd}
+                      onMouseLeave={handleDragEnd}
+                      onTouchMove={handleDragMove}
+                      onTouchEnd={handleDragEnd}
+                    >
+                      <img
+                        ref={imageRef}
+                        src={previewUrl || formData.image_url}
+                        alt="Pratinjau"
+                        className="w-full h-auto block"
+                        onLoad={handleImageLoad}
+                        onError={(e) => { (e.currentTarget as HTMLElement).style.display = 'none' }}
+                        draggable={false}
+                      />
+                      {selectedFile && imgSize.renderedWidth > 0 && (
+                        <>
+                          {/* Dark overlay outside crop area */}
+                          <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 0 9999px rgba(0,0,0,0.5)' }} />
+                          {/* Crop box */}
+                          <div
+                            className="absolute border-2 border-white"
+                            style={{
+                              left: cropPos.x,
+                              top: cropPos.y,
+                              width: getCropBoxSize().width,
+                              height: getCropBoxSize().height,
+                            }}
+                            onMouseDown={handleDragStart}
+                            onTouchStart={handleDragStart}
+                          >
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <span className="text-white text-xs font-medium bg-black/50 px-2 py-0.5 rounded">
+                                16:9
+                              </span>
+                            </div>
+                            {/* Grid lines */}
+                            <div className="absolute inset-0 pointer-events-none opacity-40">
+                              <div className="absolute left-1/3 top-0 bottom-0 border-l border-white/70" />
+                              <div className="absolute left-2/3 top-0 bottom-0 border-l border-white/70" />
+                              <div className="absolute top-1/3 left-0 right-0 border-t border-white/70" />
+                              <div className="absolute top-2/3 left-0 right-0 border-t border-white/70" />
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                    {selectedFile && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Geser kotak putih untuk memilih area yang akan ditampilkan (rasio 16:9)
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
