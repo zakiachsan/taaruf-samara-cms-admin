@@ -169,9 +169,15 @@ export default function BannerManagement() {
   const cropAndUpload = async (): Promise<string | null> => {
     if (!selectedFile) return formData.image_url || null
 
+    // Wait for imgSize to be populated
+    if (imgSize.renderedWidth === 0 || imgSize.renderedHeight === 0) {
+      alert('Gambar belum siap, silakan tunggu sebentar dan coba lagi.')
+      return null
+    }
+
     setUploadingImage(true)
     try {
-      const img = await loadImage(previewUrl!)
+      const img = await loadImage(previewUrl!, true)
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')!
 
@@ -186,16 +192,17 @@ export default function BannerManagement() {
       const sWidth = cropBoxWidth * scaleX
       const sHeight = cropBoxHeight * scaleY
 
-      canvas.width = sWidth
-      canvas.height = sHeight
-      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight)
+      canvas.width = Math.round(sWidth)
+      canvas.height = Math.round(sHeight)
+      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height)
 
       const blob = await new Promise<Blob>((resolve) => {
         canvas.toBlob((b) => resolve(b!), selectedFile.type, 0.9)
       })
-      const fileToUpload = new File([blob], selectedFile.name, { type: selectedFile.type })
+      const safeName = selectedFile.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+      const fileExt = safeName.split('.').pop() || 'jpg'
+      const fileToUpload = new File([blob], safeName, { type: selectedFile.type })
 
-      const fileExt = fileToUpload.name.split('.').pop()
       const fileName = `banners/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`
 
       const { error } = await supabase.storage.from('public').upload(fileName, fileToUpload, {
@@ -215,12 +222,15 @@ export default function BannerManagement() {
     }
   }
 
-  const loadImage = (src: string): Promise<HTMLImageElement> => {
+  const loadImage = (src: string, isLocalBlob = false): Promise<HTMLImageElement> => {
     return new Promise((resolve, reject) => {
       const img = new Image()
-      img.crossOrigin = 'anonymous'
+      // Only set crossOrigin for external URLs, NOT for blob: URLs
+      if (!isLocalBlob && !src.startsWith('blob:')) {
+        img.crossOrigin = 'anonymous'
+      }
       img.onload = () => resolve(img)
-      img.onerror = reject
+      img.onerror = () => reject(new Error('Gagal memuat gambar untuk crop'))
       img.src = src
     })
   }
