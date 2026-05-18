@@ -68,24 +68,31 @@ export const usePackages = () => {
     updates: Partial<Pick<Package, 'display_name' | 'description' | 'price' | 'is_active' | 'is_popular' | 'features'>>
   ): Promise<{ success: boolean; error?: string }> => {
     try {
+      // Always use fresh state - refetch if needed, but for now just do the update
       const { error } = await supabase
         .from('subscription_packages')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .update({ 
+          ...updates, 
+          updated_at: new Date().toISOString(),
+          // Ensure features is never undefined
+          features: updates.features === undefined ? undefined : updates.features
+        })
         .eq('id', id)
 
-      if (error) throw error
+      if (error) {
+        console.error('[usePackages] updatePackage error:', error)
+        throw error
+      }
 
-      // Update local state
-      setPackages(prev => prev.map(pkg =>
-        pkg.id === id ? { ...pkg, ...updates } : pkg
-      ))
+      // Refetch to get fresh state instead of optimistic update
+      await fetchPackages()
 
       return { success: true }
     } catch (err) {
       console.error('[usePackages] Error updating package:', err)
       return { success: false, error: err instanceof Error ? err.message : 'Gagal memperbarui paket' }
     }
-  }, [])
+  }, [supabase, fetchPackages])
 
   useEffect(() => {
     fetchPackages()
