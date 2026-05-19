@@ -34,6 +34,7 @@ if (!window.__supabaseClient) {
 }
 
 // Admin client (bypasses RLS for admin operations)
+// Lazy creation to reduce GoTrueClient instances warning
 export const supabaseAdmin: SupabaseClient =
   window.__supabaseAdminClient ??
   createClient(supabaseUrl, supabaseServiceRoleKey, {
@@ -41,6 +42,7 @@ export const supabaseAdmin: SupabaseClient =
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
+      storageKey: 'sb-admin-token', // Different storage key to avoid conflict
     },
     global: {
       headers: {

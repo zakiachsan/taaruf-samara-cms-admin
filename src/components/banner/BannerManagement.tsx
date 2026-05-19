@@ -205,13 +205,13 @@ export default function BannerManagement() {
 
       const fileName = `banners/${Date.now()}_${Math.random().toString(36).substring(2, 15)}.${fileExt}`
 
-      const { error } = await supabase.storage.from('public').upload(fileName, fileToUpload, {
+      const { error } = await supabase.storage.from('profile-photos').upload(fileName, fileToUpload, {
         cacheControl: '3600',
         upsert: false,
       })
       if (error) throw error
 
-      const { data: { publicUrl } } = supabase.storage.from('public').getPublicUrl(fileName)
+      const { data: { publicUrl } } = supabase.storage.from('profile-photos').getPublicUrl(fileName)
       return publicUrl
     } catch (err) {
       console.error('Upload error:', err)
@@ -537,6 +537,12 @@ export default function BannerManagement() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Gambar Banner
                 </label>
+                <p className="text-xs text-amber-600 mb-2">
+                  Format: JPG / PNG / WebP · Maks 5 MB · Rasio 16:9 direkomendasikan
+                </p>
+                <p className="text-xs text-gray-500 mb-2">
+                  Ukuran ideal: <strong>1200 x 675 px</strong> (16:9). Banner akan ditampilkan di seluruh lebar layar ponsel.
+                </p>
                 <div className="flex gap-2">
                   <input
                     ref={fileInputRef}

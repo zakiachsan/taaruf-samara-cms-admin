@@ -115,8 +115,14 @@ export default function ChatKeywordSensor() {
       )
       .subscribe()
 
+    // Polling fallback every 30s to ensure consistency across admin sessions
+    const pollInterval = setInterval(() => {
+      fetchKeywords()
+    }, 30000)
+
     return () => {
       supabaseAdmin.removeChannel(channel)
+      clearInterval(pollInterval)
     }
   }, [])
 

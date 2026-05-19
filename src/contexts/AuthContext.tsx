@@ -45,6 +45,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [validating, setValidating] = useState(false)
   const isRefreshingRef = useRef(false)
 
   const mapUser = (u: any): User => ({
@@ -66,6 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const refreshSession = useCallback(async () => {
     if (isRefreshingRef.current) return
     isRefreshingRef.current = true
+    setValidating(true)
 
     try {
       const { data: { session: refreshedSession } } = await supabase.auth.getSession()
@@ -93,6 +95,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       setSession(null)
     } finally {
       isRefreshingRef.current = false
+      setValidating(false)
     }
   }, [])
 
@@ -166,7 +169,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value = {
     user,
     session,
-    loading,
+    loading: loading || validating,
     signIn,
     signOut,
     isAuthenticated: !!user,

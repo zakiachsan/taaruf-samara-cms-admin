@@ -54,6 +54,12 @@ export default function AddonsManagement() {
     is_active: true,
   })
 
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; addon: Addon | null }>({
+    open: false,
+    addon: null,
+  })
+  const [toggling, setToggling] = useState(false)
+
   const handleDragStart = (e: React.DragEvent, addonId: string) => {
     setDraggingId(addonId)
     e.dataTransfer.effectAllowed = 'move'
@@ -126,8 +132,19 @@ export default function AddonsManagement() {
 
   const handleToggleActive = async (id: string) => {
     const result = await toggleAddonActive(id)
+    setToggling(false)
+    setConfirmModal({ open: false, addon: null })
     if (!result.success) {
       alert(result.error || 'Gagal mengubah status add-on')
+    }
+  }
+
+  const openToggleConfirm = (addon: Addon) => {
+    if (addon.is_active) {
+      setConfirmModal({ open: true, addon })
+    } else {
+      setToggling(true)
+      handleToggleActive(addon.id)
     }
   }
 
@@ -347,15 +364,17 @@ export default function AddonsManagement() {
                   )}
                 </div>
                 <button
-                  onClick={() => handleToggleActive(addon.id)}
-                  className={`p-1.5 rounded-lg ${
+                  onClick={() => openToggleConfirm(addon)}
+                  disabled={toggling}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                     addon.is_active
-                      ? 'text-amber-600 hover:bg-amber-50'
-                      : 'text-emerald-600 hover:bg-emerald-50'
-                  }`}
+                      ? 'text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200'
+                      : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200'
+                  } disabled:opacity-50`}
                   title={addon.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                 >
                   <Power size={16} />
+                  {addon.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                 </button>
               </div>
 
@@ -365,6 +384,60 @@ export default function AddonsManagement() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Toggle Confirmation Modal */}
+      {confirmModal.open && confirmModal.addon && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl w-full max-w-md">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-gray-900">Konfirmasi Nonaktifkan</h3>
+                <button
+                  onClick={() => {
+                    setConfirmModal({ open: false, addon: null })
+                    setToggling(false)
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+            <div className="p-6">
+              <p className="text-gray-700">
+                Apakah Anda yakin ingin menonaktifkan produk{' '}
+                <span className="font-semibold text-gray-900">"{confirmModal.addon.name}"</span>?
+              </p>
+              <p className="text-sm text-gray-500 mt-2">
+                Produk yang dinonaktifkan tidak akan ditampilkan kepada pengguna.
+              </p>
+            </div>
+            <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setConfirmModal({ open: false, addon: null })
+                  setToggling(false)
+                }}
+                className="px-4 py-2 text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => handleToggleActive(confirmModal.addon!.id)}
+                disabled={toggling}
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                {toggling ? 'Memproses...' : (
+                  <>
+                    <Power size={16} />
+                    Nonaktifkan Produk
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
