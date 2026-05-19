@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -45,8 +45,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const [validating, setValidating] = useState(false)
-  const isRefreshingRef = useRef(false)
 
   const mapUser = (u: any): User => ({
     id: u.id,
@@ -63,41 +61,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     token_type: s.token_type,
     user: mapUser(s.user),
   })
-
-  const refreshSession = useCallback(async () => {
-    if (isRefreshingRef.current) return
-    isRefreshingRef.current = true
-    setValidating(true)
-
-    try {
-      const { data: { session: refreshedSession } } = await supabase.auth.getSession()
-
-      if (refreshedSession?.user) {
-        setUser(mapUser(refreshedSession.user))
-        setSession(mapSession(refreshedSession))
-      } else {
-        try {
-          const { data: { session: retrySession } } = await supabase.auth.refreshSession()
-          if (retrySession?.user) {
-            setUser(mapUser(retrySession.user))
-            setSession(mapSession(retrySession))
-          } else {
-            setUser(null)
-            setSession(null)
-          }
-        } catch {
-          setUser(null)
-          setSession(null)
-        }
-      }
-    } catch {
-      setUser(null)
-      setSession(null)
-    } finally {
-      isRefreshingRef.current = false
-      setValidating(false)
-    }
-  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -138,15 +101,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [])
 
-  useEffect(() => {
-    const handleVisibility = async () => {
-      if (document.visibilityState !== 'visible') return
-      await refreshSession()
-    }
-    document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
-  }, [refreshSession])
-
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
@@ -169,7 +123,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const value = {
     user,
     session,
-    loading: loading || validating,
+    loading,
     signIn,
     signOut,
     isAuthenticated: !!user,

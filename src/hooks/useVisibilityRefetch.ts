@@ -1,17 +1,18 @@
 import { useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 
 export function useVisibilityRefetch(refetch: () => void) {
   useEffect(() => {
-    const handleVisibility = async () => {
+    let cancelled = false
+    const handleVisibility = () => {
       if (document.visibilityState !== 'visible') return
-
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        refetch()
-      }
+      setTimeout(() => {
+        if (!cancelled) refetch()
+      }, 1000)
     }
     document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
+    return () => {
+      cancelled = true
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [refetch])
 }
