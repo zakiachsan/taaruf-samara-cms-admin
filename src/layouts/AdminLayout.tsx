@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
+import { supabaseAdmin } from '../lib/supabase'
 import {
   LayoutDashboard,
   Users,
@@ -115,13 +115,18 @@ export default function AdminLayout() {
 
   const checkConnection = async () => {
     try {
-      // Use a lightweight health check instead of getUser() to avoid triggering token refresh
-      const { error } = await supabase.from('user_profiles').select('id', { count: 'exact', head: true }).limit(1)
+      const { error } = await supabaseAdmin.from('user_profiles').select('id', { count: 'exact', head: true }).limit(1)
       if (error && error.code !== 'PGRST116') throw error
       setConnectionStatus('connected')
     } catch (err) {
-      setConnectionStatus('error')
-      setErrorMessage(err instanceof Error ? err.message : 'Gagal terhubung ke Supabase')
+      try {
+        const { error: retryError } = await supabaseAdmin.from('user_profiles').select('id', { count: 'exact', head: true }).limit(1)
+        if (retryError && retryError.code !== 'PGRST116') throw retryError
+        setConnectionStatus('connected')
+      } catch (retryErr) {
+        setConnectionStatus('error')
+        setErrorMessage(retryErr instanceof Error ? retryErr.message : 'Gagal terhubung ke Supabase')
+      }
     }
   }
 
