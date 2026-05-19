@@ -1,0 +1,196 @@
+- generic [ref=e33]:
+  - complementary [ref=e34]:
+    - generic [ref=e36]:
+      - img "Taaruf Samara" [ref=e37]
+      - generic [ref=e38]:
+        - heading "Taaruf Samara" [level=1] [ref=e39]
+        - paragraph [ref=e40]: Admin CMS
+    - navigation [ref=e41]:
+      - generic [ref=e42]:
+        - paragraph [ref=e43]: Utama
+        - generic [ref=e44]:
+          - link "Dashboard" [ref=e45] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e46]
+            - generic [ref=e51]: Dashboard
+          - link "Pengguna" [ref=e52] [cursor=pointer]:
+            - /url: /admin/users
+            - img [ref=e53]
+            - generic [ref=e58]: Pengguna
+      - generic [ref=e59]:
+        - paragraph [ref=e60]: Langganan
+        - generic [ref=e61]:
+          - link "Pengguna Premium" [ref=e62] [cursor=pointer]:
+            - /url: /admin/premium
+            - img [ref=e63]
+            - generic [ref=e65]: Pengguna Premium
+          - link "Paket" [ref=e66] [cursor=pointer]:
+            - /url: /admin/packages
+            - img [ref=e67]
+            - generic [ref=e71]: Paket
+          - link "Tambahan" [ref=e72] [cursor=pointer]:
+            - /url: /admin/addons
+            - img [ref=e73]
+            - generic [ref=e75]: Tambahan
+          - link "Premium Pendampingan" [ref=e76] [cursor=pointer]:
+            - /url: /admin/pendampingan
+            - img [ref=e77]
+            - generic [ref=e82]: Premium Pendampingan
+      - generic [ref=e83]:
+        - paragraph [ref=e84]: Fitur
+        - generic [ref=e85]:
+          - link "Self-Value" [ref=e86] [cursor=pointer]:
+            - /url: /admin/selfvalue
+            - img [ref=e87]
+            - generic [ref=e90]: Self-Value
+          - link "Referral" [ref=e91] [cursor=pointer]:
+            - /url: /admin/referral
+            - img [ref=e92]
+            - generic [ref=e96]: Referral
+          - link "Pengaturan Referral" [ref=e97] [cursor=pointer]:
+            - /url: /admin/referral-settings
+            - img [ref=e98]
+            - generic [ref=e101]: Pengaturan Referral
+          - link "Banner" [ref=e102] [cursor=pointer]:
+            - /url: /admin/banner
+            - img [ref=e103]
+            - generic [ref=e107]: Banner
+          - link "Testimoni" [ref=e108] [cursor=pointer]:
+            - /url: /admin/testimonials
+            - img [ref=e109]
+            - generic [ref=e113]: Testimoni
+      - generic [ref=e114]:
+        - paragraph [ref=e115]: Pencocokan
+        - generic [ref=e116]:
+          - link "Pencocokan" [ref=e117] [cursor=pointer]:
+            - /url: /admin/matches
+            - img [ref=e118]
+            - generic [ref=e120]: Pencocokan
+          - link "Obrolan" [ref=e121] [cursor=pointer]:
+            - /url: /admin/chats
+            - img [ref=e122]
+            - generic [ref=e124]: Obrolan
+          - link "Sensor Chat" [ref=e125] [cursor=pointer]:
+            - /url: /admin/chat-keywords
+            - img [ref=e126]
+            - generic [ref=e128]: Sensor Chat
+          - link "Diblokir" [ref=e129] [cursor=pointer]:
+            - /url: /admin/blocked
+            - img [ref=e130]
+            - generic [ref=e133]: Diblokir
+      - generic [ref=e134]:
+        - paragraph [ref=e135]: Laporan
+        - link "Laporan" [ref=e137] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e138]
+          - generic [ref=e140]: Laporan
+      - generic [ref=e141]:
+        - paragraph [ref=e142]: Pengaturan
+        - generic [ref=e143]:
+          - link "Pengaturan" [ref=e144] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e145]
+            - generic [ref=e148]: Pengaturan
+          - link "Profil Admin" [ref=e149] [cursor=pointer]:
+            - /url: /admin/profile
+            - img [ref=e150]
+            - generic [ref=e154]: Profil Admin
+    - generic [ref=e155]:
+      - generic [ref=e157]:
+        - img [ref=e158]
+        - generic [ref=e161]: Terhubung
+      - button "Keluar" [ref=e162]:
+        - img [ref=e163]
+        - generic [ref=e166]: Keluar
+  - main [ref=e167]:
+    - generic [ref=e168]:
+      - button [ref=e169]:
+        - img [ref=e170]
+      - link "Pengguna Admin Super Admin A" [ref=e173] [cursor=pointer]:
+        - /url: /admin/profile
+        - generic [ref=e174]:
+          - paragraph [ref=e175]: Pengguna Admin
+          - paragraph [ref=e176]: Super Admin
+        - generic [ref=e178]: A
+    - generic [ref=e180]:
+      - generic [ref=e181]:
+        - heading "Dashboard" [level=2] [ref=e182]
+        - paragraph [ref=e183]: Kelola dashboard aplikasi Taaruf Samara
+      - generic [ref=e184]:
+        - button "Segarkan Data" [ref=e186]:
+          - img [ref=e187]
+          - generic [ref=e192]: Segarkan Data
+        - generic [ref=e193]:
+          - generic [ref=e195]:
+            - generic [ref=e196]:
+              - paragraph [ref=e197]: Total Pengguna
+              - heading "..." [level=3] [ref=e198]
+              - generic [ref=e199]:
+                - img [ref=e200]
+                - generic [ref=e203]: +12%
+            - img [ref=e205]
+          - generic [ref=e211]:
+            - generic [ref=e212]:
+              - paragraph [ref=e213]: Pengguna Baru Hari Ini
+              - heading "..." [level=3] [ref=e214]
+              - generic [ref=e215]:
+                - img [ref=e216]
+                - generic [ref=e219]: Hari ini
+            - img [ref=e221]
+          - generic [ref=e225]:
+            - generic [ref=e226]:
+              - paragraph [ref=e227]: Premium Aktif
+              - heading "..." [level=3] [ref=e228]
+              - generic [ref=e229]:
+                - img [ref=e230]
+                - generic [ref=e233]: Aktif
+            - img [ref=e235]
+          - generic [ref=e238]:
+            - generic [ref=e239]:
+              - paragraph [ref=e240]: Verifikasi Tertunda
+              - heading "..." [level=3] [ref=e241]
+              - generic [ref=e242]:
+                - img [ref=e243]
+                - generic [ref=e246]: Butuh review
+            - img [ref=e248]
+        - generic [ref=e250]:
+          - generic [ref=e252]:
+            - generic [ref=e253]:
+              - heading "Registrasi 7 Hari Terakhir" [level=3] [ref=e254]
+              - paragraph [ref=e255]: Grafik pengguna baru yang mendaftar
+            - generic [ref=e256]:
+              - img [ref=e257]
+              - generic [ref=e259]: 7 Hari Terakhir
+          - generic [ref=e264]:
+            - generic [ref=e265]:
+              - heading "Aktivitas Terbaru" [level=3] [ref=e266]
+              - paragraph [ref=e267]: Update real-time
+            - img [ref=e268]
+        - generic [ref=e273]:
+          - generic [ref=e274]:
+            - generic [ref=e275]:
+              - generic [ref=e276]:
+                - paragraph [ref=e277]: Total Pendapatan
+                - heading "..." [level=3] [ref=e278]
+              - img [ref=e280]
+            - generic [ref=e282]:
+              - img [ref=e283]
+              - generic [ref=e286]: Pendapatan Sepanjang Waktu
+          - generic [ref=e287]:
+            - generic [ref=e288]:
+              - generic [ref=e289]:
+                - paragraph [ref=e290]: Pendapatan Bulanan
+                - heading "..." [level=3] [ref=e291]
+              - img [ref=e293]
+            - generic [ref=e295]:
+              - img [ref=e296]
+              - generic [ref=e299]: Bulan Ini
+          - generic [ref=e300]:
+            - generic [ref=e301]:
+              - generic [ref=e302]:
+                - paragraph [ref=e303]: Pencocokan Hari Ini
+                - heading "..." [level=3] [ref=e304]
+              - img [ref=e306]
+            - generic [ref=e308]:
+              - img [ref=e309]
+              - generic [ref=e312]: Permintaan Pencocokan Hari Ini

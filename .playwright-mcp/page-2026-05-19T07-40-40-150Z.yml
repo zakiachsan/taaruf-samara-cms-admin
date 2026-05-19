@@ -1,0 +1,273 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e33]:
+    - complementary [ref=e34]:
+      - generic [ref=e36]:
+        - img "Taaruf Samara" [ref=e37]
+        - generic [ref=e38]:
+          - heading "Taaruf Samara" [level=1] [ref=e39]
+          - paragraph [ref=e40]: Admin CMS
+      - navigation [ref=e41]:
+        - generic [ref=e42]:
+          - paragraph [ref=e43]: Utama
+          - generic [ref=e44]:
+            - link "Dashboard" [ref=e45] [cursor=pointer]:
+              - /url: /admin
+              - img [ref=e46]
+              - generic [ref=e51]: Dashboard
+            - link "Pengguna" [ref=e52] [cursor=pointer]:
+              - /url: /admin/users
+              - img [ref=e53]
+              - generic [ref=e58]: Pengguna
+        - generic [ref=e59]:
+          - paragraph [ref=e60]: Langganan
+          - generic [ref=e61]:
+            - link "Pengguna Premium" [ref=e62] [cursor=pointer]:
+              - /url: /admin/premium
+              - img [ref=e63]
+              - generic [ref=e65]: Pengguna Premium
+            - link "Paket" [ref=e66] [cursor=pointer]:
+              - /url: /admin/packages
+              - img [ref=e67]
+              - generic [ref=e71]: Paket
+            - link "Tambahan" [ref=e72] [cursor=pointer]:
+              - /url: /admin/addons
+              - img [ref=e73]
+              - generic [ref=e75]: Tambahan
+            - link "Premium Pendampingan" [ref=e76] [cursor=pointer]:
+              - /url: /admin/pendampingan
+              - img [ref=e77]
+              - generic [ref=e82]: Premium Pendampingan
+        - generic [ref=e83]:
+          - paragraph [ref=e84]: Fitur
+          - generic [ref=e85]:
+            - link "Self-Value" [ref=e86] [cursor=pointer]:
+              - /url: /admin/selfvalue
+              - img [ref=e87]
+              - generic [ref=e90]: Self-Value
+            - link "Referral" [ref=e91] [cursor=pointer]:
+              - /url: /admin/referral
+              - img [ref=e92]
+              - generic [ref=e96]: Referral
+            - link "Pengaturan Referral" [ref=e97] [cursor=pointer]:
+              - /url: /admin/referral-settings
+              - img [ref=e98]
+              - generic [ref=e101]: Pengaturan Referral
+            - link "Banner" [ref=e102] [cursor=pointer]:
+              - /url: /admin/banner
+              - img [ref=e103]
+              - generic [ref=e107]: Banner
+            - link "Testimoni" [ref=e108] [cursor=pointer]:
+              - /url: /admin/testimonials
+              - img [ref=e109]
+              - generic [ref=e113]: Testimoni
+        - generic [ref=e114]:
+          - paragraph [ref=e115]: Pencocokan
+          - generic [ref=e116]:
+            - link "Pencocokan" [ref=e117] [cursor=pointer]:
+              - /url: /admin/matches
+              - img [ref=e118]
+              - generic [ref=e120]: Pencocokan
+            - link "Obrolan" [ref=e121] [cursor=pointer]:
+              - /url: /admin/chats
+              - img [ref=e122]
+              - generic [ref=e124]: Obrolan
+            - link "Sensor Chat" [ref=e125] [cursor=pointer]:
+              - /url: /admin/chat-keywords
+              - img [ref=e126]
+              - generic [ref=e128]: Sensor Chat
+            - link "Diblokir" [ref=e129] [cursor=pointer]:
+              - /url: /admin/blocked
+              - img [ref=e130]
+              - generic [ref=e133]: Diblokir
+        - generic [ref=e134]:
+          - paragraph [ref=e135]: Laporan
+          - link "Laporan" [ref=e137] [cursor=pointer]:
+            - /url: /admin/reports
+            - img [ref=e138]
+            - generic [ref=e140]: Laporan
+        - generic [ref=e141]:
+          - paragraph [ref=e142]: Pengaturan
+          - generic [ref=e143]:
+            - link "Pengaturan" [ref=e144] [cursor=pointer]:
+              - /url: /admin/settings
+              - img [ref=e145]
+              - generic [ref=e148]: Pengaturan
+            - link "Profil Admin" [ref=e149] [cursor=pointer]:
+              - /url: /admin/profile
+              - img [ref=e150]
+              - generic [ref=e154]: Profil Admin
+      - generic [ref=e155]:
+        - generic [ref=e157]:
+          - img [ref=e158]
+          - generic [ref=e161]: Terhubung
+        - button "Keluar" [ref=e162]:
+          - img [ref=e163]
+          - generic [ref=e166]: Keluar
+    - main [ref=e167]:
+      - generic [ref=e168]:
+        - button [ref=e169]:
+          - img [ref=e170]
+        - link "Pengguna Admin Super Admin A" [ref=e173] [cursor=pointer]:
+          - /url: /admin/profile
+          - generic [ref=e174]:
+            - paragraph [ref=e175]: Pengguna Admin
+            - paragraph [ref=e176]: Super Admin
+          - generic [ref=e178]: A
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - heading "Dashboard" [level=2] [ref=e182]
+          - paragraph [ref=e183]: Kelola dashboard aplikasi Taaruf Samara
+        - generic [ref=e184]:
+          - button "Segarkan Data" [ref=e186]:
+            - img [ref=e187]
+            - generic [ref=e192]: Segarkan Data
+          - generic [ref=e193]:
+            - generic [ref=e195]:
+              - generic [ref=e196]:
+                - paragraph [ref=e197]: Total Pengguna
+                - heading "24" [level=3] [ref=e313]
+                - generic [ref=e199]:
+                  - img [ref=e200]
+                  - generic [ref=e203]: +12%
+              - img [ref=e205]
+            - generic [ref=e211]:
+              - generic [ref=e212]:
+                - paragraph [ref=e213]: Pengguna Baru Hari Ini
+                - heading "0" [level=3] [ref=e314]
+                - generic [ref=e215]:
+                  - img [ref=e216]
+                  - generic [ref=e219]: Hari ini
+              - img [ref=e221]
+            - generic [ref=e225]:
+              - generic [ref=e226]:
+                - paragraph [ref=e227]: Premium Aktif
+                - heading "3" [level=3] [ref=e315]
+                - generic [ref=e229]:
+                  - img [ref=e230]
+                  - generic [ref=e233]: Aktif
+              - img [ref=e235]
+            - generic [ref=e238]:
+              - generic [ref=e239]:
+                - paragraph [ref=e240]: Verifikasi Tertunda
+                - heading "8" [level=3] [ref=e316]
+                - generic [ref=e242]:
+                  - img [ref=e243]
+                  - generic [ref=e246]: Butuh review
+              - img [ref=e248]
+          - generic [ref=e250]:
+            - generic [ref=e251]:
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - heading "Registrasi 7 Hari Terakhir" [level=3] [ref=e254]
+                  - paragraph [ref=e255]: Grafik pengguna baru yang mendaftar
+                - generic [ref=e256]:
+                  - img [ref=e257]
+                  - generic [ref=e259]: 7 Hari Terakhir
+              - application [ref=e319]:
+                - generic [ref=e334]:
+                  - generic [ref=e335]:
+                    - generic [ref=e337]: Rab
+                    - generic [ref=e339]: Kam
+                    - generic [ref=e341]: Jum
+                    - generic [ref=e343]: Sab
+                    - generic [ref=e345]: Min
+                    - generic [ref=e347]: Sen
+                    - generic [ref=e349]: Sel
+                  - generic [ref=e350]:
+                    - generic [ref=e352]: "0"
+                    - generic [ref=e354]: "1"
+                    - generic [ref=e356]: "2"
+                    - generic [ref=e358]: "3"
+                    - generic [ref=e360]: "4"
+            - generic [ref=e263]:
+              - generic [ref=e264]:
+                - generic [ref=e265]:
+                  - heading "Aktivitas Terbaru" [level=3] [ref=e266]
+                  - paragraph [ref=e267]: Update real-time
+                - img [ref=e268]
+              - generic [ref=e270]:
+                - generic [ref=e361]:
+                  - img [ref=e363]
+                  - generic [ref=e366]:
+                    - paragraph [ref=e367]: User baru terdaftar
+                    - paragraph [ref=e368]: Yanisay
+                  - generic [ref=e369]: 7 hari lalu
+                - generic [ref=e370]:
+                  - img [ref=e372]
+                  - generic [ref=e375]:
+                    - paragraph [ref=e376]: User baru terdaftar
+                    - paragraph [ref=e377]: Admin zaki
+                  - generic [ref=e378]: 7 hari lalu
+                - generic [ref=e379]:
+                  - img [ref=e381]
+                  - generic [ref=e384]:
+                    - paragraph [ref=e385]: User baru terdaftar
+                    - paragraph [ref=e386]: Yani
+                  - generic [ref=e387]: 7 hari lalu
+                - generic [ref=e388]:
+                  - img [ref=e390]
+                  - generic [ref=e393]:
+                    - paragraph [ref=e394]: User baru terdaftar
+                    - paragraph [ref=e395]: Female Admin
+                  - generic [ref=e396]: 7 hari lalu
+                - generic [ref=e397]:
+                  - img [ref=e399]
+                  - paragraph [ref=e402]: Berlangganan premium
+                  - generic [ref=e403]: 12 hari lalu
+                - generic [ref=e404]:
+                  - img [ref=e406]
+                  - generic [ref=e409]:
+                    - paragraph [ref=e410]: User baru terdaftar
+                    - paragraph [ref=e411]: Taufik
+                  - generic [ref=e412]: 16 hari lalu
+                - generic [ref=e413]:
+                  - img [ref=e415]
+                  - paragraph [ref=e418]: Berlangganan basic
+                  - generic [ref=e419]: 16 hari lalu
+                - generic [ref=e420]:
+                  - img [ref=e422]
+                  - generic [ref=e425]:
+                    - paragraph [ref=e426]: User baru terdaftar
+                    - paragraph [ref=e427]: Aap mukromun ansory
+                  - generic [ref=e428]: 19 hari lalu
+                - generic [ref=e429]:
+                  - img [ref=e431]
+                  - generic [ref=e434]:
+                    - paragraph [ref=e435]: User baru terdaftar
+                    - paragraph [ref=e436]: User
+                  - generic [ref=e437]: 24 hari lalu
+                - generic [ref=e438]:
+                  - img [ref=e440]
+                  - generic [ref=e443]:
+                    - paragraph [ref=e444]: User baru terdaftar
+                    - paragraph [ref=e445]: User
+                  - generic [ref=e446]: 24 hari lalu
+          - generic [ref=e273]:
+            - generic [ref=e274]:
+              - generic [ref=e275]:
+                - generic [ref=e276]:
+                  - paragraph [ref=e277]: Total Pendapatan
+                  - heading "Rp 56.000" [level=3] [ref=e447]
+                - img [ref=e280]
+              - generic [ref=e282]:
+                - img [ref=e283]
+                - generic [ref=e286]: Pendapatan Sepanjang Waktu
+            - generic [ref=e287]:
+              - generic [ref=e288]:
+                - generic [ref=e289]:
+                  - paragraph [ref=e290]: Pendapatan Bulanan
+                  - heading "Rp 6.000" [level=3] [ref=e448]
+                - img [ref=e293]
+              - generic [ref=e295]:
+                - img [ref=e296]
+                - generic [ref=e299]: Bulan Ini
+            - generic [ref=e300]:
+              - generic [ref=e301]:
+                - generic [ref=e302]:
+                  - paragraph [ref=e303]: Pencocokan Hari Ini
+                  - heading "0" [level=3] [ref=e449]
+                - img [ref=e306]
+              - generic [ref=e308]:
+                - img [ref=e309]
+                - generic [ref=e312]: Permintaan Pencocokan Hari Ini
+  - generic [ref=e450]: "0"

@@ -1,0 +1,25 @@
+- generic [ref=e4]:
+  - link "Kembali ke Beranda" [ref=e5] [cursor=pointer]:
+    - /url: /
+    - img [ref=e6]
+    - generic [ref=e8]: Kembali ke Beranda
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - img [ref=e12]
+      - heading "Login Admin" [level=1] [ref=e15]
+      - paragraph [ref=e16]: Masuk ke CMS Taaruf Samara
+    - generic [ref=e17]:
+      - paragraph [ref=e34]: missing email or phone
+      - generic [ref=e18]:
+        - generic [ref=e19]: Email
+        - textbox "Email" [ref=e20]:
+          - /placeholder: admin@taarufsamara.com
+      - generic [ref=e21]:
+        - generic [ref=e22]: Password
+        - textbox "Password" [ref=e23]:
+          - /placeholder: ••••••••
+      - button "Masuk" [ref=e24]:
+        - img [ref=e35]
+        - generic [ref=e28]: Masuk
+    - paragraph [ref=e30]: Hanya untuk administrator yang berwenang
+  - paragraph [ref=e32]: © 2025 Taaruf Samara. Panel Admin CMS

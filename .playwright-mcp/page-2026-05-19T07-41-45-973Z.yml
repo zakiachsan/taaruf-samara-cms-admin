@@ -1,0 +1,549 @@
+- generic [ref=e5]:
+  - complementary [ref=e6]:
+    - generic [ref=e8]:
+      - img "Taaruf Samara" [ref=e9]
+      - generic [ref=e10]:
+        - heading "Taaruf Samara" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Admin CMS
+    - navigation [ref=e13]:
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Utama
+        - generic [ref=e16]:
+          - link "Dashboard" [ref=e17] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e18]
+            - generic [ref=e23]: Dashboard
+          - link "Pengguna" [ref=e24] [cursor=pointer]:
+            - /url: /admin/users
+            - img [ref=e25]
+            - generic [ref=e30]: Pengguna
+      - generic [ref=e31]:
+        - paragraph [ref=e32]: Langganan
+        - generic [ref=e33]:
+          - link "Pengguna Premium" [ref=e34] [cursor=pointer]:
+            - /url: /admin/premium
+            - img [ref=e35]
+            - generic [ref=e37]: Pengguna Premium
+          - link "Paket" [ref=e38] [cursor=pointer]:
+            - /url: /admin/packages
+            - img [ref=e39]
+            - generic [ref=e43]: Paket
+          - link "Tambahan" [ref=e44] [cursor=pointer]:
+            - /url: /admin/addons
+            - img [ref=e45]
+            - generic [ref=e47]: Tambahan
+          - link "Premium Pendampingan" [ref=e48] [cursor=pointer]:
+            - /url: /admin/pendampingan
+            - img [ref=e49]
+            - generic [ref=e54]: Premium Pendampingan
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Fitur
+        - generic [ref=e57]:
+          - link "Self-Value" [ref=e58] [cursor=pointer]:
+            - /url: /admin/selfvalue
+            - img [ref=e59]
+            - generic [ref=e62]: Self-Value
+          - link "Referral" [ref=e63] [cursor=pointer]:
+            - /url: /admin/referral
+            - img [ref=e64]
+            - generic [ref=e68]: Referral
+          - link "Pengaturan Referral" [ref=e69] [cursor=pointer]:
+            - /url: /admin/referral-settings
+            - img [ref=e70]
+            - generic [ref=e73]: Pengaturan Referral
+          - link "Banner" [ref=e74] [cursor=pointer]:
+            - /url: /admin/banner
+            - img [ref=e75]
+            - generic [ref=e79]: Banner
+          - link "Testimoni" [ref=e80] [cursor=pointer]:
+            - /url: /admin/testimonials
+            - img [ref=e81]
+            - generic [ref=e85]: Testimoni
+      - generic [ref=e86]:
+        - paragraph [ref=e87]: Pencocokan
+        - generic [ref=e88]:
+          - link "Pencocokan" [ref=e89] [cursor=pointer]:
+            - /url: /admin/matches
+            - img [ref=e90]
+            - generic [ref=e92]: Pencocokan
+          - link "Obrolan" [ref=e93] [cursor=pointer]:
+            - /url: /admin/chats
+            - img [ref=e94]
+            - generic [ref=e96]: Obrolan
+          - link "Sensor Chat" [ref=e97] [cursor=pointer]:
+            - /url: /admin/chat-keywords
+            - img [ref=e98]
+            - generic [ref=e100]: Sensor Chat
+          - link "Diblokir" [ref=e101] [cursor=pointer]:
+            - /url: /admin/blocked
+            - img [ref=e102]
+            - generic [ref=e105]: Diblokir
+      - generic [ref=e106]:
+        - paragraph [ref=e107]: Laporan
+        - link "Laporan" [ref=e109] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e110]
+          - generic [ref=e112]: Laporan
+      - generic [ref=e113]:
+        - paragraph [ref=e114]: Pengaturan
+        - generic [ref=e115]:
+          - link "Pengaturan" [ref=e116] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e117]
+            - generic [ref=e120]: Pengaturan
+          - link "Profil Admin" [ref=e121] [cursor=pointer]:
+            - /url: /admin/profile
+            - img [ref=e122]
+            - generic [ref=e126]: Profil Admin
+    - generic [ref=e127]:
+      - generic [ref=e129]:
+        - img [ref=e130]
+        - generic [ref=e133]: Terhubung
+      - button "Keluar" [ref=e134]:
+        - img [ref=e135]
+        - generic [ref=e138]: Keluar
+  - main [ref=e139]:
+    - generic [ref=e140]:
+      - button [ref=e141]:
+        - img [ref=e142]
+      - link "Pengguna Admin Super Admin A" [ref=e145] [cursor=pointer]:
+        - /url: /admin/profile
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Pengguna Admin
+          - paragraph [ref=e148]: Super Admin
+        - generic [ref=e150]: A
+    - generic [ref=e152]:
+      - generic [ref=e153]:
+        - heading "Pengguna" [level=2] [ref=e154]
+        - paragraph [ref=e155]: Kelola pengguna aplikasi Taaruf Samara
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - generic [ref=e159]:
+              - img [ref=e160]
+              - textbox "Cari berdasarkan nama atau email..." [ref=e163]
+            - generic [ref=e164]:
+              - combobox [ref=e165]:
+                - option "Semua Peran" [selected]
+                - option "Pengguna"
+                - option "Admin"
+                - option "Moderator"
+              - combobox [ref=e166]:
+                - option "Semua Status" [selected]
+                - option "Terverifikasi"
+                - option "Belum Terverifikasi"
+              - combobox [ref=e167]:
+                - option "Semua Pengguna" [selected]
+                - option "Premium"
+                - option "Gratis"
+              - button "Segarkan" [ref=e168]:
+                - img [ref=e169]
+                - generic [ref=e174]: Segarkan
+          - generic [ref=e175]:
+            - generic [ref=e176]: "Total: 24 pengguna"
+            - generic [ref=e177]:
+              - generic [ref=e178]: "Tampilkan:"
+              - combobox [ref=e179]:
+                - option "10" [selected]
+                - option "25"
+                - option "50"
+        - generic [ref=e180]:
+          - table [ref=e182]:
+            - rowgroup [ref=e183]:
+              - row "Pengguna Status Peran Verifikasi Keanggotaan WhatsApp Aksi" [ref=e184]:
+                - columnheader "Pengguna" [ref=e185]
+                - columnheader "Status" [ref=e186]
+                - columnheader "Peran" [ref=e187]
+                - columnheader "Verifikasi" [ref=e188]
+                - columnheader "Keanggotaan" [ref=e189]
+                - columnheader "WhatsApp" [ref=e190]
+                - columnheader "Aksi" [ref=e191]
+            - rowgroup [ref=e192]:
+              - row "T testing Aktif Pengguna Belum Terverifikasi Gratis -" [ref=e193]:
+                - cell "T testing" [ref=e194]:
+                  - generic [ref=e195]:
+                    - generic [ref=e197]: T
+                    - generic [ref=e198]:
+                      - button "testing" [ref=e199]:
+                        - text: testing
+                        - img [ref=e200]
+                      - paragraph
+                - cell "Aktif" [ref=e204]:
+                  - generic [ref=e205]:
+                    - img [ref=e206]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e209]:
+                  - combobox [ref=e210]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Belum Terverifikasi" [ref=e211]:
+                  - generic [ref=e212]:
+                    - img [ref=e213]
+                    - text: Belum Terverifikasi
+                - cell "Gratis" [ref=e217]:
+                  - generic [ref=e219]: Gratis
+                - cell "-" [ref=e220]
+                - cell [ref=e221]:
+                  - generic [ref=e222]:
+                    - button "Verifikasi" [ref=e223]:
+                      - img [ref=e224]
+                    - button "Blokir" [ref=e226]:
+                      - img [ref=e227]
+                    - button "Hapus Pengguna" [ref=e230]:
+                      - img [ref=e231]
+              - row "D david Aktif Pengguna Terverifikasi Gratis -" [ref=e234]:
+                - cell "D david" [ref=e235]:
+                  - generic [ref=e236]:
+                    - generic [ref=e238]: D
+                    - generic [ref=e239]:
+                      - button "david" [ref=e240]:
+                        - text: david
+                        - img [ref=e241]
+                      - paragraph
+                - cell "Aktif" [ref=e245]:
+                  - generic [ref=e246]:
+                    - img [ref=e247]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e250]:
+                  - combobox [ref=e251]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e252]:
+                  - generic [ref=e253]:
+                    - img [ref=e254]
+                    - text: Terverifikasi
+                - cell "Gratis" [ref=e257]:
+                  - generic [ref=e259]: Gratis
+                - cell "-" [ref=e260]
+                - cell [ref=e261]:
+                  - generic [ref=e262]:
+                    - button "Batalkan Verifikasi" [ref=e263]:
+                      - img [ref=e264]
+                    - button "Blokir" [ref=e267]:
+                      - img [ref=e268]
+                    - button "Hapus Pengguna" [ref=e271]:
+                      - img [ref=e272]
+              - row "F Female Admin female.admin.test@example.com 6281234567890 Aktif Pengguna Terverifikasi Gratis 6281234567890" [ref=e275]:
+                - cell "F Female Admin female.admin.test@example.com 6281234567890" [ref=e276]:
+                  - generic [ref=e277]:
+                    - generic [ref=e279]: F
+                    - generic [ref=e280]:
+                      - button "Female Admin" [ref=e281]:
+                        - text: Female Admin
+                        - img [ref=e282]
+                      - paragraph [ref=e286]: female.admin.test@example.com
+                      - paragraph [ref=e287]:
+                        - img [ref=e288]
+                        - text: "6281234567890"
+                - cell "Aktif" [ref=e290]:
+                  - generic [ref=e291]:
+                    - img [ref=e292]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e295]:
+                  - combobox [ref=e296]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e297]:
+                  - generic [ref=e298]:
+                    - img [ref=e299]
+                    - text: Terverifikasi
+                - cell "Gratis" [ref=e302]:
+                  - generic [ref=e304]: Gratis
+                - cell "6281234567890" [ref=e305]:
+                  - link "6281234567890" [ref=e306] [cursor=pointer]:
+                    - /url: https://wa.me/6281234567890
+                    - img [ref=e307]
+                    - text: "6281234567890"
+                - cell [ref=e309]:
+                  - generic [ref=e310]:
+                    - button "Batalkan Verifikasi" [ref=e311]:
+                      - img [ref=e312]
+                    - button "Blokir" [ref=e315]:
+                      - img [ref=e316]
+                    - button "Hapus Pengguna" [ref=e319]:
+                      - img [ref=e320]
+              - row "Y Yanisay 853370ad-5cfb-4b17-aeb1-4f4495dfa815@placeholder.local 628212423561 Aktif Pengguna Terverifikasi Gratis 628212423561" [ref=e323]:
+                - cell "Y Yanisay 853370ad-5cfb-4b17-aeb1-4f4495dfa815@placeholder.local 628212423561" [ref=e324]:
+                  - generic [ref=e325]:
+                    - generic [ref=e327]: "Y"
+                    - generic [ref=e328]:
+                      - button "Yanisay" [ref=e329]:
+                        - text: Yanisay
+                        - img [ref=e330]
+                      - paragraph [ref=e334]: 853370ad-5cfb-4b17-aeb1-4f4495dfa815@placeholder.local
+                      - paragraph [ref=e335]:
+                        - img [ref=e336]
+                        - text: "628212423561"
+                - cell "Aktif" [ref=e338]:
+                  - generic [ref=e339]:
+                    - img [ref=e340]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e343]:
+                  - combobox [ref=e344]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e345]:
+                  - generic [ref=e346]:
+                    - img [ref=e347]
+                    - text: Terverifikasi
+                - cell "Gratis" [ref=e350]:
+                  - generic [ref=e352]: Gratis
+                - cell "628212423561" [ref=e353]:
+                  - link "628212423561" [ref=e354] [cursor=pointer]:
+                    - /url: https://wa.me/628212423561
+                    - img [ref=e355]
+                    - text: "628212423561"
+                - cell [ref=e357]:
+                  - generic [ref=e358]:
+                    - button "Batalkan Verifikasi" [ref=e359]:
+                      - img [ref=e360]
+                    - button "Blokir" [ref=e363]:
+                      - img [ref=e364]
+                    - button "Hapus Pengguna" [ref=e367]:
+                      - img [ref=e368]
+              - row "Y Yani 3b08c50c-b3ef-414a-b6a6-fa4cb1c601ae@placeholder.local 6285811897662 Aktif Pengguna Terverifikasi Premium 6285811897662" [ref=e371]:
+                - cell "Y Yani 3b08c50c-b3ef-414a-b6a6-fa4cb1c601ae@placeholder.local 6285811897662" [ref=e372]:
+                  - generic [ref=e373]:
+                    - generic [ref=e375]: "Y"
+                    - generic [ref=e376]:
+                      - button "Yani" [ref=e377]:
+                        - text: Yani
+                        - img [ref=e378]
+                      - paragraph [ref=e382]: 3b08c50c-b3ef-414a-b6a6-fa4cb1c601ae@placeholder.local
+                      - paragraph [ref=e383]:
+                        - img [ref=e384]
+                        - text: "6285811897662"
+                - cell "Aktif" [ref=e386]:
+                  - generic [ref=e387]:
+                    - img [ref=e388]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e391]:
+                  - combobox [ref=e392]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e393]:
+                  - generic [ref=e394]:
+                    - img [ref=e395]
+                    - text: Terverifikasi
+                - cell "Premium" [ref=e398]:
+                  - generic [ref=e400]:
+                    - img [ref=e401]
+                    - text: Premium
+                - cell "6285811897662" [ref=e403]:
+                  - link "6285811897662" [ref=e404] [cursor=pointer]:
+                    - /url: https://wa.me/6285811897662
+                    - img [ref=e405]
+                    - text: "6285811897662"
+                - cell [ref=e407]:
+                  - generic [ref=e408]:
+                    - button "Batalkan Verifikasi" [ref=e409]:
+                      - img [ref=e410]
+                    - button "Blokir" [ref=e413]:
+                      - img [ref=e414]
+                    - button "Hapus Pengguna" [ref=e417]:
+                      - img [ref=e418]
+              - row "T Taufik 6281298900985@taaruftsamara.app 6281298900985 Aktif Pengguna Terverifikasi Premium 6281298900985" [ref=e421]:
+                - cell "T Taufik 6281298900985@taaruftsamara.app 6281298900985" [ref=e422]:
+                  - generic [ref=e423]:
+                    - generic [ref=e425]: T
+                    - generic [ref=e426]:
+                      - button "Taufik" [ref=e427]:
+                        - text: Taufik
+                        - img [ref=e428]
+                      - paragraph [ref=e432]: 6281298900985@taaruftsamara.app
+                      - paragraph [ref=e433]:
+                        - img [ref=e434]
+                        - text: "6281298900985"
+                - cell "Aktif" [ref=e436]:
+                  - generic [ref=e437]:
+                    - img [ref=e438]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e441]:
+                  - combobox [ref=e442]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e443]:
+                  - generic [ref=e444]:
+                    - img [ref=e445]
+                    - text: Terverifikasi
+                - cell "Premium" [ref=e448]:
+                  - generic [ref=e450]:
+                    - img [ref=e451]
+                    - text: Premium
+                - cell "6281298900985" [ref=e453]:
+                  - link "6281298900985" [ref=e454] [cursor=pointer]:
+                    - /url: https://wa.me/6281298900985
+                    - img [ref=e455]
+                    - text: "6281298900985"
+                - cell [ref=e457]:
+                  - generic [ref=e458]:
+                    - button "Batalkan Verifikasi" [ref=e459]:
+                      - img [ref=e460]
+                    - button "Blokir" [ref=e463]:
+                      - img [ref=e464]
+                    - button "Hapus Pengguna" [ref=e467]:
+                      - img [ref=e468]
+              - row "A Admin zaki 1b3d0c9b-379e-491f-9ec3-b4ae445162b0@placeholder.local 6285694662592 Aktif Pengguna Terverifikasi Premium 6285694662592" [ref=e471]:
+                - cell "A Admin zaki 1b3d0c9b-379e-491f-9ec3-b4ae445162b0@placeholder.local 6285694662592" [ref=e472]:
+                  - generic [ref=e473]:
+                    - generic [ref=e475]: A
+                    - generic [ref=e476]:
+                      - button "Admin zaki" [ref=e477]:
+                        - text: Admin zaki
+                        - img [ref=e478]
+                      - paragraph [ref=e482]: 1b3d0c9b-379e-491f-9ec3-b4ae445162b0@placeholder.local
+                      - paragraph [ref=e483]:
+                        - img [ref=e484]
+                        - text: "6285694662592"
+                - cell "Aktif" [ref=e486]:
+                  - generic [ref=e487]:
+                    - img [ref=e488]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e491]:
+                  - combobox [ref=e492]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e493]:
+                  - generic [ref=e494]:
+                    - img [ref=e495]
+                    - text: Terverifikasi
+                - cell "Premium" [ref=e498]:
+                  - generic [ref=e500]:
+                    - img [ref=e501]
+                    - text: Premium
+                - cell "6285694662592" [ref=e503]:
+                  - link "6285694662592" [ref=e504] [cursor=pointer]:
+                    - /url: https://wa.me/6285694662592
+                    - img [ref=e505]
+                    - text: "6285694662592"
+                - cell [ref=e507]:
+                  - generic [ref=e508]:
+                    - button "Batalkan Verifikasi" [ref=e509]:
+                      - img [ref=e510]
+                    - button "Blokir" [ref=e513]:
+                      - img [ref=e514]
+                    - button "Hapus Pengguna" [ref=e517]:
+                      - img [ref=e518]
+              - row "A Aap mukromun ansory aap.mukromun@gmail.com 6285321385380 Aktif Pengguna Terverifikasi Premium 6285321385380" [ref=e521]:
+                - cell "A Aap mukromun ansory aap.mukromun@gmail.com 6285321385380" [ref=e522]:
+                  - generic [ref=e523]:
+                    - generic [ref=e525]: A
+                    - generic [ref=e526]:
+                      - button "Aap mukromun ansory" [ref=e527]:
+                        - text: Aap mukromun ansory
+                        - img [ref=e528]
+                      - paragraph [ref=e532]: aap.mukromun@gmail.com
+                      - paragraph [ref=e533]:
+                        - img [ref=e534]
+                        - text: "6285321385380"
+                - cell "Aktif" [ref=e536]:
+                  - generic [ref=e537]:
+                    - img [ref=e538]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e541]:
+                  - combobox [ref=e542]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e543]:
+                  - generic [ref=e544]:
+                    - img [ref=e545]
+                    - text: Terverifikasi
+                - cell "Premium" [ref=e548]:
+                  - generic [ref=e550]:
+                    - img [ref=e551]
+                    - text: Premium
+                - cell "6285321385380" [ref=e553]:
+                  - link "6285321385380" [ref=e554] [cursor=pointer]:
+                    - /url: https://wa.me/6285321385380
+                    - img [ref=e555]
+                    - text: "6285321385380"
+                - cell [ref=e557]:
+                  - generic [ref=e558]:
+                    - button "Batalkan Verifikasi" [ref=e559]:
+                      - img [ref=e560]
+                    - button "Blokir" [ref=e563]:
+                      - img [ref=e564]
+                    - button "Hapus Pengguna" [ref=e567]:
+                      - img [ref=e568]
+              - row "A Aap Mukromun Ansory asghor2307@gmail.com Aktif Pengguna Terverifikasi Gratis -" [ref=e571]:
+                - cell "A Aap Mukromun Ansory asghor2307@gmail.com" [ref=e572]:
+                  - generic [ref=e573]:
+                    - generic [ref=e575]: A
+                    - generic [ref=e576]:
+                      - button "Aap Mukromun Ansory" [ref=e577]:
+                        - text: Aap Mukromun Ansory
+                        - img [ref=e578]
+                      - paragraph [ref=e582]: asghor2307@gmail.com
+                - cell "Aktif" [ref=e583]:
+                  - generic [ref=e584]:
+                    - img [ref=e585]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e588]:
+                  - combobox [ref=e589]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e590]:
+                  - generic [ref=e591]:
+                    - img [ref=e592]
+                    - text: Terverifikasi
+                - cell "Gratis" [ref=e595]:
+                  - generic [ref=e597]: Gratis
+                - cell "-" [ref=e598]
+                - cell [ref=e599]:
+                  - generic [ref=e600]:
+                    - button "Batalkan Verifikasi" [ref=e601]:
+                      - img [ref=e602]
+                    - button "Blokir" [ref=e605]:
+                      - img [ref=e606]
+                    - button "Hapus Pengguna" [ref=e609]:
+                      - img [ref=e610]
+              - row "I Ida keysafeli66@gmail.com Aktif Pengguna Terverifikasi Gratis -" [ref=e613]:
+                - cell "I Ida keysafeli66@gmail.com" [ref=e614]:
+                  - generic [ref=e615]:
+                    - generic [ref=e617]: I
+                    - generic [ref=e618]:
+                      - button "Ida" [ref=e619]:
+                        - text: Ida
+                        - img [ref=e620]
+                      - paragraph [ref=e624]: keysafeli66@gmail.com
+                - cell "Aktif" [ref=e625]:
+                  - generic [ref=e626]:
+                    - img [ref=e627]
+                    - text: Aktif
+                - cell "Pengguna" [ref=e630]:
+                  - combobox [ref=e631]:
+                    - option "Pengguna" [selected]
+                    - option "Moderator"
+                    - option "Admin"
+                - cell "Terverifikasi" [ref=e632]:
+                  - generic [ref=e633]:
+                    - img [ref=e634]
+                    - text: Terverifikasi
+                - cell "Gratis" [ref=e637]:
+                  - generic [ref=e639]: Gratis
+                - cell "-" [ref=e640]
+                - cell [ref=e641]:
+                  - generic [ref=e642]:
+                    - button "Batalkan Verifikasi" [ref=e643]:
+                      - img [ref=e644]
+                    - button "Blokir" [ref=e647]:
+                      - img [ref=e648]
+                    - button "Hapus Pengguna" [ref=e651]:
+                      - img [ref=e652]
+          - generic [ref=e655]:
+            - button "Sebelumnya" [disabled] [ref=e656]:
+              - img [ref=e657]
+              - generic [ref=e659]: Sebelumnya
+            - generic [ref=e660]: Halaman 1 dari 3
+            - button "Berikutnya" [ref=e661]:
+              - generic [ref=e662]: Berikutnya
+              - img [ref=e663]

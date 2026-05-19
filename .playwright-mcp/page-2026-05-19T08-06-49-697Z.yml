@@ -1,0 +1,312 @@
+- generic [ref=e5]:
+  - complementary [ref=e6]:
+    - generic [ref=e8]:
+      - img "Taaruf Samara" [ref=e9]
+      - generic [ref=e10]:
+        - heading "Taaruf Samara" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Admin CMS
+    - navigation [ref=e13]:
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Utama
+        - generic [ref=e16]:
+          - link "Dashboard" [ref=e17] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e18]
+            - generic [ref=e23]: Dashboard
+          - link "Pengguna" [ref=e24] [cursor=pointer]:
+            - /url: /admin/users
+            - img [ref=e25]
+            - generic [ref=e30]: Pengguna
+      - generic [ref=e31]:
+        - paragraph [ref=e32]: Langganan
+        - generic [ref=e33]:
+          - link "Pengguna Premium" [ref=e34] [cursor=pointer]:
+            - /url: /admin/premium
+            - img [ref=e35]
+            - generic [ref=e37]: Pengguna Premium
+          - link "Paket" [ref=e38] [cursor=pointer]:
+            - /url: /admin/packages
+            - img [ref=e39]
+            - generic [ref=e43]: Paket
+          - link "Tambahan" [ref=e44] [cursor=pointer]:
+            - /url: /admin/addons
+            - img [ref=e45]
+            - generic [ref=e47]: Tambahan
+          - link "Premium Pendampingan" [ref=e48] [cursor=pointer]:
+            - /url: /admin/pendampingan
+            - img [ref=e49]
+            - generic [ref=e54]: Premium Pendampingan
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Fitur
+        - generic [ref=e57]:
+          - link "Self-Value" [ref=e58] [cursor=pointer]:
+            - /url: /admin/selfvalue
+            - img [ref=e59]
+            - generic [ref=e62]: Self-Value
+          - link "Referral" [ref=e63] [cursor=pointer]:
+            - /url: /admin/referral
+            - img [ref=e64]
+            - generic [ref=e68]: Referral
+          - link "Pengaturan Referral" [ref=e69] [cursor=pointer]:
+            - /url: /admin/referral-settings
+            - img [ref=e70]
+            - generic [ref=e73]: Pengaturan Referral
+          - link "Banner" [ref=e74] [cursor=pointer]:
+            - /url: /admin/banner
+            - img [ref=e75]
+            - generic [ref=e79]: Banner
+          - link "Testimoni" [ref=e80] [cursor=pointer]:
+            - /url: /admin/testimonials
+            - img [ref=e81]
+            - generic [ref=e85]: Testimoni
+      - generic [ref=e86]:
+        - paragraph [ref=e87]: Pencocokan
+        - generic [ref=e88]:
+          - link "Pencocokan" [ref=e89] [cursor=pointer]:
+            - /url: /admin/matches
+            - img [ref=e90]
+            - generic [ref=e92]: Pencocokan
+          - link "Obrolan" [ref=e93] [cursor=pointer]:
+            - /url: /admin/chats
+            - img [ref=e94]
+            - generic [ref=e96]: Obrolan
+          - link "Sensor Chat" [ref=e97] [cursor=pointer]:
+            - /url: /admin/chat-keywords
+            - img [ref=e98]
+            - generic [ref=e100]: Sensor Chat
+          - link "Diblokir" [ref=e101] [cursor=pointer]:
+            - /url: /admin/blocked
+            - img [ref=e102]
+            - generic [ref=e105]: Diblokir
+      - generic [ref=e106]:
+        - paragraph [ref=e107]: Laporan
+        - link "Laporan" [ref=e109] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e110]
+          - generic [ref=e112]: Laporan
+      - generic [ref=e113]:
+        - paragraph [ref=e114]: Pengaturan
+        - generic [ref=e115]:
+          - link "Pengaturan" [ref=e116] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e117]
+            - generic [ref=e120]: Pengaturan
+          - link "Profil Admin" [ref=e121] [cursor=pointer]:
+            - /url: /admin/profile
+            - img [ref=e122]
+            - generic [ref=e126]: Profil Admin
+    - generic [ref=e127]:
+      - generic [ref=e129]:
+        - img [ref=e130]
+        - generic [ref=e133]: Terhubung
+      - button "Keluar" [ref=e134]:
+        - img [ref=e135]
+        - generic [ref=e138]: Keluar
+  - main [ref=e139]:
+    - generic [ref=e140]:
+      - button [ref=e141]:
+        - img [ref=e142]
+      - link "Pengguna Admin Super Admin A" [ref=e145] [cursor=pointer]:
+        - /url: /admin/profile
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Pengguna Admin
+          - paragraph [ref=e148]: Super Admin
+        - generic [ref=e150]: A
+    - generic [ref=e152]:
+      - generic [ref=e153]:
+        - heading "Obrolan" [level=2] [ref=e154]
+        - paragraph [ref=e155]: Kelola obrolan aplikasi Taaruf Samara
+      - generic [ref=e156]:
+        - generic [ref=e159]:
+          - img [ref=e161]
+          - generic [ref=e163]:
+            - paragraph [ref=e164]: Total Chat
+            - paragraph [ref=e165]: "8"
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - generic [ref=e168]:
+              - img [ref=e169]
+              - textbox "Cari berdasarkan nama atau email pengguna..." [ref=e172]
+            - generic [ref=e173]:
+              - generic [ref=e174]:
+                - img [ref=e175]
+                - combobox [ref=e177]:
+                  - option "Semua Pengguna" [selected]
+                  - option
+                  - option "Aap mukromun ansory"
+                  - option "Aap Mukromun Ansory"
+                  - option "Admin"
+                  - option "Admin Test"
+                  - option "Admin Test 3"
+                  - option "Admin zaki"
+                  - option "Ahmad Fauzi"
+                  - option "Aisyah Putri"
+                  - option "Capung singit"
+                  - option "david"
+                  - option "Dewi Safitri"
+                  - option "Female Admin"
+                  - option "Ida"
+                  - option "M. Haqqul Faris"
+                  - option "Mamah"
+                  - option "Rizky pasha"
+                  - option "Sila"
+                  - option "Siti Aminah"
+                  - option "Taufik"
+                  - option "Taufik"
+                  - option "testing"
+                  - option "Yani"
+                  - option "Yanisay"
+              - button [ref=e178]:
+                - img [ref=e179]
+          - generic [ref=e184]:
+            - generic [ref=e185]: "Total: 8 chat"
+            - generic [ref=e186]:
+              - generic [ref=e187]: "Tampilkan:"
+              - combobox [ref=e188]:
+                - option "10"
+                - option "20" [selected]
+                - option "50"
+        - table [ref=e191]:
+          - rowgroup [ref=e192]:
+            - row "Peserta Pesan Terakhir Dimulai Aktivitas Terakhir Aksi" [ref=e193]:
+              - columnheader "Peserta" [ref=e194]
+              - columnheader "Pesan Terakhir" [ref=e195]
+              - columnheader "Dimulai" [ref=e196]
+              - columnheader "Aktivitas Terakhir" [ref=e197]
+              - columnheader "Aksi" [ref=e198]
+          - rowgroup [ref=e199]:
+            - 'row "A Y Aap mukromun ansory Yani Aap mukromun ansory: Gk bisa hapus pesan? 6 Mei 2026, 16.31 8 jam lalu Lihat" [ref=e200]':
+              - cell "A Y Aap mukromun ansory Yani" [ref=e201]:
+                - generic [ref=e202]:
+                  - generic [ref=e203]:
+                    - generic [ref=e205]: A
+                    - generic [ref=e207]: "Y"
+                  - generic [ref=e208]:
+                    - paragraph [ref=e209]: Aap mukromun ansory
+                    - paragraph [ref=e210]: Yani
+              - 'cell "Aap mukromun ansory: Gk bisa hapus pesan?" [ref=e211]':
+                - paragraph [ref=e213]: "Aap mukromun ansory: Gk bisa hapus pesan?"
+              - cell "6 Mei 2026, 16.31" [ref=e214]
+              - cell "8 jam lalu" [ref=e215]
+              - cell "Lihat" [ref=e216]:
+                - button "Lihat" [ref=e217]:
+                  - img [ref=e218]
+                  - text: Lihat
+            - row "U Y User Yani Belum ada pesan 18 Mei 2026, 07.13 1 hari lalu Lihat" [ref=e221]:
+              - cell "U Y User Yani" [ref=e222]:
+                - generic [ref=e223]:
+                  - generic [ref=e224]:
+                    - generic [ref=e226]: U
+                    - generic [ref=e228]: "Y"
+                  - generic [ref=e229]:
+                    - paragraph [ref=e230]: User
+                    - paragraph [ref=e231]: Yani
+              - cell "Belum ada pesan" [ref=e232]
+              - cell "18 Mei 2026, 07.13" [ref=e233]
+              - cell "1 hari lalu" [ref=e234]
+              - cell "Lihat" [ref=e235]:
+                - button "Lihat" [ref=e236]:
+                  - img [ref=e237]
+                  - text: Lihat
+            - 'row "T Y Taufik Yani Taufik: Y 15 Mei 2026, 11.34 3 hari lalu Lihat" [ref=e240]':
+              - cell "T Y Taufik Yani" [ref=e241]:
+                - generic [ref=e242]:
+                  - generic [ref=e243]:
+                    - generic [ref=e245]: T
+                    - generic [ref=e247]: "Y"
+                  - generic [ref=e248]:
+                    - paragraph [ref=e249]: Taufik
+                    - paragraph [ref=e250]: Yani
+              - 'cell "Taufik: Y" [ref=e251]':
+                - paragraph [ref=e253]: "Taufik: Y"
+              - cell "15 Mei 2026, 11.34" [ref=e254]
+              - cell "3 hari lalu" [ref=e255]
+              - cell "Lihat" [ref=e256]:
+                - button "Lihat" [ref=e257]:
+                  - img [ref=e258]
+                  - text: Lihat
+            - 'row "A F Admin zaki Female Admin Female Admin: Halo kak ini nomor saya 085694 12 Mei 2026, 04.04 5 hari lalu Lihat" [ref=e261]':
+              - cell "A F Admin zaki Female Admin" [ref=e262]:
+                - generic [ref=e263]:
+                  - generic [ref=e264]:
+                    - generic [ref=e266]: A
+                    - generic [ref=e268]: F
+                  - generic [ref=e269]:
+                    - paragraph [ref=e270]: Admin zaki
+                    - paragraph [ref=e271]: Female Admin
+              - 'cell "Female Admin: Halo kak ini nomor saya 085694" [ref=e272]':
+                - paragraph [ref=e274]: "Female Admin: Halo kak ini nomor saya 085694"
+              - cell "12 Mei 2026, 04.04" [ref=e275]
+              - cell "5 hari lalu" [ref=e276]
+              - cell "Lihat" [ref=e277]:
+                - button "Lihat" [ref=e278]:
+                  - img [ref=e279]
+                  - text: Lihat
+            - 'row "A Z Ahmad Demo Zaki Achsan Ahmad Demo: Nice 31 Mar 2026, 15.16 23 Apr 2026, 06.15 Lihat" [ref=e282]':
+              - cell "A Z Ahmad Demo Zaki Achsan" [ref=e283]:
+                - generic [ref=e284]:
+                  - generic [ref=e285]:
+                    - generic [ref=e287]: A
+                    - generic [ref=e289]: Z
+                  - generic [ref=e290]:
+                    - paragraph [ref=e291]: Ahmad Demo
+                    - paragraph [ref=e292]: Zaki Achsan
+              - 'cell "Ahmad Demo: Nice" [ref=e293]':
+                - paragraph [ref=e295]: "Ahmad Demo: Nice"
+              - cell "31 Mar 2026, 15.16" [ref=e296]
+              - cell "23 Apr 2026, 06.15" [ref=e297]
+              - cell "Lihat" [ref=e298]:
+                - button "Lihat" [ref=e299]:
+                  - img [ref=e300]
+                  - text: Lihat
+            - 'row "T S Taufik Sila Taufik: Tes 5 Apr 2026, 14.33 5 Apr 2026, 14.36 Lihat" [ref=e303]':
+              - cell "T S Taufik Sila" [ref=e304]:
+                - generic [ref=e305]:
+                  - generic [ref=e306]:
+                    - generic [ref=e308]: T
+                    - generic [ref=e310]: S
+                  - generic [ref=e311]:
+                    - paragraph [ref=e312]: Taufik
+                    - paragraph [ref=e313]: Sila
+              - 'cell "Taufik: Tes" [ref=e314]':
+                - paragraph [ref=e316]: "Taufik: Tes"
+              - cell "5 Apr 2026, 14.33" [ref=e317]
+              - cell "5 Apr 2026, 14.36" [ref=e318]
+              - cell "Lihat" [ref=e319]:
+                - button "Lihat" [ref=e320]:
+                  - img [ref=e321]
+                  - text: Lihat
+            - 'row "Z F Zaki Achsan Fatma Zahra Fatma Zahra: Halo 31 Mar 2026, 15.15 4 Apr 2026, 07.37 Lihat" [ref=e324]':
+              - cell "Z F Zaki Achsan Fatma Zahra" [ref=e325]:
+                - generic [ref=e326]:
+                  - generic [ref=e327]:
+                    - generic [ref=e329]: Z
+                    - generic [ref=e331]: F
+                  - generic [ref=e332]:
+                    - paragraph [ref=e333]: Zaki Achsan
+                    - paragraph [ref=e334]: Fatma Zahra
+              - 'cell "Fatma Zahra: Halo" [ref=e335]':
+                - paragraph [ref=e337]: "Fatma Zahra: Halo"
+              - cell "31 Mar 2026, 15.15" [ref=e338]
+              - cell "4 Apr 2026, 07.37" [ref=e339]
+              - cell "Lihat" [ref=e340]:
+                - button "Lihat" [ref=e341]:
+                  - img [ref=e342]
+                  - text: Lihat
+            - 'row "A Z Aisyah Putri Zaki Achsan Zaki Achsan: Halo 31 Mar 2026, 15.16 31 Mar 2026, 16.01 Lihat" [ref=e345]':
+              - cell "A Z Aisyah Putri Zaki Achsan" [ref=e346]:
+                - generic [ref=e347]:
+                  - generic [ref=e348]:
+                    - generic [ref=e350]: A
+                    - generic [ref=e352]: Z
+                  - generic [ref=e353]:
+                    - paragraph [ref=e354]: Aisyah Putri
+                    - paragraph [ref=e355]: Zaki Achsan
+              - 'cell "Zaki Achsan: Halo" [ref=e356]':
+                - paragraph [ref=e358]: "Zaki Achsan: Halo"
+              - cell "31 Mar 2026, 15.16" [ref=e359]
+              - cell "31 Mar 2026, 16.01" [ref=e360]
+              - cell "Lihat" [ref=e361]:
+                - button "Lihat" [ref=e362]:
+                  - img [ref=e363]
+                  - text: Lihat

@@ -1,0 +1,175 @@
+- generic [ref=e5]:
+  - complementary [ref=e6]:
+    - generic [ref=e8]:
+      - img "Taaruf Samara" [ref=e9]
+      - generic [ref=e10]:
+        - heading "Taaruf Samara" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Admin CMS
+    - navigation [ref=e13]:
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Utama
+        - generic [ref=e16]:
+          - link "Dashboard" [ref=e17] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e18]
+            - generic [ref=e23]: Dashboard
+          - link "Pengguna" [ref=e24] [cursor=pointer]:
+            - /url: /admin/users
+            - img [ref=e25]
+            - generic [ref=e30]: Pengguna
+      - generic [ref=e31]:
+        - paragraph [ref=e32]: Langganan
+        - generic [ref=e33]:
+          - link "Pengguna Premium" [ref=e34] [cursor=pointer]:
+            - /url: /admin/premium
+            - img [ref=e35]
+            - generic [ref=e37]: Pengguna Premium
+          - link "Paket" [ref=e38] [cursor=pointer]:
+            - /url: /admin/packages
+            - img [ref=e39]
+            - generic [ref=e43]: Paket
+          - link "Tambahan" [ref=e44] [cursor=pointer]:
+            - /url: /admin/addons
+            - img [ref=e45]
+            - generic [ref=e47]: Tambahan
+          - link "Premium Pendampingan" [ref=e48] [cursor=pointer]:
+            - /url: /admin/pendampingan
+            - img [ref=e49]
+            - generic [ref=e54]: Premium Pendampingan
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Fitur
+        - generic [ref=e57]:
+          - link "Self-Value" [ref=e58] [cursor=pointer]:
+            - /url: /admin/selfvalue
+            - img [ref=e59]
+            - generic [ref=e62]: Self-Value
+          - link "Referral" [active] [ref=e63] [cursor=pointer]:
+            - /url: /admin/referral
+            - img [ref=e64]
+            - generic [ref=e68]: Referral
+          - link "Pengaturan Referral" [ref=e69] [cursor=pointer]:
+            - /url: /admin/referral-settings
+            - img [ref=e70]
+            - generic [ref=e73]: Pengaturan Referral
+          - link "Banner" [ref=e74] [cursor=pointer]:
+            - /url: /admin/banner
+            - img [ref=e75]
+            - generic [ref=e79]: Banner
+          - link "Testimoni" [ref=e80] [cursor=pointer]:
+            - /url: /admin/testimonials
+            - img [ref=e81]
+            - generic [ref=e85]: Testimoni
+      - generic [ref=e86]:
+        - paragraph [ref=e87]: Pencocokan
+        - generic [ref=e88]:
+          - link "Pencocokan" [ref=e89] [cursor=pointer]:
+            - /url: /admin/matches
+            - img [ref=e90]
+            - generic [ref=e92]: Pencocokan
+          - link "Obrolan" [ref=e93] [cursor=pointer]:
+            - /url: /admin/chats
+            - img [ref=e94]
+            - generic [ref=e96]: Obrolan
+          - link "Sensor Chat" [ref=e97] [cursor=pointer]:
+            - /url: /admin/chat-keywords
+            - img [ref=e98]
+            - generic [ref=e100]: Sensor Chat
+          - link "Diblokir" [ref=e101] [cursor=pointer]:
+            - /url: /admin/blocked
+            - img [ref=e102]
+            - generic [ref=e105]: Diblokir
+      - generic [ref=e106]:
+        - paragraph [ref=e107]: Laporan
+        - link "Laporan" [ref=e109] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e110]
+          - generic [ref=e112]: Laporan
+      - generic [ref=e113]:
+        - paragraph [ref=e114]: Pengaturan
+        - generic [ref=e115]:
+          - link "Pengaturan" [ref=e116] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e117]
+            - generic [ref=e120]: Pengaturan
+          - link "Profil Admin" [ref=e121] [cursor=pointer]:
+            - /url: /admin/profile
+            - img [ref=e122]
+            - generic [ref=e126]: Profil Admin
+    - generic [ref=e127]:
+      - generic [ref=e129]:
+        - img [ref=e130]
+        - generic [ref=e133]: Terhubung
+      - button "Keluar" [ref=e134]:
+        - img [ref=e135]
+        - generic [ref=e138]: Keluar
+  - main [ref=e139]:
+    - generic [ref=e140]:
+      - button [ref=e141]:
+        - img [ref=e142]
+      - link "Pengguna Admin Super Admin A" [ref=e145] [cursor=pointer]:
+        - /url: /admin/profile
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Pengguna Admin
+          - paragraph [ref=e148]: Super Admin
+        - generic [ref=e150]: A
+    - generic [ref=e152]:
+      - generic [ref=e153]:
+        - heading "Referral" [level=2] [ref=e366]
+        - paragraph [ref=e155]: Kelola referral aplikasi Taaruf Samara
+      - generic [ref=e367]:
+        - generic [ref=e368]:
+          - generic [ref=e370]:
+            - generic [ref=e371]:
+              - paragraph [ref=e372]: Total Referrer
+              - heading "0" [level=3] [ref=e373]
+            - img [ref=e375]
+          - generic [ref=e381]:
+            - generic [ref=e382]:
+              - paragraph [ref=e383]: Referral Berhasil
+              - heading "0" [level=3] [ref=e384]
+            - img [ref=e386]
+          - generic [ref=e390]:
+            - generic [ref=e391]:
+              - paragraph [ref=e392]: Komisi Dibayar
+              - heading "Rp 0" [level=3] [ref=e393]
+            - img [ref=e395]
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - paragraph [ref=e400]: Penarikan Menunggu
+              - heading "0" [level=3] [ref=e401]
+              - paragraph [ref=e402]: Rp 0
+            - img [ref=e404]
+        - generic [ref=e407]:
+          - generic [ref=e408]:
+            - button "Referral" [ref=e409]:
+              - img [ref=e410]
+              - text: Referral
+            - button "Penarikan" [ref=e414]:
+              - img [ref=e415]
+              - text: Penarikan
+          - generic [ref=e418]:
+            - generic [ref=e419]:
+              - generic [ref=e420]:
+                - img [ref=e421]
+                - textbox "Cari berdasarkan nama atau kode..." [ref=e424]
+              - combobox [ref=e425]:
+                - option "Semua Status" [selected]
+                - option "Menunggu"
+                - option "Berhasil"
+                - option "Gagal"
+              - button [ref=e426]:
+                - img [ref=e427]
+            - table [ref=e433]:
+              - rowgroup [ref=e434]:
+                - row "Referrer User yang Direferral Kode Status Hadiah Tanggal" [ref=e435]:
+                  - columnheader "Referrer" [ref=e436]
+                  - columnheader "User yang Direferral" [ref=e437]
+                  - columnheader "Kode" [ref=e438]
+                  - columnheader "Status" [ref=e439]
+                  - columnheader "Hadiah" [ref=e440]
+                  - columnheader "Tanggal" [ref=e441]
+              - rowgroup [ref=e442]:
+                - row "Tidak ada referral ditemukan" [ref=e443]:
+                  - cell "Tidak ada referral ditemukan" [ref=e444]:
+                    - img [ref=e445]
+                    - text: Tidak ada referral ditemukan

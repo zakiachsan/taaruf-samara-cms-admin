@@ -1,0 +1,456 @@
+- generic [ref=e5]:
+  - complementary [ref=e6]:
+    - generic [ref=e8]:
+      - img "Taaruf Samara" [ref=e9]
+      - generic [ref=e10]:
+        - heading "Taaruf Samara" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Admin CMS
+    - navigation [ref=e13]:
+      - generic [ref=e14]:
+        - paragraph [ref=e15]: Utama
+        - generic [ref=e16]:
+          - link "Dashboard" [ref=e17] [cursor=pointer]:
+            - /url: /admin
+            - img [ref=e18]
+            - generic [ref=e23]: Dashboard
+          - link "Pengguna" [ref=e24] [cursor=pointer]:
+            - /url: /admin/users
+            - img [ref=e25]
+            - generic [ref=e30]: Pengguna
+      - generic [ref=e31]:
+        - paragraph [ref=e32]: Langganan
+        - generic [ref=e33]:
+          - link "Pengguna Premium" [ref=e34] [cursor=pointer]:
+            - /url: /admin/premium
+            - img [ref=e35]
+            - generic [ref=e37]: Pengguna Premium
+          - link "Paket" [ref=e38] [cursor=pointer]:
+            - /url: /admin/packages
+            - img [ref=e39]
+            - generic [ref=e43]: Paket
+          - link "Tambahan" [ref=e44] [cursor=pointer]:
+            - /url: /admin/addons
+            - img [ref=e45]
+            - generic [ref=e47]: Tambahan
+          - link "Premium Pendampingan" [ref=e48] [cursor=pointer]:
+            - /url: /admin/pendampingan
+            - img [ref=e49]
+            - generic [ref=e54]: Premium Pendampingan
+      - generic [ref=e55]:
+        - paragraph [ref=e56]: Fitur
+        - generic [ref=e57]:
+          - link "Self-Value" [ref=e58] [cursor=pointer]:
+            - /url: /admin/selfvalue
+            - img [ref=e59]
+            - generic [ref=e62]: Self-Value
+          - link "Referral" [ref=e63] [cursor=pointer]:
+            - /url: /admin/referral
+            - img [ref=e64]
+            - generic [ref=e68]: Referral
+          - link "Pengaturan Referral" [ref=e69] [cursor=pointer]:
+            - /url: /admin/referral-settings
+            - img [ref=e70]
+            - generic [ref=e73]: Pengaturan Referral
+          - link "Banner" [ref=e74] [cursor=pointer]:
+            - /url: /admin/banner
+            - img [ref=e75]
+            - generic [ref=e79]: Banner
+          - link "Testimoni" [ref=e80] [cursor=pointer]:
+            - /url: /admin/testimonials
+            - img [ref=e81]
+            - generic [ref=e85]: Testimoni
+      - generic [ref=e86]:
+        - paragraph [ref=e87]: Pencocokan
+        - generic [ref=e88]:
+          - link "Pencocokan" [ref=e89] [cursor=pointer]:
+            - /url: /admin/matches
+            - img [ref=e90]
+            - generic [ref=e92]: Pencocokan
+          - link "Obrolan" [ref=e93] [cursor=pointer]:
+            - /url: /admin/chats
+            - img [ref=e94]
+            - generic [ref=e96]: Obrolan
+          - link "Sensor Chat" [ref=e97] [cursor=pointer]:
+            - /url: /admin/chat-keywords
+            - img [ref=e98]
+            - generic [ref=e100]: Sensor Chat
+          - link "Diblokir" [ref=e101] [cursor=pointer]:
+            - /url: /admin/blocked
+            - img [ref=e102]
+            - generic [ref=e105]: Diblokir
+      - generic [ref=e106]:
+        - paragraph [ref=e107]: Laporan
+        - link "Laporan" [ref=e109] [cursor=pointer]:
+          - /url: /admin/reports
+          - img [ref=e110]
+          - generic [ref=e112]: Laporan
+      - generic [ref=e113]:
+        - paragraph [ref=e114]: Pengaturan
+        - generic [ref=e115]:
+          - link "Pengaturan" [ref=e116] [cursor=pointer]:
+            - /url: /admin/settings
+            - img [ref=e117]
+            - generic [ref=e120]: Pengaturan
+          - link "Profil Admin" [ref=e121] [cursor=pointer]:
+            - /url: /admin/profile
+            - img [ref=e122]
+            - generic [ref=e126]: Profil Admin
+    - generic [ref=e127]:
+      - generic [ref=e129]:
+        - img [ref=e130]
+        - generic [ref=e133]: Terhubung
+      - button "Keluar" [ref=e134]:
+        - img [ref=e135]
+        - generic [ref=e138]: Keluar
+  - main [ref=e139]:
+    - generic [ref=e140]:
+      - button [ref=e141]:
+        - img [ref=e142]
+      - link "Pengguna Admin Super Admin A" [ref=e145] [cursor=pointer]:
+        - /url: /admin/profile
+        - generic [ref=e146]:
+          - paragraph [ref=e147]: Pengguna Admin
+          - paragraph [ref=e148]: Super Admin
+        - generic [ref=e150]: A
+    - generic [ref=e152]:
+      - generic [ref=e153]:
+        - heading "Pencocokan" [level=2] [ref=e154]
+        - paragraph [ref=e155]: Kelola pencocokan aplikasi Taaruf Samara
+      - generic [ref=e156]:
+        - generic [ref=e157]:
+          - generic [ref=e159]:
+            - img [ref=e161]
+            - generic [ref=e163]:
+              - paragraph [ref=e164]: "16"
+              - paragraph [ref=e165]: Total
+          - generic [ref=e167]:
+            - img [ref=e169]
+            - generic [ref=e172]:
+              - paragraph [ref=e173]: "6"
+              - paragraph [ref=e174]: Menunggu
+          - generic [ref=e176]:
+            - img [ref=e178]
+            - generic [ref=e181]:
+              - paragraph [ref=e182]: "4"
+              - paragraph [ref=e183]: Diterima
+          - generic [ref=e185]:
+            - img [ref=e187]
+            - generic [ref=e191]:
+              - paragraph [ref=e192]: "0"
+              - paragraph [ref=e193]: Ditolak
+          - generic [ref=e195]:
+            - img [ref=e197]
+            - generic [ref=e199]:
+              - paragraph [ref=e200]: "0"
+              - paragraph [ref=e201]: Selesai
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - img [ref=e204]
+            - textbox "Cari nama user..." [ref=e207]
+          - combobox [ref=e208]:
+            - option "Semua Status" [selected]
+            - option "Menunggu"
+            - option "Diterima"
+            - option "Ditolak"
+            - option "Selesai"
+          - button "Segarkan" [ref=e209]:
+            - img [ref=e210]
+            - text: Segarkan
+        - generic [ref=e215]:
+          - table [ref=e216]:
+            - rowgroup [ref=e217]:
+              - row "Pengirim Penerima Status Pesan Tanggal Aksi" [ref=e218]:
+                - columnheader "Pengirim" [ref=e219]
+                - columnheader [ref=e220]
+                - columnheader "Penerima" [ref=e221]
+                - columnheader "Status" [ref=e222]
+                - columnheader "Pesan" [ref=e223]
+                - columnheader "Tanggal" [ref=e224]
+                - columnheader "Aksi" [ref=e225]
+            - rowgroup [ref=e226]:
+              - row "- - - - Menunggu - 15 Mei 2026, 14.12" [ref=e227]:
+                - cell "- -" [ref=e228]:
+                  - generic [ref=e229]:
+                    - img [ref=e231]
+                    - generic [ref=e234]:
+                      - paragraph [ref=e235]: "-"
+                      - paragraph [ref=e236]: "-"
+                - cell [ref=e237]:
+                  - img [ref=e238]
+                - cell "- -" [ref=e240]:
+                  - generic [ref=e241]:
+                    - img [ref=e243]
+                    - generic [ref=e246]:
+                      - paragraph [ref=e247]: "-"
+                      - paragraph [ref=e248]: "-"
+                - cell "Menunggu" [ref=e249]:
+                  - generic [ref=e250]:
+                    - img [ref=e251]
+                    - text: Menunggu
+                - cell "-" [ref=e254]
+                - cell "15 Mei 2026, 14.12" [ref=e255]
+                - cell [ref=e256]:
+                  - generic [ref=e257]:
+                    - button "Terima" [ref=e258]:
+                      - img [ref=e259]
+                    - button "Tolak" [ref=e262]:
+                      - img [ref=e263]
+                    - button "Hapus" [ref=e267]:
+                      - img [ref=e268]
+              - row "- - - - Menunggu - 14 Mei 2026, 19.48" [ref=e271]:
+                - cell "- -" [ref=e272]:
+                  - generic [ref=e273]:
+                    - img [ref=e275]
+                    - generic [ref=e278]:
+                      - paragraph [ref=e279]: "-"
+                      - paragraph [ref=e280]: "-"
+                - cell [ref=e281]:
+                  - img [ref=e282]
+                - cell "- -" [ref=e284]:
+                  - generic [ref=e285]:
+                    - img [ref=e287]
+                    - generic [ref=e290]:
+                      - paragraph [ref=e291]: "-"
+                      - paragraph [ref=e292]: "-"
+                - cell "Menunggu" [ref=e293]:
+                  - generic [ref=e294]:
+                    - img [ref=e295]
+                    - text: Menunggu
+                - cell "-" [ref=e298]
+                - cell "14 Mei 2026, 19.48" [ref=e299]
+                - cell [ref=e300]:
+                  - generic [ref=e301]:
+                    - button "Terima" [ref=e302]:
+                      - img [ref=e303]
+                    - button "Tolak" [ref=e306]:
+                      - img [ref=e307]
+                    - button "Hapus" [ref=e311]:
+                      - img [ref=e312]
+              - row "- - - - Diterima - 12 Mei 2026, 13.23 Selesaikan" [ref=e315]:
+                - cell "- -" [ref=e316]:
+                  - generic [ref=e317]:
+                    - img [ref=e319]
+                    - generic [ref=e322]:
+                      - paragraph [ref=e323]: "-"
+                      - paragraph [ref=e324]: "-"
+                - cell [ref=e325]:
+                  - img [ref=e326]
+                - cell "- -" [ref=e328]:
+                  - generic [ref=e329]:
+                    - img [ref=e331]
+                    - generic [ref=e334]:
+                      - paragraph [ref=e335]: "-"
+                      - paragraph [ref=e336]: "-"
+                - cell "Diterima" [ref=e337]:
+                  - generic [ref=e338]:
+                    - img [ref=e339]
+                    - text: Diterima
+                - cell "-" [ref=e342]
+                - cell "12 Mei 2026, 13.23" [ref=e343]
+                - cell "Selesaikan" [ref=e344]:
+                  - generic [ref=e345]:
+                    - button "Selesaikan" [ref=e346]
+                    - button "Hapus" [ref=e347]:
+                      - img [ref=e348]
+              - row "- - - - Diterima - 12 Mei 2026, 03.42 Selesaikan" [ref=e351]:
+                - cell "- -" [ref=e352]:
+                  - generic [ref=e353]:
+                    - img [ref=e355]
+                    - generic [ref=e358]:
+                      - paragraph [ref=e359]: "-"
+                      - paragraph [ref=e360]: "-"
+                - cell [ref=e361]:
+                  - img [ref=e362]
+                - cell "- -" [ref=e364]:
+                  - generic [ref=e365]:
+                    - img [ref=e367]
+                    - generic [ref=e370]:
+                      - paragraph [ref=e371]: "-"
+                      - paragraph [ref=e372]: "-"
+                - cell "Diterima" [ref=e373]:
+                  - generic [ref=e374]:
+                    - img [ref=e375]
+                    - text: Diterima
+                - cell "-" [ref=e378]
+                - cell "12 Mei 2026, 03.42" [ref=e379]
+                - cell "Selesaikan" [ref=e380]:
+                  - generic [ref=e381]:
+                    - button "Selesaikan" [ref=e382]
+                    - button "Hapus" [ref=e383]:
+                      - img [ref=e384]
+              - row "- - - - Menunggu - 5 Mei 2026, 15.09" [ref=e387]:
+                - cell "- -" [ref=e388]:
+                  - generic [ref=e389]:
+                    - img [ref=e391]
+                    - generic [ref=e394]:
+                      - paragraph [ref=e395]: "-"
+                      - paragraph [ref=e396]: "-"
+                - cell [ref=e397]:
+                  - img [ref=e398]
+                - cell "- -" [ref=e400]:
+                  - generic [ref=e401]:
+                    - img [ref=e403]
+                    - generic [ref=e406]:
+                      - paragraph [ref=e407]: "-"
+                      - paragraph [ref=e408]: "-"
+                - cell "Menunggu" [ref=e409]:
+                  - generic [ref=e410]:
+                    - img [ref=e411]
+                    - text: Menunggu
+                - cell "-" [ref=e414]
+                - cell "5 Mei 2026, 15.09" [ref=e415]
+                - cell [ref=e416]:
+                  - generic [ref=e417]:
+                    - button "Terima" [ref=e418]:
+                      - img [ref=e419]
+                    - button "Tolak" [ref=e422]:
+                      - img [ref=e423]
+                    - button "Hapus" [ref=e427]:
+                      - img [ref=e428]
+              - row "- - - - Menunggu - 5 Mei 2026, 15.09" [ref=e431]:
+                - cell "- -" [ref=e432]:
+                  - generic [ref=e433]:
+                    - img [ref=e435]
+                    - generic [ref=e438]:
+                      - paragraph [ref=e439]: "-"
+                      - paragraph [ref=e440]: "-"
+                - cell [ref=e441]:
+                  - img [ref=e442]
+                - cell "- -" [ref=e444]:
+                  - generic [ref=e445]:
+                    - img [ref=e447]
+                    - generic [ref=e450]:
+                      - paragraph [ref=e451]: "-"
+                      - paragraph [ref=e452]: "-"
+                - cell "Menunggu" [ref=e453]:
+                  - generic [ref=e454]:
+                    - img [ref=e455]
+                    - text: Menunggu
+                - cell "-" [ref=e458]
+                - cell "5 Mei 2026, 15.09" [ref=e459]
+                - cell [ref=e460]:
+                  - generic [ref=e461]:
+                    - button "Terima" [ref=e462]:
+                      - img [ref=e463]
+                    - button "Tolak" [ref=e466]:
+                      - img [ref=e467]
+                    - button "Hapus" [ref=e471]:
+                      - img [ref=e472]
+              - row "- - - - Menunggu - 5 Mei 2026, 15.08" [ref=e475]:
+                - cell "- -" [ref=e476]:
+                  - generic [ref=e477]:
+                    - img [ref=e479]
+                    - generic [ref=e482]:
+                      - paragraph [ref=e483]: "-"
+                      - paragraph [ref=e484]: "-"
+                - cell [ref=e485]:
+                  - img [ref=e486]
+                - cell "- -" [ref=e488]:
+                  - generic [ref=e489]:
+                    - img [ref=e491]
+                    - generic [ref=e494]:
+                      - paragraph [ref=e495]: "-"
+                      - paragraph [ref=e496]: "-"
+                - cell "Menunggu" [ref=e497]:
+                  - generic [ref=e498]:
+                    - img [ref=e499]
+                    - text: Menunggu
+                - cell "-" [ref=e502]
+                - cell "5 Mei 2026, 15.08" [ref=e503]
+                - cell [ref=e504]:
+                  - generic [ref=e505]:
+                    - button "Terima" [ref=e506]:
+                      - img [ref=e507]
+                    - button "Tolak" [ref=e510]:
+                      - img [ref=e511]
+                    - button "Hapus" [ref=e515]:
+                      - img [ref=e516]
+              - row "- - - - Diterima - 5 Mei 2026, 15.08 Selesaikan" [ref=e519]:
+                - cell "- -" [ref=e520]:
+                  - generic [ref=e521]:
+                    - img [ref=e523]
+                    - generic [ref=e526]:
+                      - paragraph [ref=e527]: "-"
+                      - paragraph [ref=e528]: "-"
+                - cell [ref=e529]:
+                  - img [ref=e530]
+                - cell "- -" [ref=e532]:
+                  - generic [ref=e533]:
+                    - img [ref=e535]
+                    - generic [ref=e538]:
+                      - paragraph [ref=e539]: "-"
+                      - paragraph [ref=e540]: "-"
+                - cell "Diterima" [ref=e541]:
+                  - generic [ref=e542]:
+                    - img [ref=e543]
+                    - text: Diterima
+                - cell "-" [ref=e546]
+                - cell "5 Mei 2026, 15.08" [ref=e547]
+                - cell "Selesaikan" [ref=e548]:
+                  - generic [ref=e549]:
+                    - button "Selesaikan" [ref=e550]
+                    - button "Hapus" [ref=e551]:
+                      - img [ref=e552]
+              - row "- - - - Diterima - 5 Mei 2026, 10.02 Selesaikan" [ref=e555]:
+                - cell "- -" [ref=e556]:
+                  - generic [ref=e557]:
+                    - img [ref=e559]
+                    - generic [ref=e562]:
+                      - paragraph [ref=e563]: "-"
+                      - paragraph [ref=e564]: "-"
+                - cell [ref=e565]:
+                  - img [ref=e566]
+                - cell "- -" [ref=e568]:
+                  - generic [ref=e569]:
+                    - img [ref=e571]
+                    - generic [ref=e574]:
+                      - paragraph [ref=e575]: "-"
+                      - paragraph [ref=e576]: "-"
+                - cell "Diterima" [ref=e577]:
+                  - generic [ref=e578]:
+                    - img [ref=e579]
+                    - text: Diterima
+                - cell "-" [ref=e582]
+                - cell "5 Mei 2026, 10.02" [ref=e583]
+                - cell "Selesaikan" [ref=e584]:
+                  - generic [ref=e585]:
+                    - button "Selesaikan" [ref=e586]
+                    - button "Hapus" [ref=e587]:
+                      - img [ref=e588]
+              - row "- - - - Menunggu - 5 Apr 2026, 15.20" [ref=e591]:
+                - cell "- -" [ref=e592]:
+                  - generic [ref=e593]:
+                    - img [ref=e595]
+                    - generic [ref=e598]:
+                      - paragraph [ref=e599]: "-"
+                      - paragraph [ref=e600]: "-"
+                - cell [ref=e601]:
+                  - img [ref=e602]
+                - cell "- -" [ref=e604]:
+                  - generic [ref=e605]:
+                    - img [ref=e607]
+                    - generic [ref=e610]:
+                      - paragraph [ref=e611]: "-"
+                      - paragraph [ref=e612]: "-"
+                - cell "Menunggu" [ref=e613]:
+                  - generic [ref=e614]:
+                    - img [ref=e615]
+                    - text: Menunggu
+                - cell "-" [ref=e618]
+                - cell "5 Apr 2026, 15.20" [ref=e619]
+                - cell [ref=e620]:
+                  - generic [ref=e621]:
+                    - button "Terima" [ref=e622]:
+                      - img [ref=e623]
+                    - button "Tolak" [ref=e626]:
+                      - img [ref=e627]
+                    - button "Hapus" [ref=e631]:
+                      - img [ref=e632]
+          - generic [ref=e635]:
+            - button "Sebelumnya" [disabled] [ref=e636]:
+              - img [ref=e637]
+              - text: Sebelumnya
+            - generic [ref=e639]: Halaman 1 dari 2
+            - button "Berikutnya" [ref=e640]:
+              - text: Berikutnya
+              - img [ref=e641]

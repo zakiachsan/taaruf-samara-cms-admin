@@ -1,0 +1,28 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e7]:
+    - generic [ref=e9]:
+      - paragraph [ref=e12]:
+        - link "RagamGuna Store" [ref=e13] [cursor=pointer]:
+          - /url: http://localhost:8080
+      - generic [ref=e14]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - link "LinkedIn" [ref=e18] [cursor=pointer]:
+              - /url: https://www.linkedin.com/
+              - img [ref=e19]
+              - generic [ref=e21]: LinkedIn
+          - listitem [ref=e22]:
+            - link "Instagram" [ref=e23] [cursor=pointer]:
+              - /url: https://www.instagram.com
+              - img [ref=e24]
+              - generic [ref=e26]: Instagram
+          - listitem [ref=e27]:
+            - link "Facebook" [ref=e28] [cursor=pointer]:
+              - /url: https://www.facebook.com
+              - img [ref=e29]
+              - generic [ref=e31]: Facebook
+        - link "Log in" [ref=e33] [cursor=pointer]:
+          - /url: http://localhost:8080/wp-login.php?redirect_to=http%3A%2F%2Flocalhost%3A8080%2Fadmin%2Faddons
+    - heading "Pardon our dust! We're working on something amazing — check back soon!" [level=1] [ref=e35]
+    - paragraph [ref=e38]
+  - status [ref=e39]
