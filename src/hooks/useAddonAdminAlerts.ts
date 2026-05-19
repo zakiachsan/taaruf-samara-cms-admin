@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface AddonAdminAlert {
   id: string
@@ -45,6 +46,8 @@ export const useAddonAdminAlerts = () => {
   useEffect(() => {
     fetchAlerts()
   }, [fetchAlerts])
+
+  useVisibilityRefetch(fetchAlerts)
 
   const updateAlertStatus = useCallback(
     async (alertId: string, status: 'pending' | 'contacted' | 'resolved', adminNotes?: string) => {

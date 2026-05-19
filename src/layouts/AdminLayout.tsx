@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { getCurrentUser } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 import {
   LayoutDashboard,
   Users,
@@ -115,7 +115,9 @@ export default function AdminLayout() {
 
   const checkConnection = async () => {
     try {
-      await getCurrentUser()
+      // Use a lightweight health check instead of getUser() to avoid triggering token refresh
+      const { error } = await supabase.from('user_profiles').select('id', { count: 'exact', head: true }).limit(1)
+      if (error && error.code !== 'PGRST116') throw error
       setConnectionStatus('connected')
     } catch (err) {
       setConnectionStatus('error')

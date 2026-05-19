@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface AddonPurchase {
   id: string
@@ -89,30 +90,32 @@ export const useAddonPurchases = (filters: AddonPurchaseFilters, page: number = 
       let userMap = new Map<string, { full_name: string; email: string }>()
       if (userIds.length > 0) {
         try {
-          const { data: users } = await supabase
+          const { data: profiles } = await supabaseAdmin
             .from('user_profiles')
-            .select('user_id, full_name, email')
+            .select('user_id, full_name')
             .in('user_id', userIds)
 
-          if (users) {
-            users.forEach((u: any) => {
-              userMap.set(u.user_id, { full_name: u.full_name, email: u.email })
+          if (profiles) {
+            profiles.forEach((u: any) => {
+              userMap.set(u.user_id, { full_name: u.full_name, email: '' })
             })
           }
         } catch (e) {
           console.log('Could not fetch from user_profiles:', e)
         }
 
-        // Fallback to users table
         try {
-          const { data: authUsers } = await supabase
+          const { data: authUsers } = await supabaseAdmin
             .from('users')
-            .select('id, full_name, email')
+            .select('id, email, full_name')
             .in('id', userIds)
 
           if (authUsers) {
             authUsers.forEach((u: any) => {
-              if (!userMap.has(u.id)) {
+              const existing = userMap.get(u.id)
+              if (existing) {
+                existing.email = u.email
+              } else {
                 userMap.set(u.id, { full_name: u.full_name, email: u.email })
               }
             })
@@ -170,6 +173,8 @@ export const useAddonPurchases = (filters: AddonPurchaseFilters, page: number = 
   useEffect(() => {
     fetchPurchases()
   }, [fetchPurchases])
+
+  useVisibilityRefetch(fetchPurchases)
 
   return {
     purchases,

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface BlockedUser {
   id: string
@@ -82,6 +83,8 @@ export const useBlockedUsers = (filters: BlockedFilters, page: number = 1, limit
   useEffect(() => {
     fetchBlockedUsers()
   }, [fetchBlockedUsers])
+
+  useVisibilityRefetch(fetchBlockedUsers)
 
   const unblockById = async (userId: string) => {
     try {

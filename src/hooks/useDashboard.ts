@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface DashboardStats {
   totalUsers: number
@@ -112,6 +113,8 @@ export const useDashboardStats = () => {
   const refetch = () => {
     fetchStats()
   }
+
+  useVisibilityRefetch(refetch)
 
   return { stats, loading, error, refetch }
 }

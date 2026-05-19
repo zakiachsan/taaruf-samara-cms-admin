@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface MentoringSession {
   id: string
@@ -37,71 +38,48 @@ export const usePendampingan = () => {
       setLoading(true)
       setError(null)
 
-      console.log('Fetching pendampingan users...')
-      console.log('Supabase URL:', import.meta.env.VITE_SUPABASE_URL)
-
-      // Step 1: Get all Premium Pendampingan purchase_addons
       const { data: purchaseAddonsData, error: addonsError } = await supabaseAdmin
         .from('purchase_addons')
         .select('*, subscription_purchases(user_id, expires_at)')
-        .eq('addon_name', 'Premium Pendampingan')
+        .ilike('addon_name', '%Pendampingan%')
         .order('created_at', { ascending: false })
-
-      console.log('Purchase addons response:', { purchaseAddonsData, error: addonsError })
 
       if (addonsError) throw addonsError
 
-      // Step 2: Get user profiles for the user_ids
-      const userIds = purchaseAddonsData?.map((item: any) => item.subscription_purchases?.user_id).filter(Boolean) || []
-      console.log('User IDs to fetch:', userIds)
+      const userIds = purchaseAddonsData
+        ?.map((item: any) => item.subscription_purchases?.user_id)
+        .filter(Boolean) || []
 
       if (userIds.length === 0) {
         setUsers([])
+        setLoading(false)
         return
       }
 
-      // Step 3: Get user profiles
       const { data: profilesData, error: profilesError } = await supabaseAdmin
         .from('user_profiles')
         .select('*')
         .in('user_id', userIds)
 
-      console.log('Profiles response:', { profilesData, error: profilesError })
-
       if (profilesError) throw profilesError
 
-      // Step 4: Get auth users for emails
-      const { data: authUsersData, error: authError } = await supabaseAdmin
-        .from('auth.users')
-        .select('id, email')
-        .in('id', userIds)
-
-      console.log('Auth users response:', { authUsersData, error: authError })
-
-      if (authError) throw authError
-
-      // Step 5: Map to PendampinganUser format
       const profilesMap = new Map(profilesData?.map((p: any) => [p.user_id, p]) || [])
-      const authUsersMap = new Map(authUsersData?.map((u: any) => [u.id, u.email]) || [])
 
       const formattedUsers: PendampinganUser[] = (purchaseAddonsData || []).map((item: any) => {
         const purchase = item.subscription_purchases || {}
         const profile = profilesMap.get(purchase.user_id) || {}
-        const authUser = authUsersMap.get(purchase.user_id) || {}
 
         return {
           id: item.id,
           purchase_id: purchase.id || '',
           user_id: purchase.user_id || '',
           user_full_name: profile.full_name || '',
-          user_email: authUser.email || '',
+          user_email: profile.email || '',
           expires_at: purchase.expires_at || '',
           addon_name: item.addon_name || '',
           addon_price: item.addon_price || 0,
         }
       })
-
-      console.log('Formatted users:', formattedUsers)
 
       setUsers(formattedUsers)
     } catch (err) {
@@ -115,6 +93,8 @@ export const usePendampingan = () => {
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers])
+
+  useVisibilityRefetch(fetchUsers)
 
   const fetchSessions = useCallback(async (userId: string): Promise<MentoringSession[]> => {
     try {

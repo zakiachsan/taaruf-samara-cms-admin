@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Chat {
   id: string
@@ -49,8 +50,6 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
         query = query.lte('created_at', filters.dateTo + 'T23:59:59')
       }
 
-      // Note: userId filter is applied client-side since participant_ids is an array
-
       const { count } = await query
       setTotalCount(count || 0)
 
@@ -63,25 +62,21 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
 
       if (error) throw error
 
-      // Fetch participant details for each chat
       const chatsWithParticipants = await Promise.all(
         (data || []).map(async (chat) => {
-          // Get participant user details
           const { data: participants } = await supabase
             .from('users')
             .select('id, full_name, email')
             .in('id', chat.participant_ids)
 
-          // Get last message
           const { data: lastMsg } = await supabaseAdmin
             .from('chat_messages')
             .select('content, created_at, sender_id')
             .eq('chat_id', chat.id)
             .order('created_at', { ascending: false })
             .limit(1)
-            .single()
+            .maybeSingle()
 
-          // Get unread count for each participant (we'll calculate total)
           const { data: unreadData } = await supabaseAdmin
             .from('chat_messages')
             .select('sender_id')
@@ -107,7 +102,6 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
         })
       )
 
-      // Client-side search filter
       let filtered = chatsWithParticipants
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
@@ -138,6 +132,8 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
     fetchChats()
   }, [fetchChats])
 
+  useVisibilityRefetch(fetchChats)
+
   const getChatById = async (chatId: string) => {
     try {
       const { data, error } = await supabase
@@ -148,7 +144,6 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
 
       if (error) throw error
 
-      // Get participants
       const { data: participants } = await supabase
         .from('users')
         .select('id, full_name, email')

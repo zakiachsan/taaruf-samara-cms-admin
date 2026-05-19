@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Report {
   id: string
@@ -184,6 +185,8 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
     fetchReports()
     fetchStats()
   }, [fetchReports, fetchStats])
+
+  useVisibilityRefetch(fetchReports)
 
   const updateStatus = async (reportId: string, newStatus: string, notes?: string) => {
     try {

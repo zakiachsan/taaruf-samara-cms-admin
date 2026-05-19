@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Package {
   id: string
@@ -97,6 +98,8 @@ export const usePackages = () => {
   useEffect(() => {
     fetchPackages()
   }, [fetchPackages])
+
+  useVisibilityRefetch(fetchPackages)
 
   return {
     packages,

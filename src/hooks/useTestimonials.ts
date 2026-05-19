@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { type Testimonial } from '../types'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export const useTestimonials = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
@@ -30,6 +31,8 @@ export const useTestimonials = () => {
   useEffect(() => {
     fetchTestimonials()
   }, [fetchTestimonials])
+
+  useVisibilityRefetch(fetchTestimonials)
 
   const createTestimonial = async (testimonial: Omit<Testimonial, 'id' | 'created_at' | 'updated_at'>) => {
     try {

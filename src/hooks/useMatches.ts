@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { type MatchRequest } from '../types'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface MatchFilters {
   status: string
@@ -87,6 +88,8 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
   useEffect(() => {
     fetchMatches()
   }, [fetchMatches])
+
+  useVisibilityRefetch(fetchMatches)
 
   const updateStatus = async (id: string, status: MatchRequest['status']) => {
     try {

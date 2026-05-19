@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface ChatMessage {
   id: string
@@ -72,6 +73,8 @@ export const useChatMessages = (chatId: string, page: number = 1, limit: number 
   useEffect(() => {
     fetchMessages()
   }, [fetchMessages])
+
+  useVisibilityRefetch(fetchMessages)
 
   const markAsRead = async (messageId: string) => {
     try {

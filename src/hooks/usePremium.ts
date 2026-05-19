@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface PremiumSubscription {
   id: string
@@ -54,7 +55,24 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
       const weekFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
       const monthFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
 
-      // Fetch from new subscription_purchases table first
+      // Apply pagination
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+
+      // Helper to apply filters
+      const applyFilters = (qb: any) => {
+        if (filters.status) {
+          qb = qb.eq('status', filters.status === 'active' ? 'paid' : filters.status)
+        }
+        if (filters.expiringSoon === 'week') {
+          qb = qb.lte('expires_at', weekFromNow.toISOString()).gte('expires_at', today.toISOString())
+        } else if (filters.expiringSoon === 'month') {
+          qb = qb.lte('expires_at', monthFromNow.toISOString()).gte('expires_at', today.toISOString())
+        }
+        return qb.order('created_at', { ascending: false }).range(from, to)
+      }
+
+      // Fetch from new subscription_purchases table (no embedded users join to avoid 400)
       let query = supabase
         .from('subscription_purchases')
         .select(`
@@ -69,52 +87,49 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
           purchase_addons(
             addon_name,
             addon_price
-          ),
-          users:user_id (
-            full_name,
-            email
           )
         `, { count: 'exact' })
 
-      // Apply filters
-      if (filters.status) {
-        query = query.eq('status', filters.status === 'active' ? 'paid' : filters.status)
-      }
+      let { data, error, count } = await applyFilters(query)
 
-      if (filters.expiringSoon === 'week') {
-        query = query
-          .lte('expires_at', weekFromNow.toISOString())
-          .gte('expires_at', today.toISOString())
-      } else if (filters.expiringSoon === 'month') {
-        query = query
-          .lte('expires_at', monthFromNow.toISOString())
-          .gte('expires_at', today.toISOString())
-      }
-
-      // Apply pagination
-      const from = (page - 1) * limit
-      const to = from + limit - 1
-
-      query = query
-        .order('created_at', { ascending: false })
-        .range(from, to)
-
-      let { data, error, count } = await query
-
+      // Fallback: if error, use old table
       if (error) {
-        console.error('[usePremium] Error fetching new subscriptions:', error)
-        // Fallback to old table if new table query fails
+        console.warn('[usePremium] New table query failed, falling back to old table:', error.message)
         return fetchOldSubscriptions()
       }
 
       setTotalCount(count || 0)
 
+      // Lookup user profiles for names if join was missing
+      let userMap = new Map<string, { full_name: string; email: string }>()
+      if (!data?.[0]?.users) {
+        const userIds = [...new Set((data || []).map((s: any) => s.user_id).filter(Boolean))]
+        if (userIds.length > 0) {
+          // Fetch names from user_profiles
+          const { data: profiles } = await supabaseAdmin
+            .from('user_profiles')
+            .select('user_id, full_name')
+            .in('user_id', userIds)
+          profiles?.forEach((p: any) => userMap.set(p.user_id, { full_name: p.full_name, email: '' }))
+
+          // Fetch emails from users table
+          const { data: authUsers } = await supabaseAdmin
+            .from('users')
+            .select('id, email')
+            .in('id', userIds)
+          authUsers?.forEach((u: any) => {
+            const existing = userMap.get(u.id)
+            if (existing) existing.email = u.email || ''
+          })
+        }
+      }
+
       // Transform data to match expected format
       const transformed: PremiumSubscription[] = (data || []).map((s: any) => ({
         id: s.id,
         user_id: s.user_id,
-        user_name: s.users?.full_name || 'Unknown',
-        user_email: s.users?.email || '',
+        user_name: s.users?.full_name || userMap.get(s.user_id)?.full_name || 'Unknown',
+        user_email: s.users?.email || userMap.get(s.user_id)?.email || '',
         plan_type: s.package?.name || 'basic',
         status: s.status === 'paid' ? 'active' : s.status,
         start_date: s.start_date,
@@ -141,9 +156,8 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       setSubscriptions(filtered)
     } catch (err) {
-      console.error('[usePremium] Error fetching subscriptions:', err)
-      // Try fallback to old table
-      fetchOldSubscriptions()
+      console.error('[usePremium] Unexpected error fetching subscriptions:', err)
+      await fetchOldSubscriptions()
     } finally {
       setLoading(false)
     }
@@ -159,13 +173,7 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       let query = supabase
         .from('premium_subscriptions')
-        .select(`
-          *,
-          users:user_id (
-            full_name,
-            email
-          )
-        `, { count: 'exact' })
+        .select('*', { count: 'exact' })
 
       if (filters.type) {
         query = query.eq('plan_type', filters.type)
@@ -197,11 +205,26 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
 
       if (error) throw error
 
+      // Batch lookup user names + emails
+      const userIds = [...new Set((data || []).map((s: any) => s.user_id).filter(Boolean))]
+      let userMap = new Map<string, { full_name: string; email: string }>()
+      if (userIds.length > 0) {
+        const [{ data: profiles }, { data: authUsers }] = await Promise.all([
+          supabaseAdmin.from('user_profiles').select('user_id, full_name').in('user_id', userIds),
+          supabaseAdmin.from('users').select('id, email').in('id', userIds),
+        ])
+        profiles?.forEach((p: any) => userMap.set(p.user_id, { full_name: p.full_name, email: '' }))
+        authUsers?.forEach((u: any) => {
+          const existing = userMap.get(u.id)
+          if (existing) existing.email = u.email || ''
+        })
+      }
+
       const transformed: PremiumSubscription[] = (data || []).map((s: any) => ({
         id: s.id,
         user_id: s.user_id,
-        user_name: s.users?.full_name || 'Unknown',
-        user_email: s.users?.email || '',
+        user_name: userMap.get(s.user_id)?.full_name || 'Unknown',
+        user_email: userMap.get(s.user_id)?.email || '',
         plan_type: s.plan_type,
         status: s.status,
         start_date: s.start_date,
@@ -324,6 +347,8 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
     fetchSubscriptions()
     fetchStats()
   }, [fetchSubscriptions, fetchStats])
+
+  useVisibilityRefetch(fetchSubscriptions)
 
   const extendSubscription = async (subscriptionId: string, newEndDate: string) => {
     try {

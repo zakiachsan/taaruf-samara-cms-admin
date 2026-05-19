@@ -1,8 +1,7 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 
-// User type definition
 interface User {
   id: string
   email: string
@@ -11,7 +10,6 @@ interface User {
   updated_at?: string
 }
 
-// Session type definition
 interface Session {
   access_token: string
   refresh_token: string
@@ -47,67 +45,78 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const isRefreshingRef = useRef(false)
+
+  const mapUser = (u: any): User => ({
+    id: u.id,
+    email: u.email ?? '',
+    email_confirmed_at: u.email_confirmed_at,
+    created_at: u.created_at,
+    updated_at: u.updated_at,
+  })
+
+  const mapSession = (s: any): Session => ({
+    access_token: s.access_token,
+    refresh_token: s.refresh_token,
+    expires_in: s.expires_in ?? 3600,
+    token_type: s.token_type,
+    user: mapUser(s.user),
+  })
+
+  const refreshSession = useCallback(async () => {
+    if (isRefreshingRef.current) return
+    isRefreshingRef.current = true
+
+    try {
+      const { data: { session: refreshedSession } } = await supabase.auth.getSession()
+
+      if (refreshedSession?.user) {
+        setUser(mapUser(refreshedSession.user))
+        setSession(mapSession(refreshedSession))
+      } else {
+        try {
+          const { data: { session: retrySession } } = await supabase.auth.refreshSession()
+          if (retrySession?.user) {
+            setUser(mapUser(retrySession.user))
+            setSession(mapSession(retrySession))
+          } else {
+            setUser(null)
+            setSession(null)
+          }
+        } catch {
+          setUser(null)
+          setSession(null)
+        }
+      }
+    } catch {
+      setUser(null)
+      setSession(null)
+    } finally {
+      isRefreshingRef.current = false
+    }
+  }, [])
 
   useEffect(() => {
     let mounted = true
+    let sub: { unsubscribe: () => void } | null = null
 
     const initAuth = async () => {
-      // Check for existing Supabase session
       const { data: { session: existingSession } } = await supabase.auth.getSession()
 
       if (mounted && existingSession?.user) {
-        const u = existingSession.user
-        setUser({
-          id: u.id,
-          email: u.email ?? '',
-          email_confirmed_at: u.email_confirmed_at,
-          created_at: u.created_at,
-          updated_at: u.updated_at,
-        })
-        setSession({
-          access_token: existingSession.access_token,
-          refresh_token: existingSession.refresh_token,
-          expires_in: existingSession.expires_in ?? 3600,
-          token_type: existingSession.token_type,
-          user: {
-            id: u.id,
-            email: u.email ?? '',
-            email_confirmed_at: u.email_confirmed_at,
-            created_at: u.created_at,
-            updated_at: u.updated_at,
-          },
-        })
+        setUser(mapUser(existingSession.user))
+        setSession(mapSession(existingSession))
       }
 
       if (!mounted) return
       setLoading(false)
 
-      // Listen for auth state changes
-      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
         (_event, newSession) => {
           if (!mounted) return
           if (newSession?.user) {
-            const u = newSession.user
-            setUser({
-              id: u.id,
-              email: u.email ?? '',
-              email_confirmed_at: u.email_confirmed_at,
-              created_at: u.created_at,
-              updated_at: u.updated_at,
-            })
-            setSession({
-              access_token: newSession.access_token,
-              refresh_token: newSession.refresh_token,
-              expires_in: newSession.expires_in ?? 3600,
-              token_type: newSession.token_type,
-              user: {
-                id: u.id,
-                email: u.email ?? '',
-                email_confirmed_at: u.email_confirmed_at,
-                created_at: u.created_at,
-                updated_at: u.updated_at,
-              },
-            })
+            setUser(mapUser(newSession.user))
+            setSession(mapSession(newSession))
           } else {
             setUser(null)
             setSession(null)
@@ -115,17 +124,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         }
       )
 
-      return () => {
-        sub.unsubscribe()
-      }
+      sub = subscription
     }
 
     initAuth()
 
     return () => {
       mounted = false
+      sub?.unsubscribe()
     }
   }, [])
+
+  useEffect(() => {
+    const handleVisibility = async () => {
+      if (document.visibilityState !== 'visible') return
+      await refreshSession()
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [refreshSession])
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
@@ -139,8 +156,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       await supabase.auth.signOut()
     } catch {
-      // Force clear if signOut fails
-      localStorage.removeItem('sb-okgddlgugdkiswitewdi-auth-token')
+      const tokenKey = 'sb-okgddlgugdkiswitewdi-auth-token'
+      localStorage.removeItem(tokenKey)
     }
     setUser(null)
     setSession(null)

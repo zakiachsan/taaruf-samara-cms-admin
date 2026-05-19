@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseAdmin } from '../lib/supabase'
 import { type SelfValueRegistration } from '../types'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface SelfValueFilters {
   status: string
@@ -46,11 +47,62 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
         .order('created_at', { ascending: false })
         .range(from, to)
 
-      const { data, error: fetchError } = await query
+      let { data, error: fetchError } = await query
+
+      // Fallback: if users relationship doesn't exist
+      if (fetchError && fetchError.code === 'PGRST200') {
+        let fallbackQuery = supabase
+          .from('self_value_registrations')
+          .select('*', { count: 'exact' })
+
+        if (filters.status) {
+          fallbackQuery = fallbackQuery.eq('status', filters.status)
+        }
+
+        const { count: fbCount } = await fallbackQuery
+        setTotalCount(fbCount || 0)
+
+        const fbResult = await fallbackQuery
+          .order('created_at', { ascending: false })
+          .range(from, to)
+
+        data = fbResult.data
+        fetchError = fbResult.error
+      }
 
       if (fetchError) throw fetchError
 
-      setRegistrations(data || [])
+      // Lookup user profiles for names if join was missing
+      let userMap = new Map<string, { full_name: string; email: string }>()
+      if (!data?.[0]?.user) {
+        const userIds = [...new Set((data || []).map((r: any) => r.user_id).filter(Boolean))]
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabaseAdmin
+            .from('user_profiles')
+            .select('user_id, full_name')
+            .in('user_id', userIds)
+          const { data: users } = await supabaseAdmin
+            .from('users')
+            .select('id, email')
+            .in('id', userIds)
+          const emailMap = new Map(users?.map((u: any) => [u.id, u.email]))
+          profiles?.forEach((p: any) => userMap.set(p.user_id, {
+            full_name: p.full_name,
+            email: emailMap.get(p.user_id) || '',
+          }))
+        }
+      }
+
+      const transformed = (data || []).map((r: any) => ({
+        ...r,
+        user: r.user || {
+          id: r.user_id,
+          full_name: userMap.get(r.user_id)?.full_name || 'Unknown',
+          email: userMap.get(r.user_id)?.email || '',
+        },
+      }))
+
+      setRegistrations(transformed)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Gagal memuat pendaftaran')
     } finally {
@@ -61,6 +113,8 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
   useEffect(() => {
     fetchRegistrations()
   }, [fetchRegistrations])
+
+  useVisibilityRefetch(fetchRegistrations)
 
   const updateStatus = async (
     id: string,
@@ -127,7 +181,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
     try {
       // First get user_profiles.id from users.id
       // (bedah_value_results.user_id references user_profiles.id, not users.id)
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabaseAdmin
         .from('user_profiles')
         .select('id')
         .eq('user_id', userId)
@@ -141,7 +195,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
       const certCode = results.certificate_code || `BV-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
 
       // Use upsert to handle both insert and update cases
-      const { error: resultsError } = await supabase
+      const { error: resultsError } = await supabaseAdmin
         .from('bedah_value_results')
         .upsert({
           user_id: profile.id,
@@ -160,7 +214,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
       if (resultsError) throw resultsError
 
       // Update user_profiles to mark certification
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseAdmin
         .from('user_profiles')
         .update({
           has_bedah_value_cert: true,
@@ -192,7 +246,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
   ) => {
     try {
       // First get user_profiles.id from users.id
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabaseAdmin
         .from('user_profiles')
         .select('id')
         .eq('user_id', userId)
@@ -203,7 +257,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
       }
 
       // Check if results exist using user_profiles.id
-      const { data: existingResults, error: fetchError } = await supabase
+      const { data: existingResults, error: fetchError } = await supabaseAdmin
         .from('bedah_value_results')
         .select('id, certificate_code')
         .eq('user_id', profile.id)
@@ -229,7 +283,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
           updateData.certificate_code = results.certificate_code
         }
 
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
           .from('bedah_value_results')
           .update(updateData)
           .eq('user_id', profile.id)
@@ -238,7 +292,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
       } else {
         // Insert new using user_profiles.id
         const certCode = results.certificate_code || `BV-${new Date().getFullYear()}-${Math.random().toString(36).substring(2, 7).toUpperCase()}`
-        const { error: insertError } = await supabase
+        const { error: insertError } = await supabaseAdmin
           .from('bedah_value_results')
           .insert({
             user_id: profile.id,
@@ -264,7 +318,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
   const getTestResults = async (userId: string) => {
     try {
       // First get user_profiles.id from users.id
-      const { data: profile, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabaseAdmin
         .from('user_profiles')
         .select('id')
         .eq('user_id', userId)
@@ -275,7 +329,7 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
       }
 
       // Fetch results using user_profiles.id
-      const { data, error } = await supabase
+      const { data, error } = await supabaseAdmin
         .from('bedah_value_results')
         .select('*')
         .eq('user_id', profile.id)

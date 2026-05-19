@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface ReferralSettings {
   id: string
@@ -77,6 +78,8 @@ export const useReferralSettings = () => {
   useEffect(() => {
     fetchSettings()
   }, [fetchSettings])
+
+  useVisibilityRefetch(fetchSettings)
 
   return {
     settings,

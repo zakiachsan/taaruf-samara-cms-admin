@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '../lib/supabase'
+import { supabase, supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Referral {
   id: string
@@ -145,7 +146,7 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
 
   const fetchWithdrawals = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('referral_withdrawals')
         .select(`
           *,
@@ -156,13 +157,40 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         `)
         .order('created_at', { ascending: false })
 
+      // Fallback: if user relationship doesn't exist
+      if (error && error.code === 'PGRST200') {
+        const fbResult = await supabase
+          .from('referral_withdrawals')
+          .select('*')
+          .order('created_at', { ascending: false })
+        data = fbResult.data
+        error = fbResult.error
+      }
+
       if (error) throw error
+
+      // Lookup user profiles for names if join was missing
+      let userMap = new Map<string, { full_name: string; email: string }>()
+      if (!data?.[0]?.user) {
+        const userIds = [...new Set((data || []).map((w: any) => w.user_id).filter(Boolean))]
+        if (userIds.length > 0) {
+          const [{ data: profiles }, { data: authUsers }] = await Promise.all([
+            supabaseAdmin.from('user_profiles').select('user_id, full_name').in('user_id', userIds),
+            supabaseAdmin.from('users').select('id, email').in('id', userIds),
+          ])
+          profiles?.forEach((p: any) => userMap.set(p.user_id, { full_name: p.full_name, email: '' }))
+          authUsers?.forEach((u: any) => {
+            const existing = userMap.get(u.id)
+            if (existing) existing.email = u.email || ''
+          })
+        }
+      }
 
       const transformed: Withdrawal[] = (data || []).map((w: any) => ({
         id: w.id,
         user_id: w.user_id,
-        user_name: w.user?.full_name || 'Unknown',
-        user_email: w.user?.email || '',
+        user_name: w.user?.full_name || userMap.get(w.user_id)?.full_name || 'Unknown',
+        user_email: w.user?.email || userMap.get(w.user_id)?.email || '',
         amount: w.amount,
         status: w.status,
         bank_name: w.bank_name,
@@ -222,6 +250,8 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
     fetchWithdrawals()
     fetchStats()
   }, [fetchReferrals, fetchWithdrawals, fetchStats])
+
+  useVisibilityRefetch(fetchReferrals)
 
   const approveWithdrawal = async (withdrawalId: string) => {
     try {

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { type Banner } from '../types'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export const useBanners = () => {
   const [banners, setBanners] = useState<Banner[]>([])
@@ -30,6 +31,8 @@ export const useBanners = () => {
   useEffect(() => {
     fetchBanners()
   }, [fetchBanners])
+
+  useVisibilityRefetch(fetchBanners)
 
   const createBanner = async (banner: Omit<Banner, 'id' | 'created_at' | 'updated_at'>) => {
     try {

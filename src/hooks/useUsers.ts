@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface User {
   id: string
@@ -43,12 +44,10 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     try {
       setLoading(true)
 
-      // Query user_profiles directly (user_id references auth.users.id)
       let query = supabase
         .from('user_profiles')
         .select('*', { count: 'exact' })
 
-      // Apply filters
       if (filters.search) {
         query = query.or(`full_name.ilike.%${filters.search}%`)
       }
@@ -59,11 +58,9 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         query = query.eq('is_verified', false)
       }
 
-      // Get total count
       const { count } = await query
       setTotalCount(count || 0)
 
-      // Apply pagination
       const from = (page - 1) * limit
       const to = from + limit - 1
 
@@ -84,10 +81,8 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         return
       }
 
-      // Get user_ids for fetching auth.users emails and subscriptions
       const userIds = profiles.map(p => p.user_id)
 
-      // Fetch active subscriptions from subscription_purchases for all users in this page
       const now = new Date().toISOString()
       const { data: subscriptions } = await supabase
         .from('subscription_purchases')
@@ -98,12 +93,11 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       const premiumUserIds = new Set((subscriptions || []).map(s => s.user_id))
 
-      // Transform data - use user_profiles data as source of truth
       let transformedUsers: User[] = profiles.map((p: any) => ({
         id: p.user_id,
-        email: p.email || '', // Will be filled if we can get from auth
+        email: p.email || '',
         full_name: p.full_name,
-        role: 'user' as const, // Default role
+        role: 'user' as const,
         is_verified: p.is_verified,
         is_blocked: p.is_blocked || false,
         created_at: p.created_at,
@@ -124,7 +118,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         },
       }))
 
-      // Try to get emails from users table (if it has matching user_ids)
       try {
         const { data: usersData } = await supabase
           .from('users')
@@ -139,11 +132,9 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
           }))
         }
       } catch (e) {
-        // users table might not exist or not have the right data, continue without email
         console.log('Could not fetch emails from users table:', e)
       }
 
-      // Filter by premium status (already computed from subscription_purchases)
       if (filters.isPremium) {
         const isPremium = filters.isPremium === 'true'
         transformedUsers = transformedUsers.filter(u =>
@@ -151,7 +142,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         )
       }
 
-      // Filter by search (if searching by email, we need to check after we have emails)
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
         transformedUsers = transformedUsers.filter(u =>
@@ -161,6 +151,7 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
       }
 
       setUsers(transformedUsers)
+      setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
     } finally {
@@ -172,9 +163,10 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
     fetchUsers()
   }, [fetchUsers])
 
+  useVisibilityRefetch(fetchUsers)
+
   const verifyUser = async (userId: string, verified: boolean) => {
     try {
-      // Update user_profiles.is_verified
       const { error: profilesError } = await supabase
         .from('user_profiles')
         .update({ is_verified: verified })
@@ -182,13 +174,11 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       if (profilesError) throw profilesError
 
-      // Also update legacy users table if exists
       await supabase
         .from('users')
         .update({ is_verified: verified, updated_at: new Date().toISOString() })
         .eq('id', userId)
 
-      // Update local state
       setUsers(users.map(u =>
         u.id === userId ? { ...u, is_verified: verified } : u
       ))
@@ -201,7 +191,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const blockUser = async (userId: string) => {
     try {
-      // Update user_profiles.is_blocked
       const { error: profilesError } = await supabase
         .from('user_profiles')
         .update({ is_blocked: true })
@@ -209,13 +198,11 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       if (profilesError) throw profilesError
 
-      // Also update legacy users table if exists
       await supabase
         .from('users')
         .update({ is_blocked: true, updated_at: new Date().toISOString() })
         .eq('id', userId)
 
-      // Update local state
       setUsers(prevUsers => prevUsers.map(u =>
         u.id === userId ? { ...u, is_blocked: true } : u
       ))
@@ -228,7 +215,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const unblockUser = async (userId: string) => {
     try {
-      // Update user_profiles.is_blocked
       const { error: profilesError } = await supabase
         .from('user_profiles')
         .update({ is_blocked: false })
@@ -236,13 +222,11 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       if (profilesError) throw profilesError
 
-      // Also update legacy users table if exists
       await supabase
         .from('users')
         .update({ is_blocked: false, updated_at: new Date().toISOString() })
         .eq('id', userId)
 
-      // Update local state
       setUsers(prevUsers => prevUsers.map(u =>
         u.id === userId ? { ...u, is_blocked: false } : u
       ))
@@ -255,7 +239,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const changeRole = async (userId: string, newRole: string) => {
     try {
-      // Update legacy users table
       const { error } = await supabase
         .from('users')
         .update({ role: newRole })
@@ -263,7 +246,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
       if (error) {
         console.error('Role update error:', error)
-        // Don't throw - the main functionality is updating user_profiles
       }
 
       setUsers(users.map(u =>
@@ -278,8 +260,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
 
   const deleteUser = async (userId: string) => {
     try {
-      // Step 1: Hapus data dari tabel public yang mungkin punya data user
-      // Urutan: child tables dulu, parent tables belakangan
       const tables = [
         { name: 'mentoring_sessions', col: 'user_id' },
         { name: 'purchase_addons', col: 'purchase_id', sub: 'subscription_purchases' },
@@ -299,7 +279,6 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
       for (const t of tables) {
         try {
           if (t.sub) {
-            // Untuk purchase_addons: hapus berdasarkan purchase_id dari subscription_purchases
             const { data: purchaseIds } = await supabaseAdmin
               .from(t.sub)
               .select('id')
@@ -328,12 +307,10 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
             await supabaseAdmin.from(t.name).delete().eq(t.col as string, userId)
           }
         } catch (e) {
-          // Abaikan error kalau tabel/kolom nggak ada
           console.log(`Skip ${t.name}:`, e)
         }
       }
 
-      // Hapus chats (participant_ids adalah array)
       try {
         const { data: userChats } = await supabaseAdmin
           .from('chats')
@@ -349,18 +326,15 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         console.log('Skip chats:', e)
       }
 
-      // Step 2: Hapus user_profiles dan public.users
       try { await supabaseAdmin.from('user_profiles').delete().eq('user_id', userId) } catch (e) {}
       try { await supabaseAdmin.from('users').delete().eq('id', userId) } catch (e) {}
 
-      // Step 3: Hapus user dari auth.users via admin API
       const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
       if (authError) {
         console.error('Delete auth user error:', authError)
         throw authError
       }
 
-      // Update local state
       setUsers(prevUsers => prevUsers.filter(u => u.id !== userId))
       setTotalCount(prev => Math.max(0, prev - 1))
 

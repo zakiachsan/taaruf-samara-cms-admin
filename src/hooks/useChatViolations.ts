@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface ChatViolation {
   id: string
@@ -69,23 +70,30 @@ export const useChatViolations = (
         userIds.add(v.user_id)
       })
 
-      // Step 3: Fetch user_profiles for names
-      const profilePromises = Array.from(userIds).map(async (userId) => {
-        const result = await supabaseAdmin
-          .from('user_profiles')
-          .select('user_id, full_name, email')
-          .eq('user_id', userId)
-          .single()
-        return result
-      })
+      // Step 3: Batch fetch user_profiles and users
+      const userIdsArray = Array.from(userIds)
 
-      const profileResults = await Promise.all(profilePromises)
-      const profiles = profileResults.map((r) => r.data).filter(Boolean)
+      const [{ data: profilesData }, { data: usersData }] = await Promise.all([
+        supabaseAdmin
+          .from('user_profiles')
+          .select('user_id, full_name')
+          .in('user_id', userIdsArray),
+        supabaseAdmin
+          .from('users')
+          .select('id, email')
+          .in('id', userIdsArray),
+      ])
 
       const profileMap = new Map<string, { full_name: string; email: string }>()
-      ;(profiles as any[]).forEach((p) => {
+      ;(profilesData as any[] || []).forEach((p) => {
         if (p?.user_id) {
-          profileMap.set(p.user_id, { full_name: p.full_name, email: p.email })
+          profileMap.set(p.user_id, { full_name: p.full_name, email: '' })
+        }
+      })
+      ;(usersData as any[] || []).forEach((u) => {
+        if (u?.id) {
+          const existing = profileMap.get(u.id) || { full_name: 'Unknown', email: '' }
+          profileMap.set(u.id, { full_name: existing.full_name, email: u.email })
         }
       })
 
@@ -151,6 +159,8 @@ export const useChatViolations = (
     fetchViolations()
     fetchStats()
   }, [fetchViolations, fetchStats])
+
+  useVisibilityRefetch(fetchViolations)
 
   return {
     violations,

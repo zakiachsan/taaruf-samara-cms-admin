@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
+import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface BannedUser {
   id: string
@@ -114,6 +115,8 @@ export const useBannedUsers = (
   useEffect(() => {
     fetchBannedUsers()
   }, [fetchBannedUsers])
+
+  useVisibilityRefetch(fetchBannedUsers)
 
   const unbanUser = async (userId: string) => {
     try {
