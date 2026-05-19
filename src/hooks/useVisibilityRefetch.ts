@@ -7,7 +7,7 @@ export function useVisibilityRefetch(refetch: () => void) {
       if (document.visibilityState !== 'visible') return
       setTimeout(() => {
         if (!cancelled) refetch()
-      }, 1000)
+      }, 500)
     }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => {
