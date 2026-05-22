@@ -69,13 +69,13 @@ export default function Footer() {
             <ul className="space-y-3 text-sm">
               <li>
                 <a
-                  href="https://wa.me/6285782304240"
+                  href="https://wa.me/6285811897662"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-2 hover:text-white transition-colors"
                 >
                   <MessageCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>+62 857-8230-4240</span>
+                  <span>+62 858-1189-7662</span>
                 </a>
               </li>
               <li>

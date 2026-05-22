@@ -122,7 +122,7 @@ export default function TermsPage() {
             <p className="text-gray-600 leading-relaxed mb-3">Jika Anda memiliki pertanyaan tentang Syarat dan Ketentuan ini, silakan hubungi kami:</p>
             <div className="bg-gray-50 rounded-xl p-6 space-y-2">
               <p className="text-gray-600">Email: <a href="mailto:taarufsamara2026@gmail.com" className="text-emerald-600 hover:underline">taarufsamara2026@gmail.com</a></p>
-              <p className="text-gray-600">WhatsApp: <a href="https://wa.me/6285782304240" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">+62 857-8230-4240</a></p>
+              <p className="text-gray-600">WhatsApp: <a href="https://wa.me/6285811897662" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">+62 858-1189-7662</a></p>
             </div>
           </section>
 
