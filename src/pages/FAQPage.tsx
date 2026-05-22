@@ -44,7 +44,7 @@ const FAQ_ITEMS = [
   },
   {
     question: 'Bagaimana jika ada kendala atau ingin melaporkan pengguna?',
-    answer: 'Anda bisa menghubungi customer service kami melalui WhatsApp di +62 857-8230-4240 atau email taarufsamara2026@gmail.com. Untuk melaporkan pengguna yang melanggar aturan, gunakan fitur "Laporkan" yang tersedia di setiap profil. Tim kami akan menindaklanjuti setiap laporan dalam 1x24 jam.'
+    answer: 'Anda bisa menghubungi customer service kami melalui WhatsApp di +62 858-1189-7662 atau email taarufsamara2026@gmail.com. Untuk melaporkan pengguna yang melanggar aturan, gunakan fitur "Laporkan" yang tersedia di setiap profil. Tim kami akan menindaklanjuti setiap laporan dalam 1x24 jam.'
   },
   {
     question: 'Apakah Taaruf Samara tersedia di iOS?',
@@ -111,7 +111,7 @@ export default function FAQPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a
-              href="https://wa.me/6285782304240"
+              href="https://wa.me/6285811897662"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors"

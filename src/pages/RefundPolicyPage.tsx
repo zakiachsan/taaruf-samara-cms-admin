@@ -100,8 +100,8 @@ export default function RefundPolicyPage() {
                 <MessageCircle className="w-5 h-5 text-emerald-600" />
                 <div>
                   <p className="font-semibold text-gray-900">WhatsApp</p>
-                  <a href="https://wa.me/6285782304240" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
-                    +62 857-8230-4240
+                  <a href="https://wa.me/6285811897662" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">
+                    +62 858-1189-7662
                   </a>
                 </div>
               </div>
