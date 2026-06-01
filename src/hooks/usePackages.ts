@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Package {
   id: string
@@ -21,11 +20,20 @@ export const usePackages = () => {
   const [packages, setPackages] = useState<Package[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchPackages = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data, error } = await supabase
         .from('subscription_packages')
@@ -34,12 +42,18 @@ export const usePackages = () => {
 
       if (error) throw error
 
-      setPackages(data || [])
+      if (mountedRef.current) {
+        setPackages(data || [])
+      }
     } catch (err) {
       console.error('[usePackages] Error fetching packages:', err)
-      setError(err instanceof Error ? err.message : 'Gagal memuat paket')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat paket')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -98,9 +112,6 @@ export const usePackages = () => {
   useEffect(() => {
     fetchPackages()
   }, [fetchPackages])
-
-  useVisibilityRefetch(fetchPackages)
-
   return {
     packages,
     loading,

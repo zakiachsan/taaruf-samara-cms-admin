@@ -1,17 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { type Testimonial } from '../types'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export const useTestimonials = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchTestimonials = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data, error: fetchError } = await supabase
         .from('testimonials')
@@ -20,20 +28,23 @@ export const useTestimonials = () => {
 
       if (fetchError) throw fetchError
 
-      setTestimonials(data || [])
+      if (mountedRef.current) {
+        setTestimonials(data || [])
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat testimoni')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat testimoni')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
     fetchTestimonials()
   }, [fetchTestimonials])
-
-  useVisibilityRefetch(fetchTestimonials)
-
   const createTestimonial = async (testimonial: Omit<Testimonial, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data, error } = await supabase

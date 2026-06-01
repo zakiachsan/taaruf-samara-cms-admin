@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface ChatViolation {
   id: string
@@ -39,10 +38,17 @@ export const useChatViolations = (
     inappropriateFlags: 0,
     uniqueUsers: 0,
   })
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchViolations = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       // Step 1: Fetch violations
       let query = supabaseAdmin
@@ -55,7 +61,9 @@ export const useChatViolations = (
       }
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -124,11 +132,15 @@ export const useChatViolations = (
         )
       }
 
-      setViolations(filtered)
+      if (mountedRef.current) {
+        setViolations(filtered)
+      }
     } catch (err) {
       console.error('Error fetching chat violations:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
@@ -144,12 +156,14 @@ export const useChatViolations = (
       ).length
       const uniqueUsers = new Set(data.map((v: any) => v.user_id)).size
 
-      setStats({
-        totalViolations: data.length,
-        phoneNumberFlags: phoneFlags,
-        inappropriateFlags: inappropriateFlags,
-        uniqueUsers: uniqueUsers,
-      })
+      if (mountedRef.current) {
+        setStats({
+          totalViolations: data.length,
+          phoneNumberFlags: phoneFlags,
+          inappropriateFlags: inappropriateFlags,
+          uniqueUsers: uniqueUsers,
+        })
+      }
     } catch (err) {
       console.error('Error fetching violation stats:', err)
     }
@@ -159,9 +173,6 @@ export const useChatViolations = (
     fetchViolations()
     fetchStats()
   }, [fetchViolations, fetchStats])
-
-  useVisibilityRefetch(fetchViolations)
-
   return {
     violations,
     loading,

@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface PremiumSubscription {
   id: string
@@ -45,10 +44,17 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
     expiringThisWeek: 0,
     expiringThisMonth: 0,
   })
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchSubscriptions = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       // Calculate date ranges for expiry filters
       const today = new Date()
@@ -98,7 +104,9 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         return fetchOldSubscriptions()
       }
 
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       // Lookup user profiles for names if join was missing
       let userMap = new Map<string, { full_name: string; email: string }>()
@@ -154,12 +162,16 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         filtered = filtered.filter(s => s.plan_type === filters.type)
       }
 
-      setSubscriptions(filtered)
+      if (mountedRef.current) {
+        setSubscriptions(filtered)
+      }
     } catch (err) {
       console.error('[usePremium] Unexpected error fetching subscriptions:', err)
       await fetchOldSubscriptions()
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
@@ -194,7 +206,9 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
       }
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -242,11 +256,15 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         )
       }
 
-      setSubscriptions(filtered)
+      if (mountedRef.current) {
+        setSubscriptions(filtered)
+      }
     } catch (err) {
       console.error('[usePremium] Error fetching old subscriptions:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
@@ -292,14 +310,16 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
           return endDate >= today && endDate <= monthFromNow && s.status === 'paid'
         }).length
 
-        setStats({
-          totalRevenue,
-          basicRevenue,
-          premiumRevenue,
-          activeSubscriptions,
-          expiringThisWeek,
-          expiringThisMonth,
-        })
+        if (mountedRef.current) {
+          setStats({
+            totalRevenue,
+            basicRevenue,
+            premiumRevenue,
+            activeSubscriptions,
+            expiringThisWeek,
+            expiringThisMonth,
+          })
+        }
         return
       }
 
@@ -330,14 +350,16 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
         return endDate >= today && endDate <= monthFromNow && s.status === 'active'
       }).length
 
-      setStats({
-        totalRevenue,
-        basicRevenue,
-        premiumRevenue,
-        activeSubscriptions,
-        expiringThisWeek,
-        expiringThisMonth,
-      })
+      if (mountedRef.current) {
+        setStats({
+          totalRevenue,
+          basicRevenue,
+          premiumRevenue,
+          activeSubscriptions,
+          expiringThisWeek,
+          expiringThisMonth,
+        })
+      }
     } catch (err) {
       console.error('[usePremium] Error fetching stats:', err)
     }
@@ -347,9 +369,6 @@ export const usePremium = (filters: PremiumFilters, page: number = 1, limit: num
     fetchSubscriptions()
     fetchStats()
   }, [fetchSubscriptions, fetchStats])
-
-  useVisibilityRefetch(fetchSubscriptions)
-
   const extendSubscription = async (subscriptionId: string, newEndDate: string) => {
     try {
       // Try updating in new table first

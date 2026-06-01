@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Referral {
   id: string
@@ -55,10 +54,17 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
     pendingWithdrawals: 0,
     pendingAmount: 0,
   })
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchReferrals = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       let query = supabase
         .from('referrals')
@@ -78,7 +84,9 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
       }
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -100,7 +108,9 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         }
 
         const { count: fbCount } = await fallbackQuery
-        setTotalCount(fbCount || 0)
+        if (mountedRef.current) {
+          setTotalCount(fbCount || 0)
+        }
 
         const fbResult = await fallbackQuery
           .order('created_at', { ascending: false })
@@ -136,11 +146,15 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         )
       }
 
-      setReferrals(filtered)
+      if (mountedRef.current) {
+        setReferrals(filtered)
+      }
     } catch (err) {
       console.error('Error fetching referrals:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
@@ -200,7 +214,9 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         processed_at: w.processed_at,
       }))
 
-      setWithdrawals(transformed)
+      if (mountedRef.current) {
+        setWithdrawals(transformed)
+      }
     } catch (err) {
       console.error('Error fetching withdrawals:', err)
     }
@@ -233,13 +249,15 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
       const pendingCount = pendingWithdrawals?.length || 0
       const pendingAmount = pendingWithdrawals?.reduce((sum, w) => sum + (w.amount || 0), 0) || 0
 
-      setStats({
-        totalReferrers: uniqueReferrers.size,
-        totalSuccessful,
-        totalCommissionPaid,
-        pendingWithdrawals: pendingCount,
-        pendingAmount,
-      })
+      if (mountedRef.current) {
+        setStats({
+          totalReferrers: uniqueReferrers.size,
+          totalSuccessful,
+          totalCommissionPaid,
+          pendingWithdrawals: pendingCount,
+          pendingAmount,
+        })
+      }
     } catch (err) {
       console.error('Error fetching stats:', err)
     }
@@ -250,9 +268,6 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
     fetchWithdrawals()
     fetchStats()
   }, [fetchReferrals, fetchWithdrawals, fetchStats])
-
-  useVisibilityRefetch(fetchReferrals)
-
   const approveWithdrawal = async (withdrawalId: string) => {
     try {
       const { error } = await supabase

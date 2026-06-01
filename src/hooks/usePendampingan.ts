@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface MentoringSession {
   id: string
@@ -32,11 +31,20 @@ export const usePendampingan = () => {
   const [users, setUsers] = useState<PendampinganUser[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchUsers = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data: purchaseAddonsData, error: addonsError } = await supabaseAdmin
         .from('purchase_addons')
@@ -51,8 +59,12 @@ export const usePendampingan = () => {
         .filter(Boolean) || []
 
       if (userIds.length === 0) {
-        setUsers([])
-        setLoading(false)
+        if (mountedRef.current) {
+          setUsers([])
+        }
+        if (mountedRef.current) {
+          setLoading(false)
+        }
         return
       }
 
@@ -81,21 +93,24 @@ export const usePendampingan = () => {
         }
       })
 
-      setUsers(formattedUsers)
+      if (mountedRef.current) {
+        setUsers(formattedUsers)
+      }
     } catch (err) {
       console.error('Error fetching pendampingan users:', err)
-      setError(err instanceof Error ? err.message : 'Gagal memuat pengguna pendampingan')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat pengguna pendampingan')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers])
-
-  useVisibilityRefetch(fetchUsers)
-
   const fetchSessions = useCallback(async (userId: string): Promise<MentoringSession[]> => {
     try {
       const { data, error } = await supabaseAdmin

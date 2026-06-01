@@ -1,6 +1,5 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface DashboardStats {
   totalUsers: number
@@ -38,10 +37,17 @@ export const useDashboardStats = () => {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchStats = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       // Total users
       const { count: totalUsers } = await supabase
@@ -90,19 +96,25 @@ export const useDashboardStats = () => {
 
       const monthlyRevenue = monthlySubs?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
 
-      setStats({
-        totalUsers: totalUsers || 0,
-        newUsersToday: newUsersToday || 0,
-        activePremiumUsers: activePremiumUsers || 0,
-        pendingVerifications: pendingVerifications || 0,
-        todayMatches: todayMatches || 0,
-        totalRevenue,
-        monthlyRevenue,
-      })
+      if (mountedRef.current) {
+        setStats({
+          totalUsers: totalUsers || 0,
+          newUsersToday: newUsersToday || 0,
+          activePremiumUsers: activePremiumUsers || 0,
+          pendingVerifications: pendingVerifications || 0,
+          todayMatches: todayMatches || 0,
+          totalRevenue,
+          monthlyRevenue,
+        })
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -113,9 +125,6 @@ export const useDashboardStats = () => {
   const refetch = () => {
     fetchStats()
   }
-
-  useVisibilityRefetch(refetch)
-
   return { stats, loading, error, refetch }
 }
 
@@ -123,11 +132,18 @@ export const useDashboardStats = () => {
 export const useRegistrationChart = () => {
   const [data, setData] = useState<RegistrationData[]>([])
   const [loading, setLoading] = useState(true)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true)
+        if (mountedRef.current) {
+          setLoading(true)
+        }
         
         // Get last 7 days
         const dates = []
@@ -152,11 +168,15 @@ export const useRegistrationChart = () => {
           })
         }
 
-        setData(chartData)
+        if (mountedRef.current) {
+          setData(chartData)
+        }
       } catch (err) {
         console.error('Error fetching chart data:', err)
       } finally {
-        setLoading(false)
+        if (mountedRef.current) {
+          setLoading(false)
+        }
       }
     }
 
@@ -170,11 +190,18 @@ export const useRegistrationChart = () => {
 export const useRecentActivities = (limit: number = 10) => {
   const [activities, setActivities] = useState<RecentActivity[]>([])
   const [loading, setLoading] = useState(true)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        setLoading(true)
+        if (mountedRef.current) {
+          setLoading(true)
+        }
         
         // Fetch recent users
         const { data: recentUsers } = await supabase
@@ -233,11 +260,15 @@ export const useRecentActivities = (limit: number = 10) => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
         )
 
-        setActivities(allActivities.slice(0, limit))
+        if (mountedRef.current) {
+          setActivities(allActivities.slice(0, limit))
+        }
       } catch (err) {
         console.error('Error fetching activities:', err)
       } finally {
-        setLoading(false)
+        if (mountedRef.current) {
+          setLoading(false)
+        }
       }
     }
 

@@ -63,6 +63,12 @@ export default function ChatsManagement({ onViewChat }: Props) {
   const [chatMessagesLoading, setChatMessagesLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
   useEffect(() => {
     const fetchUsers = async () => {
       const { data } = await supabase
@@ -70,7 +76,7 @@ export default function ChatsManagement({ onViewChat }: Props) {
         .select('user_id, full_name')
         .order('full_name', { ascending: true })
         .limit(200)
-      if (data) {
+      if (data && mountedRef.current) {
         setUserOptions(data.map((u: any) => ({ id: u.user_id, full_name: u.full_name })))
       }
     }

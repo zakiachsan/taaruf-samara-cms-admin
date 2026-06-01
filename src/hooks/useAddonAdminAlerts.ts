@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface AddonAdminAlert {
   id: string
@@ -21,11 +20,20 @@ export const useAddonAdminAlerts = () => {
   const [alerts, setAlerts] = useState<AddonAdminAlert[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchAlerts = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data, error: fetchError } = await supabaseAdmin
         .from('addon_admin_alerts')
@@ -34,21 +42,24 @@ export const useAddonAdminAlerts = () => {
 
       if (fetchError) throw fetchError
 
-      setAlerts(data || [])
+      if (mountedRef.current) {
+        setAlerts(data || [])
+      }
     } catch (err) {
       console.error('Error fetching addon admin alerts:', err)
-      setError(err instanceof Error ? err.message : 'Gagal mengambil data alert')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal mengambil data alert')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
     fetchAlerts()
   }, [fetchAlerts])
-
-  useVisibilityRefetch(fetchAlerts)
-
   const updateAlertStatus = useCallback(
     async (alertId: string, status: 'pending' | 'contacted' | 'resolved', adminNotes?: string) => {
       try {

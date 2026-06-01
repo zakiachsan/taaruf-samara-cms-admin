@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
 import { type SelfValueRegistration } from '../types'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface SelfValueFilters {
   status: string
@@ -13,11 +12,20 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchRegistrations = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       let query = supabase
         .from('self_value_registrations')
@@ -37,7 +45,9 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
 
       // Get total count
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       // Apply pagination
       const from = (page - 1) * limit
@@ -60,7 +70,9 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
         }
 
         const { count: fbCount } = await fallbackQuery
-        setTotalCount(fbCount || 0)
+        if (mountedRef.current) {
+          setTotalCount(fbCount || 0)
+        }
 
         const fbResult = await fallbackQuery
           .order('created_at', { ascending: false })
@@ -102,20 +114,50 @@ export const useSelfValue = (filters: SelfValueFilters, page: number = 1, limit:
         },
       }))
 
-      setRegistrations(transformed)
+      // Fetch certificate codes from bedah_value_results
+      const userIdsForCert = transformed.map((r: any) => r.user_id).filter(Boolean)
+      if (userIdsForCert.length > 0) {
+        // Get user_profiles.id (bedah_value_results.user_id references user_profiles.id)
+        const { data: profileIds } = await supabaseAdmin
+          .from('user_profiles')
+          .select('id, user_id')
+          .in('user_id', userIdsForCert)
+
+        const profileIdMap = new Map(profileIds?.map((p: any) => [p.user_id, p.id]) || [])
+        const profileIdsList = Array.from(profileIdMap.values())
+
+        if (profileIdsList.length > 0) {
+          const { data: certResults } = await supabaseAdmin
+            .from('bedah_value_results')
+            .select('user_id, certificate_code')
+            .in('user_id', profileIdsList)
+
+          // Map profile.id → certificate_code, then map user_id → certificate_code
+          const certMap = new Map(certResults?.map((c: any) => [c.user_id, c.certificate_code]) || [])
+          transformed.forEach((r: any) => {
+            const profileId = profileIdMap.get(r.user_id)
+            r.certificate_code = profileId ? certMap.get(profileId) || null : null
+          })
+        }
+      }
+
+      if (mountedRef.current) {
+        setRegistrations(transformed)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat pendaftaran')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat pendaftaran')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
   useEffect(() => {
     fetchRegistrations()
   }, [fetchRegistrations])
-
-  useVisibilityRefetch(fetchRegistrations)
-
   const updateStatus = async (
     id: string,
     status: SelfValueRegistration['status'],

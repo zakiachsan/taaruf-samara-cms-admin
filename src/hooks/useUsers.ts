@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface User {
   id: string
@@ -39,10 +38,17 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchUsers = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       let query = supabase
         .from('user_profiles')
@@ -59,7 +65,9 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
       }
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -76,8 +84,12 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
       }
 
       if (!profiles || profiles.length === 0) {
-        setUsers([])
-        setLoading(false)
+        if (mountedRef.current) {
+          setUsers([])
+        }
+        if (mountedRef.current) {
+          setLoading(false)
+        }
         return
       }
 
@@ -150,21 +162,26 @@ export const useUsers = (filters: UserFilters, page: number = 1, limit: number =
         )
       }
 
-      setUsers(transformedUsers)
-      setError(null)
+      if (mountedRef.current) {
+        setUsers(transformedUsers)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Terjadi kesalahan')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
   useEffect(() => {
     fetchUsers()
   }, [fetchUsers])
-
-  useVisibilityRefetch(fetchUsers)
-
   const verifyUser = async (userId: string, verified: boolean) => {
     try {
       const { error: profilesError } = await supabase

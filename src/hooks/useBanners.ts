@@ -1,17 +1,25 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { type Banner } from '../types'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export const useBanners = () => {
   const [banners, setBanners] = useState<Banner[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchBanners = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data, error: fetchError } = await supabase
         .from('banners')
@@ -20,20 +28,23 @@ export const useBanners = () => {
 
       if (fetchError) throw fetchError
 
-      setBanners(data || [])
+      if (mountedRef.current) {
+        setBanners(data || [])
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat banner')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat banner')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
   useEffect(() => {
     fetchBanners()
   }, [fetchBanners])
-
-  useVisibilityRefetch(fetchBanners)
-
   const createBanner = async (banner: Omit<Banner, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const { data, error } = await supabase

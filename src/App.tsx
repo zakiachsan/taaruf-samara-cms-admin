@@ -22,19 +22,21 @@ import UserRegisterPage from './pages/UserRegisterPage'
 import UserDashboardPage from './pages/UserDashboardPage'
 import UserSubscribePage from './pages/UserSubscribePage'
 
-// Lazy load admin page components
-const Dashboard = lazy(() => import('./components/dashboard/Dashboard'))
-const UsersManagement = lazy(() => import('./components/users/UsersManagement'))
+// Eager imports for frequently accessed admin components to avoid lazy-load hangs after tab switch
+import Dashboard from './components/dashboard/Dashboard'
+import UsersManagement from './components/users/UsersManagement'
+import PackageManagement from './components/subscription/PackageManagement'
+import AddonsManagement from './components/subscription/AddonsManagement'
+import ChatsManagement from './components/chats/ChatsManagement'
+import BannerManagement from './components/banner/BannerManagement'
+import SelfValueManagement from './components/selfvalue/SelfValueManagement'
+
+// Lazy load admin page components (less frequently accessed)
 const PremiumManagement = lazy(() => import('./components/premium/PremiumManagement'))
-const PackageManagement = lazy(() => import('./components/subscription/PackageManagement'))
-const AddonsManagement = lazy(() => import('./components/subscription/AddonsManagement'))
 const ReferralManagement = lazy(() => import('./components/referral/ReferralManagement'))
 const ReferralSettings = lazy(() => import('./components/referral/ReferralSettings'))
 const ReportsManagement = lazy(() => import('./components/reports/ReportsManagement'))
-const BannerManagement = lazy(() => import('./components/banner/BannerManagement'))
-const SelfValueManagement = lazy(() => import('./components/selfvalue/SelfValueManagement'))
 const MatchesManagement = lazy(() => import('./components/matches/MatchesManagement'))
-const ChatsManagement = lazy(() => import('./components/chats/ChatsManagement'))
 const BlockedUsersManagement = lazy(() => import('./components/blocked/BlockedUsersManagement'))
 const TestimonialManagement = lazy(() => import('./components/testimonial/TestimonialManagement'))
 const PendampinganManagement = lazy(() => import('./components/pendampingan/PendampinganManagement'))

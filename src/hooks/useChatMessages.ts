@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface ChatMessage {
   id: string
@@ -16,12 +15,19 @@ export const useChatMessages = (chatId: string, page: number = 1, limit: number 
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchMessages = useCallback(async () => {
     if (!chatId) return
 
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       let query = supabase
         .from('chat_messages')
@@ -30,7 +36,9 @@ export const useChatMessages = (chatId: string, page: number = 1, limit: number 
         .order('created_at', { ascending: true })
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = Math.max(0, (page - 1) * limit)
       const to = from + limit - 1
@@ -62,20 +70,21 @@ export const useChatMessages = (chatId: string, page: number = 1, limit: number 
         created_at: m.created_at,
       }))
 
-      setMessages(transformed)
+      if (mountedRef.current) {
+        setMessages(transformed)
+      }
     } catch (err) {
       console.error('Error fetching messages:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [chatId, page, limit])
 
   useEffect(() => {
     fetchMessages()
   }, [fetchMessages])
-
-  useVisibilityRefetch(fetchMessages)
-
   const markAsRead = async (messageId: string) => {
     try {
       const { error } = await supabase

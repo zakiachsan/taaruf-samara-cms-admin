@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface ReferralSettings {
   id: string
@@ -16,11 +15,20 @@ export const useReferralSettings = () => {
   const [settings, setSettings] = useState<ReferralSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchSettings = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data, error } = await supabase
         .from('referral_settings')
@@ -29,12 +37,18 @@ export const useReferralSettings = () => {
 
       if (error) throw error
 
-      setSettings(data)
+      if (mountedRef.current) {
+        setSettings(data)
+      }
     } catch (err) {
       console.error('[useReferralSettings] Error fetching settings:', err)
-      setError(err instanceof Error ? err.message : 'Gagal memuat pengaturan referral')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat pengaturan referral')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -78,9 +92,6 @@ export const useReferralSettings = () => {
   useEffect(() => {
     fetchSettings()
   }, [fetchSettings])
-
-  useVisibilityRefetch(fetchSettings)
-
   return {
     settings,
     loading,

@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Addon {
   id: string
@@ -31,11 +30,20 @@ export const useAddons = () => {
   const [addons, setAddons] = useState<Addon[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchAddons = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       const { data, error } = await supabase
         .from('subscription_addons')
@@ -44,12 +52,18 @@ export const useAddons = () => {
 
       if (error) throw error
 
-      setAddons(data || [])
+      if (mountedRef.current) {
+        setAddons(data || [])
+      }
     } catch (err) {
       console.error('[useAddons] Error fetching add-ons:', err)
-      setError(err instanceof Error ? err.message : 'Gagal memuat add-on')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat add-on')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [])
 
@@ -180,9 +194,6 @@ export const useAddons = () => {
   useEffect(() => {
     fetchAddons()
   }, [fetchAddons])
-
-  useVisibilityRefetch(fetchAddons)
-
   return {
     addons,
     loading,

@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Report {
   id: string
@@ -54,10 +53,17 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
     resolvedReports: 0,
     dismissedReports: 0,
   })
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchReports = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       // Step 1: Fetch reports first
       let reportsQuery = supabaseAdmin
@@ -75,7 +81,9 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
       // Get count first
       const { count } = await reportsQuery
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       // Apply pagination
       const from = (page - 1) * limit
@@ -153,11 +161,15 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
         )
       }
 
-      setReports(filtered)
+      if (mountedRef.current) {
+        setReports(filtered)
+      }
     } catch (err) {
       console.error('Error fetching reports:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
@@ -169,13 +181,15 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
 
       if (!data) return
 
-      setStats({
-        totalReports: data.length,
-        openReports: data.filter(r => r.status === 'open').length,
-        investigatingReports: data.filter(r => r.status === 'investigating').length,
-        resolvedReports: data.filter(r => r.status === 'resolved').length,
-        dismissedReports: data.filter(r => r.status === 'dismissed').length,
-      })
+      if (mountedRef.current) {
+        setStats({
+          totalReports: data.length,
+          openReports: data.filter(r => r.status === 'open').length,
+          investigatingReports: data.filter(r => r.status === 'investigating').length,
+          resolvedReports: data.filter(r => r.status === 'resolved').length,
+          dismissedReports: data.filter(r => r.status === 'dismissed').length,
+        })
+      }
     } catch (err) {
       console.error('Error fetching stats:', err)
     }
@@ -185,9 +199,6 @@ export const useReports = (filters: ReportFilters, page: number = 1, limit: numb
     fetchReports()
     fetchStats()
   }, [fetchReports, fetchStats])
-
-  useVisibilityRefetch(fetchReports)
-
   const updateStatus = async (reportId: string, newStatus: string, notes?: string) => {
     try {
       // Get current user as handler

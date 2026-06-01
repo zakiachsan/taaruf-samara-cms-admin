@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import type { User, DashboardStats, Banner, Referral } from '../types'
 
@@ -19,6 +19,11 @@ export const useDashboardStats = () => {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -86,23 +91,29 @@ export const useDashboardStats = () => {
 
         const monthlyRevenue = monthlySubs?.reduce((sum, s) => sum + (s.amount || 0), 0) || 0
 
-        setStats({
-          totalUsers: totalUsers || 0,
-          newUsersToday: newUsersToday || 0,
-          verifiedUsers: verifiedUsers || 0,
-          pendingVerifications: pendingVerifications || 0,
-          activePremiumBasic: activePremiumBasic || 0,
-          activePremiumPremium: activePremiumPremium || 0,
-          todayMatches: todayMatches || 0,
-          totalReferrals: 0,
-          totalRevenue,
-          monthlyRevenue,
-          pendingWithdrawals: 0,
-        })
+        if (mountedRef.current) {
+          setStats({
+            totalUsers: totalUsers || 0,
+            newUsersToday: newUsersToday || 0,
+            verifiedUsers: verifiedUsers || 0,
+            pendingVerifications: pendingVerifications || 0,
+            activePremiumBasic: activePremiumBasic || 0,
+            activePremiumPremium: activePremiumPremium || 0,
+            todayMatches: todayMatches || 0,
+            totalReferrals: 0,
+            totalRevenue,
+            monthlyRevenue,
+            pendingWithdrawals: 0,
+          })
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+        if (mountedRef.current) {
+          setError(err instanceof Error ? err.message : 'Unknown error')
+        }
       } finally {
-        setLoading(false)
+        if (mountedRef.current) {
+          setLoading(false)
+        }
       }
     }
 
@@ -117,11 +128,16 @@ export const useUsers = (limit: number = 50) => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef2 = useRef(true)
+  useEffect(() => {
+    mountedRef2.current = true
+    return () => { mountedRef2.current = false }
+  }, [])
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        setLoading(true)
+        if (mountedRef2.current) setLoading(true)
         const { data, error } = await supabase
           .from('users')
           .select('*')
@@ -129,11 +145,11 @@ export const useUsers = (limit: number = 50) => {
           .limit(limit)
 
         if (error) throw error
-        setUsers(data || [])
+        if (mountedRef2.current) setUsers(data || [])
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+        if (mountedRef2.current) setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
-        setLoading(false)
+        if (mountedRef2.current) setLoading(false)
       }
     }
 
@@ -148,22 +164,27 @@ export const useBanners = () => {
   const [banners, setBanners] = useState<Banner[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef3 = useRef(true)
+  useEffect(() => {
+    mountedRef3.current = true
+    return () => { mountedRef3.current = false }
+  }, [])
 
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        setLoading(true)
+        if (mountedRef3.current) setLoading(true)
         const { data, error } = await supabase
           .from('banners')
           .select('*')
           .order('order', { ascending: true })
 
         if (error) throw error
-        setBanners(data || [])
+        if (mountedRef3.current) setBanners(data || [])
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+        if (mountedRef3.current) setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
-        setLoading(false)
+        if (mountedRef3.current) setLoading(false)
       }
     }
 
@@ -178,22 +199,27 @@ export const useReferrals = () => {
   const [referrals, setReferrals] = useState<Referral[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef4 = useRef(true)
+  useEffect(() => {
+    mountedRef4.current = true
+    return () => { mountedRef4.current = false }
+  }, [])
 
   useEffect(() => {
     const fetchReferrals = async () => {
       try {
-        setLoading(true)
+        if (mountedRef4.current) setLoading(true)
         const { data, error } = await supabase
           .from('referrals')
           .select('*')
           .order('created_at', { ascending: false })
 
         if (error) throw error
-        setReferrals(data || [])
+        if (mountedRef4.current) setReferrals(data || [])
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error')
+        if (mountedRef4.current) setError(err instanceof Error ? err.message : 'Unknown error')
       } finally {
-        setLoading(false)
+        if (mountedRef4.current) setLoading(false)
       }
     }
 

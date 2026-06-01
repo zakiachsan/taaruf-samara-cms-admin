@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { type Testimonial } from '../types'
 
@@ -6,10 +6,16 @@ export const usePublicTestimonials = () => {
   const [testimonials, setTestimonials] = useState<Testimonial[]>([])
   const [loading, setLoading] = useState(true)
 
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
   useEffect(() => {
     const fetchActiveTestimonials = async () => {
       try {
-        setLoading(true)
+        if (mountedRef.current) setLoading(true)
         const { data } = await supabase
           .from('testimonials')
           .select('*')
@@ -17,12 +23,12 @@ export const usePublicTestimonials = () => {
           .order('display_order', { ascending: true })
           .limit(6)
 
-        setTestimonials(data || [])
+        if (mountedRef.current) setTestimonials(data || [])
       } catch (err) {
         console.error('Failed to fetch testimonials:', err)
-        setTestimonials([])
+        if (mountedRef.current) setTestimonials([])
       } finally {
-        setLoading(false)
+        if (mountedRef.current) setLoading(false)
       }
     }
 

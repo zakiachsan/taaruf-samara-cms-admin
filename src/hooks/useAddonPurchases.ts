@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface AddonPurchase {
   id: string
@@ -25,10 +24,17 @@ export const useAddonPurchases = (filters: AddonPurchaseFilters, page: number = 
   const [purchases, setPurchases] = useState<AddonPurchase[]>([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchPurchases = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -81,7 +87,9 @@ export const useAddonPurchases = (filters: AddonPurchaseFilters, page: number = 
         rawData = data || []
       }
 
-      setTotalCount(total)
+      if (mountedRef.current) {
+        setTotalCount(total)
+      }
 
       // Get unique user_ids
       const userIds = [...new Set(rawData.map((p: any) => p.purchase?.user_id).filter(Boolean))]
@@ -162,20 +170,21 @@ export const useAddonPurchases = (filters: AddonPurchaseFilters, page: number = 
         )
       }
 
-      setPurchases(filtered)
+      if (mountedRef.current) {
+        setPurchases(filtered)
+      }
     } catch (err) {
       console.error('Error fetching addon purchases:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
   useEffect(() => {
     fetchPurchases()
   }, [fetchPurchases])
-
-  useVisibilityRefetch(fetchPurchases)
-
   return {
     purchases,
     loading,

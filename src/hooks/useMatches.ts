@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { type MatchRequest } from '../types'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface MatchFilters {
   status: string
@@ -13,11 +12,20 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
   const [error, setError] = useState<string | null>(null)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchMatches = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
+      if (mountedRef.current) {
+        setError(null)
+      }
 
       let query = supabase
         .from('match_requests')
@@ -42,7 +50,9 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
 
       // Get total count
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       // Apply pagination
       const from = (page - 1) * limit
@@ -65,7 +75,9 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
         }
 
         const { count: fbCount } = await fallbackQuery
-        setTotalCount(fbCount || 0)
+        if (mountedRef.current) {
+          setTotalCount(fbCount || 0)
+        }
 
         const fbResult = await fallbackQuery
           .order('created_at', { ascending: false })
@@ -77,20 +89,23 @@ export const useMatches = (filters: MatchFilters, page: number = 1, limit: numbe
 
       if (fetchError) throw fetchError
 
-      setMatches(data || [])
+      if (mountedRef.current) {
+        setMatches(data || [])
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal memuat permintaan pertandingan')
+      if (mountedRef.current) {
+        setError(err instanceof Error ? err.message : 'Gagal memuat permintaan pertandingan')
+      }
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
   useEffect(() => {
     fetchMatches()
   }, [fetchMatches])
-
-  useVisibilityRefetch(fetchMatches)
-
   const updateStatus = async (id: string, status: MatchRequest['status']) => {
     try {
       const { error } = await supabase

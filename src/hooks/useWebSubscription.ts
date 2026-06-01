@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useUserAuth } from '../contexts/UserAuthContext'
 import type { SubscriptionPackage, SubscriptionAddon, SubscriptionPurchase } from '../types'
@@ -22,6 +22,11 @@ export const useWebSubscription = (userId?: string) => {
   const [loadingPackages, setLoadingPackages] = useState(true)
   const [loadingAddons, setLoadingAddons] = useState(true)
   const [purchasing, setPurchasing] = useState(false)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   // Fetch packages — wait for auth initialization to avoid lock contention
   useEffect(() => {

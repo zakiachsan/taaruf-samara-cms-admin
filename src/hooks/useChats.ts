@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase, supabaseAdmin } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface Chat {
   id: string
@@ -32,10 +31,17 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
   const [chats, setChats] = useState<Chat[]>([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchChats = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       let query = supabaseAdmin
         .from('chats')
@@ -51,7 +57,9 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
       }
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -120,20 +128,21 @@ export const useChats = (filters: ChatFilters, page: number = 1, limit: number =
         )
       }
 
-      setChats(filtered)
+      if (mountedRef.current) {
+        setChats(filtered)
+      }
     } catch (err) {
       console.error('Error fetching chats:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
   useEffect(() => {
     fetchChats()
   }, [fetchChats])
-
-  useVisibilityRefetch(fetchChats)
-
   const getChatById = async (chatId: string) => {
     try {
       const { data, error } = await supabase

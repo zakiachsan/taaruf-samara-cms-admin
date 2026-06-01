@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import { useVisibilityRefetch } from './useVisibilityRefetch'
 
 export interface BlockedUser {
   id: string
@@ -21,10 +20,17 @@ export const useBlockedUsers = (filters: BlockedFilters, page: number = 1, limit
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([])
   const [loading, setLoading] = useState(true)
   const [totalCount, setTotalCount] = useState(0)
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
 
   const fetchBlockedUsers = useCallback(async () => {
     try {
-      setLoading(true)
+      if (mountedRef.current) {
+        setLoading(true)
+      }
 
       let query = supabase
         .from('user_profiles')
@@ -38,7 +44,9 @@ export const useBlockedUsers = (filters: BlockedFilters, page: number = 1, limit
       }
 
       const { count } = await query
-      setTotalCount(count || 0)
+      if (mountedRef.current) {
+        setTotalCount(count || 0)
+      }
 
       const from = (page - 1) * limit
       const to = from + limit - 1
@@ -72,20 +80,21 @@ export const useBlockedUsers = (filters: BlockedFilters, page: number = 1, limit
         )
       }
 
-      setBlockedUsers(filtered)
+      if (mountedRef.current) {
+        setBlockedUsers(filtered)
+      }
     } catch (err) {
       console.error('Error fetching blocked users:', err)
     } finally {
-      setLoading(false)
+      if (mountedRef.current) {
+        setLoading(false)
+      }
     }
   }, [filters, page, limit])
 
   useEffect(() => {
     fetchBlockedUsers()
   }, [fetchBlockedUsers])
-
-  useVisibilityRefetch(fetchBlockedUsers)
-
   const unblockById = async (userId: string) => {
     try {
       const { error } = await supabase

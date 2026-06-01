@@ -8,8 +8,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables')
 }
 
-// Singleton pattern to prevent multiple GoTrueClient instances
-// during HMR / React Strict Mode double-mount
 declare global {
   interface Window {
     __supabaseClient?: SupabaseClient
@@ -17,7 +15,30 @@ declare global {
   }
 }
 
-// Regular client (with RLS) — shared session across tabs
+// Fetch wrapper with timeout to prevent hung requests after tab switch
+const fetchWithTimeout = async (input: URL | RequestInfo, init?: RequestInit) => {
+  const timeout = (init as any)?.timeout ?? 8000
+  const controller = new AbortController()
+  const id = setTimeout(() => controller.abort(), timeout)
+
+  const existingSignal = init?.signal
+  if (existingSignal) {
+    existingSignal.addEventListener('abort', () => controller.abort())
+  }
+
+  try {
+    const response = await fetch(input, { ...init, signal: controller.signal })
+    return response
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new Error('Request timeout - please check your connection and try again')
+    }
+    throw err
+  } finally {
+    clearTimeout(id)
+  }
+}
+
 export const supabase: SupabaseClient =
   window.__supabaseClient ??
   createClient(supabaseUrl, supabaseAnonKey, {
@@ -27,14 +48,15 @@ export const supabase: SupabaseClient =
       detectSessionInUrl: true,
       storage: window.localStorage,
     },
+    global: {
+      fetch: fetchWithTimeout,
+    },
   })
 
 if (!window.__supabaseClient) {
   window.__supabaseClient = supabase
 }
 
-// Admin client (bypasses RLS for admin operations)
-// Lazy creation to reduce GoTrueClient instances warning
 export const supabaseAdmin: SupabaseClient =
   window.__supabaseAdminClient ??
   createClient(supabaseUrl, supabaseServiceRoleKey, {
@@ -42,12 +64,13 @@ export const supabaseAdmin: SupabaseClient =
       persistSession: false,
       autoRefreshToken: false,
       detectSessionInUrl: false,
-      storageKey: 'sb-admin-token', // Different storage key to avoid conflict
+      storageKey: 'sb-admin-token',
     },
     global: {
       headers: {
         apikey: supabaseServiceRoleKey,
       },
+      fetch: fetchWithTimeout,
     },
   })
 
@@ -55,7 +78,6 @@ if (!window.__supabaseAdminClient) {
   window.__supabaseAdminClient = supabaseAdmin
 }
 
-// Auth helpers
 export const signInWithEmail = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,

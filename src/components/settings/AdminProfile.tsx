@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../contexts/AuthContext'
 import {
@@ -29,15 +29,21 @@ export default function AdminProfile() {
     confirm: false,
   })
 
+  const mountedRef = useRef(true)
+  useEffect(() => {
+    mountedRef.current = true
+    return () => { mountedRef.current = false }
+  }, [])
+
   useEffect(() => {
     const fetchUser = async () => {
       // Prefer email from AuthContext, fallback to supabase.getUser()
       if (authUser?.email) {
-        setAdminEmail(authUser.email)
+        if (mountedRef.current) setAdminEmail(authUser.email)
         return
       }
       const { data: { user } } = await supabase.auth.getUser()
-      if (user?.email) {
+      if (user?.email && mountedRef.current) {
         setAdminEmail(user.email)
       }
     }

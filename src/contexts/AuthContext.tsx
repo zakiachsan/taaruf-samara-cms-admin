@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -41,56 +41,26 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
+const mapUser = (u: any): User => ({
+  id: u.id,
+  email: u.email ?? '',
+  email_confirmed_at: u.email_confirmed_at,
+  created_at: u.created_at,
+  updated_at: u.updated_at,
+})
+
+const mapSession = (s: any): Session => ({
+  access_token: s.access_token,
+  refresh_token: s.refresh_token,
+  expires_in: s.expires_in ?? 3600,
+  token_type: s.token_type,
+  user: mapUser(s.user),
+})
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
-  const isRecoveringRef = useRef(false)
-
-  const mapUser = (u: any): User => ({
-    id: u.id,
-    email: u.email ?? '',
-    email_confirmed_at: u.email_confirmed_at,
-    created_at: u.created_at,
-    updated_at: u.updated_at,
-  })
-
-  const mapSession = (s: any): Session => ({
-    access_token: s.access_token,
-    refresh_token: s.refresh_token,
-    expires_in: s.expires_in ?? 3600,
-    token_type: s.token_type,
-    user: mapUser(s.user),
-  })
-
-  const recoverSession = useCallback(async () => {
-    if (isRecoveringRef.current) return
-    isRecoveringRef.current = true
-
-    try {
-      const { data } = await supabase.auth.getSession()
-      const s = data.session
-
-      if (s?.user) {
-        setUser(mapUser(s.user))
-        setSession(mapSession(s))
-      } else {
-        const { data: refreshData } = await supabase.auth.refreshSession()
-        if (refreshData.session?.user) {
-          setUser(mapUser(refreshData.session.user))
-          setSession(mapSession(refreshData.session))
-        } else {
-          setUser(null)
-          setSession(null)
-        }
-      }
-    } catch {
-      setUser(null)
-      setSession(null)
-    } finally {
-      isRecoveringRef.current = false
-    }
-  }, [])
 
   useEffect(() => {
     let mounted = true
@@ -131,20 +101,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   }, [])
 
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>
-    const handleFocus = () => {
-      clearTimeout(timeoutId)
-      timeoutId = setTimeout(() => {
-        recoverSession()
-      }, 200)
-    }
-    window.addEventListener('focus', handleFocus)
-    return () => {
-      clearTimeout(timeoutId)
-      window.removeEventListener('focus', handleFocus)
-    }
-  }, [recoverSession])
+  // NOTE: We intentionally do NOT refresh the session on visibilitychange/focus.
+  // Supabase client already has autoRefreshToken: true which handles token
+  // refresh reliably. Manually triggering refreshSessionIfNeeded() here caused
+  // race conditions with Supabase's internal refresh logic after tab switches,
+  // leading to hung database queries and infinite loading states.
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password })

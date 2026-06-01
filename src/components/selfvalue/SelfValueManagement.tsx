@@ -16,6 +16,8 @@ import {
   X,
   Plus,
   UserPlus,
+  Eye,
+  Download,
 } from 'lucide-react'
 
 const STATUS_OPTIONS = [
@@ -38,6 +40,12 @@ export default function SelfValueManagement() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showManualModal, setShowManualModal] = useState(false)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+
+  // Certificate modal state
+  const [showCertificateModal, setShowCertificateModal] = useState(false)
+  const [certificateData, setCertificateData] = useState<any>(null)
+  const [certificateUser, setCertificateUser] = useState<SelfValueRegistration | null>(null)
+  const [loadingCertificate, setLoadingCertificate] = useState(false)
 
   // Manual creation form
   const [manualUserSearch, setManualUserSearch] = useState('')
@@ -260,9 +268,29 @@ export default function SelfValueManagement() {
       consultant_notes: manualFormData.consultant_notes,
       certificate_code: manualFormData.certificate_code || undefined,
     })
-    setActionLoading(null)
 
     if (result.success) {
+      // Ensure a self_value_registrations record exists for this user
+      const { data: existing } = await supabase
+        .from('self_value_registrations')
+        .select('id')
+        .eq('user_id', selectedManualUser.id)
+        .maybeSingle()
+
+      if (existing) {
+        await supabase
+          .from('self_value_registrations')
+          .update({ status: 'completed', updated_at: new Date().toISOString() })
+          .eq('id', existing.id)
+      } else {
+        await supabase
+          .from('self_value_registrations')
+          .insert({
+            user_id: selectedManualUser.id,
+            status: 'completed',
+          })
+      }
+
       setShowManualModal(false)
       setSelectedManualUser(null)
       setManualUserSearch('')
@@ -276,17 +304,19 @@ export default function SelfValueManagement() {
         consultant_notes: '',
         certificate_code: '',
       })
+      await refetch()
       alert('Hasil Bedah Value berhasil dibuat')
     } else {
       alert(result.error)
     }
+
+    setActionLoading(null)
   }
 
   const handleSaveEdit = async () => {
     if (!selectedRegistration) return
 
     setActionLoading('edit')
-
     const result = await updateTestResults(selectedRegistration.user_id, {
       quality_score: completeData.quality_score,
       mental_readiness_score: completeData.mental_readiness_score,
@@ -306,6 +336,24 @@ export default function SelfValueManagement() {
     } else {
       alert(result.error)
     }
+  }
+
+  const handleViewCertificate = async (reg: SelfValueRegistration) => {
+    setCertificateUser(reg)
+    setLoadingCertificate(true)
+    setShowCertificateModal(true)
+
+    const { success, data } = await getTestResults(reg.user_id)
+    if (success && data) {
+      setCertificateData(data)
+    } else {
+      setCertificateData(null)
+    }
+    setLoadingCertificate(false)
+  }
+
+  const handlePrintCertificate = () => {
+    window.print()
   }
 
   const formatDate = (dateString?: string) => {
@@ -438,13 +486,12 @@ export default function SelfValueManagement() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px]">
+            <table className="w-full min-w-[600px]">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">User</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jadwal</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lokasi</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode Sertifikat</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Terdaftar</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
                 </tr>
@@ -465,16 +512,14 @@ export default function SelfValueManagement() {
                     </td>
                     <td className="px-4 py-3">{getStatusBadge(reg.status)}</td>
                     <td className="px-4 py-3">
-                      {reg.scheduled_date ? (
-                        <div className="text-sm">
-                          <p className="font-medium">{formatDate(reg.scheduled_date)}</p>
-                          <p className="text-gray-500">{reg.scheduled_time || '-'}</p>
-                        </div>
+                      {(reg as any).certificate_code ? (
+                        <span className="inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded text-xs font-mono font-medium">
+                          {(reg as any).certificate_code}
+                        </span>
                       ) : (
-                        <span className="text-gray-400">-</span>
+                        <span className="text-gray-400 text-xs">-</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{reg.location || '-'}</td>
                     <td className="px-4 py-3 text-sm text-gray-500">{formatDate(reg.created_at)}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-2">
@@ -501,12 +546,21 @@ export default function SelfValueManagement() {
                           </button>
                         )}
                         {reg.status === 'completed' && (
-                          <button
-                            onClick={() => handleEdit(reg)}
-                            className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
-                          >
-                            Edit Hasil
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleViewCertificate(reg)}
+                              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 flex items-center gap-1"
+                            >
+                              <Eye size={14} />
+                              Sertifikat
+                            </button>
+                            <button
+                              onClick={() => handleEdit(reg)}
+                              className="px-3 py-1 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200"
+                            >
+                              Edit
+                            </button>
+                          </>
                         )}
                         {(reg.status === 'registered' || reg.status === 'scheduled') && (
                           <button
@@ -1003,6 +1057,158 @@ export default function SelfValueManagement() {
                   {actionLoading === 'manual' ? 'Menyimpan...' : 'Simpan Hasil'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Certificate Modal */}
+      {showCertificateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-bold text-gray-900">Sertifikasi Bedah Value</h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrintCertificate}
+                  className="flex items-center gap-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  <Download size={14} />
+                  Cetak
+                </button>
+                <button onClick={() => { setShowCertificateModal(false); setCertificateData(null); setCertificateUser(null) }} className="p-2 hover:bg-gray-100 rounded-lg">
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6" id="certificate-content">
+              {loadingCertificate ? (
+                <div className="py-12 text-center">
+                  <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400 mb-3" />
+                  <p className="text-sm text-gray-500">Memuat data sertifikat...</p>
+                </div>
+              ) : (
+                <>
+                {/* Certificate Card */}
+                <div className="border-2 border-emerald-600 rounded-xl overflow-hidden">
+                  {/* Certificate Header */}
+                  <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 px-8 py-6 text-center">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <Award size={28} className="text-white" />
+                    </div>
+                    <h2 className="text-xl font-bold text-white tracking-wide">SERTIFIKAT</h2>
+                    <p className="text-emerald-100 text-sm mt-1">Bedah Value - Taaruf Samara</p>
+                  </div>
+
+                  {/* Certificate Body */}
+                  <div className="px-8 py-6 space-y-5">
+                    {/* User Info */}
+                    <div className="text-center pb-4 border-b border-gray-200">
+                      <p className="text-sm text-gray-500 mb-1">Diberikan kepada</p>
+                      <p className="text-xl font-bold text-gray-900">
+                        {certificateUser?.user?.full_name || '-'}
+                      </p>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {certificateUser?.user?.email || ''}
+                      </p>
+                    </div>
+
+                    {/* Scores */}
+                    {certificateData && (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-emerald-50 rounded-lg p-4 text-center">
+                          <p className="text-xs text-emerald-600 font-medium mb-1">Skor Kualitas</p>
+                          <p className="text-2xl font-bold text-emerald-700">
+                            {certificateData.quality_score || 0}
+                          </p>
+                          <p className="text-xs text-gray-500">/ 100</p>
+                        </div>
+                        <div className="bg-blue-50 rounded-lg p-4 text-center">
+                          <p className="text-xs text-blue-600 font-medium mb-1">Kesiapan Mental</p>
+                          <p className="text-2xl font-bold text-blue-700">
+                            {certificateData.mental_readiness_score || 0}
+                          </p>
+                          <p className="text-xs text-gray-500">/ 100</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Details */}
+                    {certificateData && (
+                      <div className="space-y-3">
+                        {certificateData.partner_category && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Kategori Partner</p>
+                            <p className="text-sm text-gray-700">{certificateData.partner_category}</p>
+                          </div>
+                        )}
+                        {certificateData.emotional_baggage_notes && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Beban Emosional</p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{certificateData.emotional_baggage_notes}</p>
+                          </div>
+                        )}
+                        {certificateData.life_needs_notes && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Kebutuhan Hidup</p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{certificateData.life_needs_notes}</p>
+                          </div>
+                        )}
+                        {certificateData.consultant_notes && (
+                          <div className="bg-gray-50 rounded-lg p-3">
+                            <p className="text-xs font-medium text-gray-500 mb-1">Catatan Konsultan</p>
+                            <p className="text-sm text-gray-700 whitespace-pre-wrap">{certificateData.consultant_notes}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Certificate Code */}
+                    {certificateData?.certificate_code && (
+                      <div className="text-center pt-4 border-t border-gray-200">
+                        <p className="text-xs text-gray-500">Kode Sertifikat</p>
+                        <p className="text-sm font-mono font-bold text-emerald-700 tracking-wider">
+                          {certificateData.certificate_code}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Signature */}
+                    <div className="flex justify-between items-end pt-4 border-t border-gray-200">
+                      <div className="text-center">
+                        <p className="text-xs text-gray-500">Tanggal Terbit</p>
+                        <p className="text-sm font-medium text-gray-700">
+                          {certificateUser?.created_at
+                            ? new Date(certificateUser.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
+                            : '-'}
+                        </p>
+                      </div>
+                      <div className="text-center">
+                        <div className="w-20 border-b border-gray-400 mb-1" />
+                        <p className="text-xs text-gray-500">Tim Pendampingan</p>
+                        <p className="text-sm font-medium text-gray-700">Taaruf Samara</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Certificate URL Link */}
+                {certificateUser?.certificate_url && (
+                  <div className="mt-4 text-center">
+                    <a
+                      href={certificateUser.certificate_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      <Eye size={14} />
+                      Buka Sertifikat Online
+                    </a>
+                  </div>
+                )}
+                </>
+              )}
             </div>
           </div>
         </div>
