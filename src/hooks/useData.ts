@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
-import type { User, DashboardStats, Banner, Referral } from '../types'
+import type { User, DashboardStats, Banner } from '../types'
 
 // Hook for fetching dashboard stats
 export const useDashboardStats = () => {
@@ -192,39 +192,4 @@ export const useBanners = () => {
   }, [])
 
   return { banners, loading, error }
-}
-
-// Hook for fetching referrals
-export const useReferrals = () => {
-  const [referrals, setReferrals] = useState<Referral[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const mountedRef4 = useRef(true)
-  useEffect(() => {
-    mountedRef4.current = true
-    return () => { mountedRef4.current = false }
-  }, [])
-
-  useEffect(() => {
-    const fetchReferrals = async () => {
-      try {
-        if (mountedRef4.current) setLoading(true)
-        const { data, error } = await supabase
-          .from('referrals')
-          .select('*')
-          .order('created_at', { ascending: false })
-
-        if (error) throw error
-        if (mountedRef4.current) setReferrals(data || [])
-      } catch (err) {
-        if (mountedRef4.current) setError(err instanceof Error ? err.message : 'Unknown error')
-      } finally {
-        if (mountedRef4.current) setLoading(false)
-      }
-    }
-
-    fetchReferrals()
-  }, [])
-
-  return { referrals, loading, error }
 }

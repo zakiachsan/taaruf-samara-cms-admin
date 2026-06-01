@@ -8,6 +8,7 @@ export interface Referral {
   referrer_email?: string
   referred_id: string
   referred_name?: string
+  referrer_balance?: number
   code: string
   status: 'pending' | 'successful' | 'failed'
   reward_amount: number
@@ -66,13 +67,15 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         setLoading(true)
       }
 
+      // Server-side search: use ilike on code, and join referrer profile for name search
       let query = supabase
         .from('referrals')
         .select(`
           *,
           referrer:referrer_id (
             full_name,
-            email
+            email,
+            referral_balance
           ),
           referred:referred_id (
             full_name
@@ -81,6 +84,13 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
 
       if (filters.status) {
         query = query.eq('status', filters.status)
+      }
+
+      // Server-side search: filter by code (always works) or referrer name/email
+      // Since Supabase doesn't support OR across joined tables easily,
+      // we search by code on server and do additional client-side filtering for names
+      if (filters.search) {
+        query = query.ilike('code', `%${filters.search}%`)
       }
 
       const { count } = await query
@@ -127,6 +137,7 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         referrer_id: r.referrer_id,
         referrer_name: r.referrer?.full_name || 'Unknown',
         referrer_email: r.referrer?.email || '',
+        referrer_balance: r.referrer?.referral_balance || 0,
         referred_id: r.referred_id,
         referred_name: r.referred?.full_name || 'Unknown',
         code: r.code,
@@ -136,13 +147,14 @@ export const useReferrals = (filters: ReferralFilters, page: number = 1, limit: 
         completed_at: r.completed_at,
       }))
 
+      // Client-side filter for name/email (Supabase can't OR across joined tables)
       let filtered = transformed
       if (filters.search) {
         const searchLower = filters.search.toLowerCase()
         filtered = transformed.filter(r =>
           r.referrer_name?.toLowerCase().includes(searchLower) ||
           r.referrer_email?.toLowerCase().includes(searchLower) ||
-          r.code.toLowerCase().includes(searchLower)
+          r.referred_name?.toLowerCase().includes(searchLower)
         )
       }
 

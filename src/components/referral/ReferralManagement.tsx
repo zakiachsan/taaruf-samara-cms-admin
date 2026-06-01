@@ -228,13 +228,14 @@ export default function ReferralManagement() {
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Hadiah</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Saldo Referrer</th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {referrals.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
+                        <td colSpan={7} className="px-4 py-12 text-center text-gray-500">
                           <Gift size={48} className="mx-auto text-gray-300 mb-4" />
                           Tidak ada referral ditemukan
                         </td>
@@ -255,6 +256,9 @@ export default function ReferralManagement() {
                           <td className="px-4 py-3">{getStatusBadge(ref.status)}</td>
                           <td className="px-4 py-3 font-medium text-gray-900">
                             {formatCurrency(ref.reward_amount)}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {formatCurrency(ref.referrer_balance || 0)}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-500">
                             {formatDate(ref.created_at)}

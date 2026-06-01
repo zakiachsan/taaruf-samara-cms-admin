@@ -52,6 +52,7 @@ interface FullUserProfile {
   preferred_location?: string[]
   preferred_marital_status?: string[]
   referral_code?: string
+  referral_balance?: number
 
   // Status
   is_verified: boolean
@@ -477,6 +478,10 @@ export default function UserDetail({ userId, userName, onClose }: UserDetailProp
                   <div>
                     <p className="text-gray-500">Kode Referral</p>
                     <p className="font-mono font-medium">{profile.referral_code || '-'}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-500">Saldo Referral</p>
+                    <p className="font-medium text-emerald-600">Rp {(profile.referral_balance || 0).toLocaleString('id-ID')}</p>
                   </div>
                   {profile.bedah_value_cert_code && (
                     <div>
